@@ -1,0 +1,6 @@
+[package]
+name = "sokoban-solver"
+version = "0.1.0"
+authors = ["Martin Taibr <taibr.martin@gmail.com>"]
+
+[dependencies]
