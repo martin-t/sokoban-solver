@@ -1,182 +1,12 @@
-use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::env;
-use std::error::Error;
-use std::fmt;
-use std::fmt::{Display, Formatter};
-use std::fs::File;
-use std::io::prelude::*;
-use std::ops::Add;
 use std::process;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-enum Cell {
-    Wall,
-    Path(PathCell),
-}
+mod formatter;
+mod data;
+mod utils;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-struct PathCell {
-    content: Content,
-    goal: bool,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-enum Content {
-    Empty,
-    Player,
-    Box,
-}
-
-#[derive(Debug, Clone)]
-struct Map {
-    map: Vec<Vec<Cell>>,
-    goals: Vec<Pos>,
-    dead_ends: Vec<Vec<bool>>,
-}
-
-impl Map {
-    fn at(&self, pos: Pos) -> &Cell {
-        &self.map[pos.r as usize][pos.c as usize]
-    }
-
-    fn at_mut(&mut self, pos: Pos) -> &mut Cell {
-        &mut self.map[pos.r as usize][pos.c as usize]
-    }
-
-    fn with_state(self, state: &State) -> Map {
-        self.with_boxes(state).with_player(state)
-    }
-
-    fn with_boxes(mut self, state: &State) -> Map {
-        for pos in &state.boxes {
-            if let Cell::Path(ref mut pc) = *self.at_mut(*pos) {
-                pc.content = Content::Box;
-            } else {
-                unreachable!();
-            }
-        }
-        self
-    }
-
-    fn with_player(mut self, state: &State) -> Map {
-        if let Cell::Path(ref mut pc) = *self.at_mut(state.player_pos) {
-            pc.content = Content::Player;
-        } else {
-            unreachable!();
-        }
-        self
-    }
-
-    fn to_string(&self) -> String {
-        let mut res = String::new();
-        for row in &self.map {
-            for cell in row {
-                match *cell {
-                    Cell::Wall => res += "<>",
-                    Cell::Path(ref path) => {
-                        match path.content {
-                            Content::Empty => res += " ",
-                            Content::Box => res += "B",
-                            Content::Player => res += "P",
-                        }
-                        match path.goal {
-                            true => res += "_",
-                            false => res += " ",
-                        }
-                    }
-                }
-            }
-            res += "\n";
-        }
-        res
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-struct State {
-    player_pos: Pos,
-    boxes: Vec<Pos>,
-}
-
-#[derive(Debug)]
-struct SearchState {
-    state: State,
-    prev: Option<State>,
-    dist: i32,
-    h: i32,
-}
-
-impl Ord for SearchState {
-    fn cmp(&self, other: &Self) -> Ordering {
-        // intentionally reversed for BinaryHeap
-        //other.heuristic().cmp(&self.heuristic())
-        (other.dist + other.h).cmp(&(self.dist + self.h))
-    }
-}
-
-impl PartialOrd for SearchState {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Eq for SearchState {}
-
-impl PartialEq for SearchState {
-    fn eq(&self, other: &Self) -> bool {
-        self.state == other.state
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct Pos {
-    r: i32,
-    c: i32,
-}
-
-impl Pos {
-    fn dist(self, other: Pos) -> i32 {
-        (self.r - other.r).abs() + (self.c - other.c).abs()
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-struct Dir {
-    r: i32,
-    c: i32,
-}
-
-impl Add<Dir> for Pos {
-    type Output = Pos;
-
-    fn add(self, dir: Dir) -> Pos {
-        Pos { r: self.r + dir.r, c: self.c + dir.c }
-    }
-}
-
-#[derive(Debug)]
-enum ParseError {
-    Pos(usize, usize),
-    LineLength(usize),
-    IncompleteBorder,
-    MorePlayers,
-    NoPlayer,
-    BoxesGoals,
-}
-
-impl Display for ParseError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match *self {
-            ParseError::Pos(r, c) => write!(f, "Invalid cell at pos: [{}, {}]", r, c),
-            ParseError::LineLength(l) => write!(f, "Wrong line length on line {}", l),
-            ParseError::IncompleteBorder => write!(f, "Not surrounded by wall"),
-            ParseError::MorePlayers => write!(f, "Too many players"),
-            ParseError::NoPlayer => write!(f, "No player"),
-            ParseError::BoxesGoals => write!(f, "Diferent number of boxes and goals"),
-        }
-    }
-}
+use data::*;
 
 const UP: Dir = Dir { r: -1, c: 0 };
 const RIGHT: Dir = Dir { r: 0, c: 1 };
@@ -192,13 +22,13 @@ fn main() {
     }
     let path = &args[1];
 
-    let puzzle = read_puzzle(path).unwrap_or_else(|err| {
+    let puzzle = utils::load_file(path).unwrap_or_else(|err| {
         let current_dir = env::current_dir().unwrap();
         println!("Can't read file {} in {:?}: {}", path, current_dir, err);
         process::exit(1);
     });
 
-    let (mut map, initial_state) = parse(&puzzle).unwrap_or_else(|err| {
+    let (mut map, initial_state) = formatter::parse(&puzzle).unwrap_or_else(|err| {
         println!("Failed to parse: {}", err);
         process::exit(1);
     });
@@ -296,6 +126,7 @@ fn heuristic_push(map: &Map, state: &State) -> i32 {
     goal_dist_sum
 }
 
+#[allow(unused)]
 fn heuristic_move(map: &Map, state: &State) -> i32 {
     // less is better
 
@@ -475,6 +306,7 @@ fn mark_reachable(map_state: &Map, reachable: &mut Vec<Vec<bool>>,
     }
 }
 
+#[allow(unused)]
 fn expand_move(map: &Map, state: &State) -> Vec<State> {
     let mut new_states = Vec::new();
 
@@ -509,143 +341,4 @@ fn expand_move(map: &Map, state: &State) -> Vec<State> {
     }
 
     new_states
-}
-
-fn read_puzzle(path: &str) -> Result<String, Box<Error>> {
-    let mut file = File::open(path)?;
-
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
-    Ok(contents)
-}
-
-fn parse(puzzle: &str) -> Result<(Map, State), ParseError> {
-    let mut map = Vec::new();
-    let mut player_pos = None;
-    let mut boxes = Vec::new();
-    let mut goals = Vec::new();
-    for (r, line) in puzzle.lines().enumerate() {
-        map.push(Vec::new());
-        let mut chars = line.chars();
-        while let (Some(c1), Some(c2)) = (chars.next(), chars.next()) {
-            let c = map[r].len();
-            match parse_cell(c1, c2) {
-                Ok(Cell::Path(PathCell { content, goal })) => {
-                    match content {
-                        Content::Player => {
-                            if player_pos.is_some() {
-                                return Err(ParseError::MorePlayers);
-                            }
-                            player_pos = Some(Pos { r: r as i32, c: c as i32 });
-                        }
-                        Content::Box => boxes.push(Pos { r: r as i32, c: c as i32 }),
-                        _ => {}
-                    }
-                    if goal {
-                        goals.push(Pos { r: r as i32, c: c as i32 });
-                    }
-                    map[r].push(Cell::Path(PathCell {
-                        content: Content::Empty,
-                        goal: goal,
-                    }));
-                }
-                Ok(cell) => map[r].push(cell),
-                Err(_) => return Err(ParseError::Pos(r, c)),
-            }
-        }
-    }
-
-    if player_pos.is_none() {
-        return Err(ParseError::NoPlayer);
-    }
-
-    if map.is_empty() || map[0].is_empty() {
-        return Err(ParseError::IncompleteBorder);
-    }
-
-    for i in 1..map.len() {
-        if map[i].len() != map[0].len() {
-            return Err(ParseError::LineLength(i));
-        }
-    }
-
-    let rows = map.len();
-    let columns = map[0].len();
-    for c in 0..columns {
-        if map[0][c] != Cell::Wall {
-            return Err(ParseError::IncompleteBorder);
-        }
-        if map[rows - 1][c] != Cell::Wall {
-            return Err(ParseError::IncompleteBorder);
-        }
-    }
-    for r in 1..rows - 1 {
-        if map[r][0] != Cell::Wall {
-            return Err(ParseError::IncompleteBorder);
-        }
-        if map[r][columns - 1] != Cell::Wall {
-            return Err(ParseError::IncompleteBorder);
-        }
-    }
-
-    if boxes.len() != goals.len() {
-        return Err(ParseError::BoxesGoals);
-    }
-
-    Ok((Map { map: map, goals: goals, dead_ends: Vec::new() },
-        State {
-            player_pos: player_pos.unwrap(),
-            boxes: boxes,
-        }))
-}
-
-fn parse_cell(c1: char, c2: char) -> Result<Cell, ()> {
-    match c1 {
-        '<' => if c2 == '>' { Ok(Cell::Wall) } else { Err(()) },
-        ' ' => {
-            Ok(Cell::Path(PathCell {
-                content: Content::Empty,
-                goal: parse_cell_goal(c2)?,
-            }))
-        }
-        'B' => {
-            Ok(Cell::Path(PathCell {
-                content: Content::Box,
-                goal: parse_cell_goal(c2)?,
-            }))
-        }
-        'P' => {
-            Ok(Cell::Path(PathCell {
-                content: Content::Player,
-                goal: parse_cell_goal(c2)?,
-            }))
-        }
-        _ => Err(()),
-    }
-}
-
-fn parse_cell_goal(c: char) -> Result<bool, ()> {
-    match c {
-        '_' => Ok(true),
-        ' ' => Ok(false),
-        _ => Err(()),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn parsing() {
-        let puzzle = "\
-<><><><><>
-<> _B_<><>
-<>B B <><>
-<>  P_<><>
-<><><><><>
-";
-        let (map, state) = parse(puzzle).unwrap();
-        assert!(map.with_state(&state).to_string() == puzzle);
-    }
 }
