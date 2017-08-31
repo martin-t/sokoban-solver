@@ -204,7 +204,7 @@ fn search(map: &Map, initial_state: &State, print_status: bool) -> Option<Vec<St
                 }
             }
 
-            return Some(backtrack_path(&prev, &current.state))
+            return Some(backtrack_path(&prev, &current.state));
         }
 
         expands += 1;
@@ -251,7 +251,9 @@ fn backtrack_path(prev: &HashMap<State, State>, final_state: &State) -> Vec<Stat
 fn solved(map: &Map, state: &State) -> bool {
     // to detect dead ends, this has to test all boxes are on a goal, not that all goals have a box
     for pos in &state.boxes {
-        if let &Cell::Path(PathCell { goal: true, .. }) = map.at(*pos) {} else { return false }
+        if let &Cell::Path(PathCell { tile: Tile::Goal, .. }) = map.at(*pos) {} else {
+            return false;
+        }
     }
     true
 }

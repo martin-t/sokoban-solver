@@ -10,7 +10,7 @@ pub enum Cell {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PathCell {
     pub content: Content,
-    pub goal: bool,
+    pub tile: Tile,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -18,6 +18,13 @@ pub enum Content {
     Empty,
     Player,
     Box,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Tile {
+    Empty,
+    Goal,
+    Remover,
 }
 
 #[derive(Debug, Clone)]
@@ -72,9 +79,10 @@ impl Map {
                             Content::Box => res += "B",
                             Content::Player => res += "P",
                         }
-                        match path.goal {
-                            true => res += "_",
-                            false => res += " ",
+                        match path.tile {
+                            Tile::Empty => res += " ",
+                            Tile::Goal => res += "_",
+                            Tile::Remover => res += "R",
                         }
                     }
                 }
