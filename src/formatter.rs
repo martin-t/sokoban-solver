@@ -3,8 +3,8 @@ use std::fmt::{Display, Formatter};
 
 use data::*;
 
-#[derive(Debug)]
-pub enum ParseError {
+#[derive(Debug, PartialEq)]
+pub enum ParseErr {
     Pos(usize, usize),
     LineLength(usize),
     IncompleteBorder,
@@ -15,22 +15,22 @@ pub enum ParseError {
     BoxesGoals,
 }
 
-impl Display for ParseError {
+impl Display for ParseErr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
-            ParseError::Pos(r, c) => write!(f, "Invalid cell at pos: [{}, {}]", r, c),
-            ParseError::LineLength(l) => write!(f, "Wrong line length on line {}", l),
-            ParseError::IncompleteBorder => write!(f, "Not surrounded by wall"),
-            ParseError::MorePlayers => write!(f, "Too many players"),
-            ParseError::NoPlayer => write!(f, "No player"),
-            ParseError::MultipleRemovers => write!(f, "Multiple removers - only one allowed"),
-            ParseError::RemoverGoals => write!(f, "Both remover and goals"),
-            ParseError::BoxesGoals => write!(f, "Different number of boxes and goals"),
+            ParseErr::Pos(r, c) => write!(f, "Invalid cell at pos: [{}, {}]", r, c),
+            ParseErr::LineLength(l) => write!(f, "Wrong line length on line {}", l),
+            ParseErr::IncompleteBorder => write!(f, "Not surrounded by wall"),
+            ParseErr::MorePlayers => write!(f, "Too many players"),
+            ParseErr::NoPlayer => write!(f, "No player"),
+            ParseErr::MultipleRemovers => write!(f, "Multiple removers - only one allowed"),
+            ParseErr::RemoverGoals => write!(f, "Both remover and goals"),
+            ParseErr::BoxesGoals => write!(f, "Different number of boxes and goals"),
         }
     }
 }
 
-pub fn parse(puzzle: &str) -> Result<(Map, State), ParseError> {
+pub fn parse(puzzle: &str) -> Result<(Map, State), ParseErr> {
     let mut map = Vec::new();
     let mut player_pos = None;
     let mut boxes = Vec::new();
@@ -46,7 +46,7 @@ pub fn parse(puzzle: &str) -> Result<(Map, State), ParseError> {
                     match content {
                         Content::Player => {
                             if player_pos.is_some() {
-                                return Err(ParseError::MorePlayers);
+                                return Err(ParseErr::MorePlayers);
                             }
                             player_pos = Some(Pos { r: r as i32, c: c as i32 });
                         }
@@ -56,7 +56,7 @@ pub fn parse(puzzle: &str) -> Result<(Map, State), ParseError> {
                     if let Tile::Goal = goal {
                         goals.push(Pos { r: r as i32, c: c as i32 });
                     } else if let Tile::Remover = goal {
-                        if remover.is_some() { return Err(ParseError::MultipleRemovers); }
+                        if remover.is_some() { return Err(ParseErr::MultipleRemovers); }
                         remover = Some(Pos { r: r as i32, c: c as i32 });
                     }
                     map[r].push(Cell::Path(PathCell {
@@ -65,22 +65,22 @@ pub fn parse(puzzle: &str) -> Result<(Map, State), ParseError> {
                     }));
                 }
                 Ok(cell) => map[r].push(cell),
-                Err(_) => return Err(ParseError::Pos(r, c)),
+                Err(_) => return Err(ParseErr::Pos(r, c)),
             }
         }
     }
 
     if player_pos.is_none() {
-        return Err(ParseError::NoPlayer);
+        return Err(ParseErr::NoPlayer);
     }
 
     if map.is_empty() || map[0].is_empty() {
-        return Err(ParseError::IncompleteBorder);
+        return Err(ParseErr::IncompleteBorder);
     }
 
     for i in 1..map.len() {
         if map[i].len() != map[0].len() {
-            return Err(ParseError::LineLength(i));
+            return Err(ParseErr::LineLength(i));
         }
     }
 
@@ -88,24 +88,24 @@ pub fn parse(puzzle: &str) -> Result<(Map, State), ParseError> {
     let columns = map[0].len();
     for c in 0..columns {
         if map[0][c] != Cell::Wall {
-            return Err(ParseError::IncompleteBorder);
+            return Err(ParseErr::IncompleteBorder);
         }
         if map[rows - 1][c] != Cell::Wall {
-            return Err(ParseError::IncompleteBorder);
+            return Err(ParseErr::IncompleteBorder);
         }
     }
     for r in 1..rows - 1 {
         if map[r][0] != Cell::Wall {
-            return Err(ParseError::IncompleteBorder);
+            return Err(ParseErr::IncompleteBorder);
         }
         if map[r][columns - 1] != Cell::Wall {
-            return Err(ParseError::IncompleteBorder);
+            return Err(ParseErr::IncompleteBorder);
         }
     }
 
     if remover.is_some() {
         if goals.len() > 0 {
-            Err(ParseError::RemoverGoals)
+            Err(ParseErr::RemoverGoals)
         } else {
             // TODO with remover
             Ok((Map { map: map, goals: goals, dead_ends: Vec::new() },
@@ -116,7 +116,7 @@ pub fn parse(puzzle: &str) -> Result<(Map, State), ParseError> {
         }
     } else {
         if goals.len() != boxes.len() {
-            Err(ParseError::BoxesGoals)
+            Err(ParseErr::BoxesGoals)
         } else {
             // TODO with goals
             Ok((Map { map: map, goals: goals, dead_ends: Vec::new() },
@@ -166,8 +166,17 @@ fn parse_cell_goal(c: char) -> Result<Tile, ()> {
 mod tests {
     use super::*;
 
+    fn assert_success(input_puzzle: &str) {
+        let (map, state) = parse(input_puzzle).unwrap();
+        assert_eq!(map.with_state(&state).to_string(), input_puzzle);
+    }
+
+    fn assert_failure(input_puzzle: &str, expected_err: ParseErr) {
+        assert_eq!(parse(input_puzzle).unwrap_err(), expected_err);
+    }
+
     #[test]
-    fn parsing1() {
+    fn parsing_goals() {
         let puzzle = "\
 <><><><><>
 <> _B_<><>
@@ -175,12 +184,11 @@ mod tests {
 <>  P_<><>
 <><><><><>
 ";
-        let (map, state) = parse(puzzle).unwrap();
-        assert!(map.with_state(&state).to_string() == puzzle);
+        assert_success(puzzle);
     }
 
     #[test]
-    fn parsing2() {
+    fn parsing_remover() {
         let puzzle = "\
 <><><><><>
 <>  B <><>
@@ -188,7 +196,37 @@ mod tests {
 <>  P  R<>
 <><><><><>
 ";
-        let (map, state) = parse(puzzle).unwrap();
-        assert!(map.with_state(&state).to_string() == puzzle);
+        assert_success(puzzle);
+    }
+
+    #[test]
+    fn only_player() {
+        let puzzle = "\
+<><><>
+<>P <>
+<><><>
+";
+        assert_success(puzzle);
+    }
+
+    #[test]
+    fn nothing() {
+        let puzzle = "\
+<><><>
+<>  <>
+<><><>
+";
+        assert_failure(puzzle, ParseErr::NoPlayer);
+    }
+
+    #[test]
+    fn x() {
+        let puzzle = "\
+<><><><>
+<>P  R<>
+<> _  <>
+<><><><>
+";
+        assert_failure(puzzle, ParseErr::RemoverGoals);
     }
 }
