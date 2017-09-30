@@ -28,17 +28,20 @@ fn main() {
         process::exit(1);
     });
 
-    let (mut map, initial_state) = formatter::parse(&puzzle).unwrap_or_else(|err| {
+    let (mut map, initial_state) = formatter::parse_custom(&puzzle).unwrap_or_else(|err| {
         println!("Failed to parse: {}", err);
         process::exit(1);
     });
+
     /*println!("Empty map:\n{}", map.to_string());
     println!("Initial state:\n{}",
              map.clone().with_state(&initial_state).to_string());*/
     //println!("Expanding: {:?}", expand(&map, &initial_state));
 
+    println!("Dead ends:");
     mark_dead_ends(&mut map);
 
+    println!("Solving...");
     match search(&map, &initial_state, true) {
         Some(path) => {
             println!("Found solution:");
@@ -51,17 +54,17 @@ fn main() {
     }
 }
 
-fn expand(map: &Map, state: &State) -> Vec<State> {
+fn expand(map: &MapState, state: &State) -> Vec<State> {
     //expand_move(map, state)
     expand_push(map, state)
 }
 
-fn heuristic(map: &Map, state: &State) -> i32 {
+fn heuristic(map: &MapState, state: &State) -> i32 {
     //heuristic_move(map, state)
     heuristic_push(map, state)
 }
 
-fn mark_dead_ends(map: &mut Map) {
+fn mark_dead_ends(map: &mut MapState) {
     // init first since otherwise we would use this partially initialized in search()
     for r in 0..map.map.len() {
         map.dead_ends.push(Vec::new());
@@ -111,7 +114,7 @@ fn mark_dead_ends(map: &mut Map) {
     }
 }
 
-fn heuristic_push(map: &Map, state: &State) -> i32 {
+fn heuristic_push(map: &MapState, state: &State) -> i32 {
     let mut goal_dist_sum = 0;
     for box_pos in &state.boxes {
         let mut min = i32::max_value();
@@ -127,7 +130,7 @@ fn heuristic_push(map: &Map, state: &State) -> i32 {
 }
 
 #[allow(unused)]
-fn heuristic_move(map: &Map, state: &State) -> i32 {
+fn heuristic_move(map: &MapState, state: &State) -> i32 {
     // less is better
 
     let mut closest_box = i32::max_value();
@@ -153,7 +156,7 @@ fn heuristic_move(map: &Map, state: &State) -> i32 {
     closest_box + goal_dist_sum
 }
 
-fn search(map: &Map, initial_state: &State, print_status: bool) -> Option<Vec<State>> {
+fn search(map: &MapState, initial_state: &State, print_status: bool) -> Option<Vec<State>> {
     let mut expands = 0;
     let mut state_counts = Vec::new();
     state_counts.push(0);
@@ -248,17 +251,17 @@ fn backtrack_path(prev: &HashMap<State, State>, final_state: &State) -> Vec<Stat
     }
 }
 
-fn solved(map: &Map, state: &State) -> bool {
+fn solved(map: &MapState, state: &State) -> bool {
     // to detect dead ends, this has to test all boxes are on a goal, not that all goals have a box
     for pos in &state.boxes {
-        if let &Cell::Path(PathCell { tile: Tile::Goal, .. }) = map.at(*pos) {} else {
+        if let &Cell::Path(_, Tile::Goal) = map.at(*pos) {} else {
             return false;
         }
     }
     true
 }
 
-fn expand_push(map: &Map, state: &State) -> Vec<State> {
+fn expand_push(map: &MapState, state: &State) -> Vec<State> {
     let mut new_states = Vec::new();
 
     let map_state = map.clone().with_boxes(&state);
@@ -276,20 +279,20 @@ fn expand_push(map: &Map, state: &State) -> Vec<State> {
     new_states
 }
 
-fn mark_reachable(map_state: &Map, reachable: &mut Vec<Vec<bool>>,
+fn mark_reachable(map_state: &MapState, reachable: &mut Vec<Vec<bool>>,
                   pos: Pos, state: &State, new_states: &mut Vec<State>) {
     let r = pos.r as usize;
     let c = pos.c as usize;
     reachable[r][c] = true;
     for dir in DIRECTIONS.iter() {
         let new_pos = pos + *dir;
-        if let Cell::Path(PathCell { content: Content::Empty, .. }) = *map_state.at(new_pos) {
+        if let Cell::Path(Content::Empty, _) = *map_state.at(new_pos) {
             if !reachable[new_pos.r as usize][new_pos.c as usize] {
                 mark_reachable(map_state, reachable, new_pos, state, new_states);
             }
-        } else if let Cell::Path(PathCell { content: Content::Box, .. }) = *map_state.at(new_pos) {
+        } else if let Cell::Path(Content::Box, _) = *map_state.at(new_pos) {
             let behind_box = new_pos + *dir;
-            if let Cell::Path(PathCell { content: Content::Empty, .. }) = *map_state.at(behind_box) {
+            if let Cell::Path(Content::Empty, _) = *map_state.at(behind_box) {
                 if !map_state.dead_ends[behind_box.r as usize][behind_box.c as usize] {
                     let mut new_boxes = state.boxes.clone();
                     for box_pos in &mut new_boxes {
@@ -309,21 +312,21 @@ fn mark_reachable(map_state: &Map, reachable: &mut Vec<Vec<bool>>,
 }
 
 #[allow(unused)]
-fn expand_move(map: &Map, state: &State) -> Vec<State> {
+fn expand_move(map: &MapState, state: &State) -> Vec<State> {
     let mut new_states = Vec::new();
 
     let map_state = map.clone().with_boxes(&state);
     for dir in DIRECTIONS.iter() {
         let new_pos = state.player_pos + *dir;
-        if let Cell::Path(PathCell { content: Content::Empty, .. }) = *map_state.at(new_pos) {
+        if let Cell::Path(Content::Empty, _) = *map_state.at(new_pos) {
             let new_state = State {
                 player_pos: new_pos,
                 boxes: state.boxes.clone(),
             };
             new_states.push(new_state);
-        } else if let Cell::Path(PathCell { content: Content::Box, .. }) = *map_state.at(new_pos) {
+        } else if let Cell::Path(Content::Box, _) = *map_state.at(new_pos) {
             let behind_box = new_pos + *dir;
-            if let Cell::Path(PathCell { content: Content::Empty, .. }) = *map_state.at(behind_box) {
+            if let Cell::Path(Content::Empty, _) = *map_state.at(behind_box) {
                 if !map.dead_ends[behind_box.r as usize][behind_box.c as usize] {
                     // goal will never be a dead end - no need to check
                     let mut new_boxes = state.boxes.clone();

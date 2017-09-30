@@ -6,12 +6,20 @@ use data::*;
 #[derive(Debug, PartialEq)]
 pub enum ParseErr {
     Pos(usize, usize),
+
+    // TODO remove
     LineLength(usize),
-    IncompleteBorder,
-    MorePlayers,
-    NoPlayer,
+
+    MultiplePlayers,
     MultipleRemovers,
-    RemoverGoals,
+    NoPlayer,
+
+    IncompleteBorder,
+    UnreachableBoxes,
+    UnreachableGoals,
+    UnreachableRemover,
+
+    RemoverAndGoals,
     BoxesGoals,
 }
 
@@ -20,17 +28,23 @@ impl Display for ParseErr {
         match *self {
             ParseErr::Pos(r, c) => write!(f, "Invalid cell at pos: [{}, {}]", r, c),
             ParseErr::LineLength(l) => write!(f, "Wrong line length on line {}", l),
-            ParseErr::IncompleteBorder => write!(f, "Not surrounded by wall"),
-            ParseErr::MorePlayers => write!(f, "Too many players"),
-            ParseErr::NoPlayer => write!(f, "No player"),
+            ParseErr::MultiplePlayers => write!(f, "Too many players"),
             ParseErr::MultipleRemovers => write!(f, "Multiple removers - only one allowed"),
-            ParseErr::RemoverGoals => write!(f, "Both remover and goals"),
+            ParseErr::NoPlayer => write!(f, "No player"),
+            ParseErr::IncompleteBorder => write!(f, "Player can exit the level because of missing border"),
+            ParseErr::UnreachableBoxes => write!(f, "Boxes that are not on goal but can't be reached"),
+            ParseErr::UnreachableGoals => write!(f, "Goals that don't have a box but can't be reached"),
+            ParseErr::UnreachableRemover => write!(f, "Remover is not reachable"),
+            ParseErr::RemoverAndGoals => write!(f, "Both remover and goals"),
             ParseErr::BoxesGoals => write!(f, "Different number of boxes and goals"),
         }
     }
 }
 
-pub fn parse(puzzle: &str) -> Result<(Map, State), ParseErr> {
+/// Parses my custom format
+pub fn parse_custom(puzzle: &str) -> Result<(MapState, State), ParseErr> {
+    let puzzle = puzzle.trim(); // no support for weird shapes
+
     let mut map = Vec::new();
     let mut player_pos = None;
     let mut boxes = Vec::new();
@@ -42,11 +56,11 @@ pub fn parse(puzzle: &str) -> Result<(Map, State), ParseErr> {
         while let (Some(c1), Some(c2)) = (chars.next(), chars.next()) {
             let c = map[r].len();
             match parse_cell(c1, c2) {
-                Ok(Cell::Path(PathCell { content, tile: goal })) => {
+                Ok(Cell::Path(content, goal)) => {
                     match content {
                         Content::Player => {
                             if player_pos.is_some() {
-                                return Err(ParseErr::MorePlayers);
+                                return Err(ParseErr::MultiplePlayers);
                             }
                             player_pos = Some(Pos { r: r as i32, c: c as i32 });
                         }
@@ -59,10 +73,7 @@ pub fn parse(puzzle: &str) -> Result<(Map, State), ParseErr> {
                         if remover.is_some() { return Err(ParseErr::MultipleRemovers); }
                         remover = Some(Pos { r: r as i32, c: c as i32 });
                     }
-                    map[r].push(Cell::Path(PathCell {
-                        content: Content::Empty,
-                        tile: goal,
-                    }));
+                    map[r].push(Cell::Path(Content::Empty, goal));
                 }
                 Ok(cell) => map[r].push(cell),
                 Err(_) => return Err(ParseErr::Pos(r, c)),
@@ -105,10 +116,10 @@ pub fn parse(puzzle: &str) -> Result<(Map, State), ParseErr> {
 
     if remover.is_some() {
         if goals.len() > 0 {
-            Err(ParseErr::RemoverGoals)
+            Err(ParseErr::RemoverAndGoals)
         } else {
             // TODO with remover
-            Ok((Map { map: map, goals: goals, dead_ends: Vec::new() },
+            Ok((MapState { map: map, goals: goals, dead_ends: Vec::new() },
                 State {
                     player_pos: player_pos.unwrap(),
                     boxes: boxes,
@@ -119,7 +130,7 @@ pub fn parse(puzzle: &str) -> Result<(Map, State), ParseErr> {
             Err(ParseErr::BoxesGoals)
         } else {
             // TODO with goals
-            Ok((Map { map: map, goals: goals, dead_ends: Vec::new() },
+            Ok((MapState { map: map, goals: goals, dead_ends: Vec::new() },
                 State {
                     player_pos: player_pos.unwrap(),
                     boxes: boxes,
@@ -132,22 +143,13 @@ fn parse_cell(c1: char, c2: char) -> Result<Cell, ()> {
     match c1 {
         '<' => if c2 == '>' { Ok(Cell::Wall) } else { Err(()) },
         ' ' => {
-            Ok(Cell::Path(PathCell {
-                content: Content::Empty,
-                tile: parse_cell_goal(c2)?,
-            }))
+            Ok(Cell::Path(Content::Empty, parse_cell_goal(c2)?))
         }
         'B' => {
-            Ok(Cell::Path(PathCell {
-                content: Content::Box,
-                tile: parse_cell_goal(c2)?,
-            }))
+            Ok(Cell::Path(Content::Box, parse_cell_goal(c2)?))
         }
         'P' => {
-            Ok(Cell::Path(PathCell {
-                content: Content::Player,
-                tile: parse_cell_goal(c2)?,
-            }))
+            Ok(Cell::Path(Content::Player, parse_cell_goal(c2)?))
         }
         _ => Err(()),
     }
@@ -162,71 +164,284 @@ fn parse_cell_goal(c: char) -> Result<Tile, ()> {
     }
 }
 
+/// Parses (a subset of) the format described [here](http://www.sokobano.de/wiki/index.php?title=Level_format)
+pub fn parse_xsb(puzzle: &str) -> Result<(Map, State), ParseErr> {
+    let puzzle = puzzle.trim_matches('\n');
+
+    let mut map = Vec::new();
+    let mut goals = Vec::new();
+    let mut remover = None;
+    let mut boxes = Vec::new();
+    let mut player_pos = None;
+
+    for (r, line) in puzzle.lines().enumerate() {
+        let mut line_tiles = Vec::new();
+        for (c, char) in line.chars().enumerate() {
+            let tile = match char {
+                // need to create MapState because of reachability checks
+                '#' => {
+                    //Cell::Wall
+                    MapCell::Wall
+                }
+                'p' | '@' => {
+                    if player_pos.is_some() {
+                        return Err(ParseErr::MultiplePlayers);
+                    }
+                    player_pos = Some(Pos::new(r, c));
+                    //Cell::Path(Content::Player, Tile::Empty)
+                    MapCell::Empty
+                }
+                'P' | '+' => {
+                    if player_pos.is_some() {
+                        return Err(ParseErr::MultiplePlayers);
+                    }
+                    player_pos = Some(Pos::new(r, c));
+                    goals.push(Pos::new(r, c));
+                    //Cell::Path(Content::Player, Tile::Goal)
+                    MapCell::Goal
+                }
+                'b' | '$' => {
+                    boxes.push(Pos::new(r, c));
+                    //Cell::Path(Content::Box, Tile::Empty)
+                    MapCell::Empty
+                }
+                'B' | '*' => {
+                    boxes.push(Pos::new(r, c));
+                    goals.push(Pos::new(r, c));
+                    //Cell::Path(Content::Box, Tile::Goal)
+                    MapCell::Goal
+                }
+                'r' => {
+                    if remover.is_some() {
+                        return Err(ParseErr::MultipleRemovers);
+                    }
+                    remover = Some(Pos::new(r, c));
+                    //Cell::Path(Content::Empty, Tile::Remover)
+                    MapCell::Remover
+                }
+                'R' => {
+                    // this is player on remover, box on remover makes no sense
+                    if player_pos.is_some() {
+                        return Err(ParseErr::MultiplePlayers);
+                    }
+                    player_pos = Some(Pos::new(r, c));
+                    if remover.is_some() {
+                        return Err(ParseErr::MultipleRemovers);
+                    }
+                    remover = Some(Pos::new(r, c));
+                    //Cell::Path(Content::Player, Tile::Remover)
+                    MapCell::Remover
+                }
+                '.' => {
+                    goals.push(Pos::new(r, c));
+                    //Cell::Path(Content::Empty, Tile::Goal)
+                    MapCell::Goal
+                }
+                ' ' | '-' | '_' => {
+                    //Cell::Path(Content::Empty, Tile::Empty)
+                    MapCell::Empty
+                }
+                _ => return Err(ParseErr::Pos(r, c))
+            };
+            line_tiles.push(tile);
+        }
+        map.push(line_tiles)
+    }
+
+    if player_pos.is_none() {
+        return Err(ParseErr::NoPlayer);
+    }
+    let player_pos = player_pos.unwrap();
+
+    let mut to_visit = vec![(player_pos.r, player_pos.c)];
+    let mut visited = Vec::new();
+    for row in map.iter() {
+        visited.push(vec![false; row.len()]);
+    }
+
+    while !to_visit.is_empty() {
+        let (r, c) = to_visit.pop().unwrap();
+        visited[r as usize][c as usize] = true;
+
+        let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
+        for &(nr, nc) in neighbors.iter() {
+            // this is the only place we need to check bounds
+            // everything after that will be surrounded by walls
+            // TODO make sure we're not wasting time bounds checking anywhere else
+            if nr < 0 || nc < 0 || nr as usize >= map.len() || nc as usize >= map[nr as usize].len() {
+                // we got out of bounds without hitting a wall
+                return Err(ParseErr::IncompleteBorder);
+            }
+            if !visited[nr as usize][nc as usize] && map[nr as usize][nc as usize] != MapCell::Wall {
+                //if !visited[nr as usize][nc as usize] && map[nr as usize][nc as usize] != Cell::Wall {
+                to_visit.push((nr, nc));
+            }
+        }
+    }
+
+    if let Some(pos) = remover {
+        if !visited[pos.r as usize][pos.c as usize] {
+            return Err(ParseErr::UnreachableRemover);
+        }
+    }
+    let mut reachable_goals = Vec::new();
+    let mut reachable_boxes = Vec::new();
+    for &pos in boxes.iter() {
+        let (r, c) = (pos.r as usize, pos.c as usize);
+        if visited[r][c] {
+            reachable_boxes.push(pos);
+        } else if !goals.contains(&pos) {
+            return Err(ParseErr::UnreachableBoxes);
+        }
+    }
+    for &pos in goals.iter() {
+        let (r, c) = (pos.r as usize, pos.c as usize);
+        if visited[r][c] {
+            reachable_goals.push(pos);
+        } else if !boxes.contains(&pos) {
+            return Err(ParseErr::UnreachableGoals);
+        }
+    }
+
+    if remover.is_some() {
+        if goals.len() > 0 {
+            return Err(ParseErr::RemoverAndGoals);
+        }
+    } else {
+        // TODO this check is replaced by visiting
+        /*if boxes.len() != goals.len() {
+            return Err(ParseErr::BoxesGoals);
+        }*/
+    }
+
+    Ok((Map::new(map, reachable_goals),
+        State::new(player_pos, reachable_boxes)))
+    /*Ok((MapState::new(map, goals), // TODO clear contents
+        State::new(player_pos, boxes)))*/
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn assert_success(input_puzzle: &str) {
-        let (map, state) = parse(input_puzzle).unwrap();
-        assert_eq!(map.with_state(&state).to_string(), input_puzzle);
-    }
-
-    fn assert_failure(input_puzzle: &str, expected_err: ParseErr) {
-        assert_eq!(parse(input_puzzle).unwrap_err(), expected_err);
-    }
-
     #[test]
     fn parsing_goals() {
-        let puzzle = "\
+        let puzzle = r"
 <><><><><>
 <> _B_<><>
 <>B B <><>
 <>  P_<><>
 <><><><><>
 ";
-        assert_success(puzzle);
+        assert_success_custom(puzzle);
     }
 
     #[test]
     fn parsing_remover() {
-        let puzzle = "\
+        let puzzle = r"
 <><><><><>
 <>  B <><>
 <>B   <><>
 <>  P  R<>
 <><><><><>
 ";
-        assert_success(puzzle);
+        assert_success_custom(puzzle);
     }
 
     #[test]
     fn only_player() {
-        let puzzle = "\
+        let puzzle = r"
 <><><>
 <>P <>
 <><><>
 ";
-        assert_success(puzzle);
+        assert_success_custom(puzzle);
     }
 
     #[test]
     fn nothing() {
-        let puzzle = "\
+        let puzzle = r"
 <><><>
 <>  <>
 <><><>
 ";
-        assert_failure(puzzle, ParseErr::NoPlayer);
+        assert_failure_custom(puzzle, ParseErr::NoPlayer);
     }
 
     #[test]
-    fn x() {
-        let puzzle = "\
+    fn remover_and_goal() {
+        let puzzle = r"
 <><><><>
 <>P  R<>
 <> _  <>
 <><><><>
 ";
-        assert_failure(puzzle, ParseErr::RemoverGoals);
+        assert_failure_custom(puzzle, ParseErr::RemoverAndGoals);
+    }
+
+    #[test]
+    fn xsb1() {
+        let level = r"
+#####
+#@$.#
+#####
+";
+        assert_success_xsb(level);
+    }
+
+    #[test]
+    fn xsb2() {
+        let level = r"
+*###*
+#@$.#
+*###*
+";
+        assert_success_xsb(level);
+    }
+
+    #[test]
+    fn xsb3() {
+        let level = r"
+    #####
+    #   #
+    #$  #
+  ###  $##
+  #  $ $ #
+### # ## #   ######
+#   # ## #####  ..#
+# $  $          ..#
+##### ### #@##  ..#
+    #     #########
+    #######
+";
+        assert_success_xsb(level);
+    }
+
+    #[test]
+    fn xsb_f1() {
+        let level = r"
+########
+#@$.#$.#
+########
+";
+        assert_failure_xsb(level, ParseErr::UnreachableBoxes);
+    }
+
+    fn assert_success_custom(input_puzzle: &str) {
+        let (map, state) = parse_custom(input_puzzle).unwrap();
+        assert_eq!(map.with_state(&state).to_string(), input_puzzle.trim_left());
+    }
+
+    fn assert_failure_custom(input_puzzle: &str, expected_err: ParseErr) {
+        assert_eq!(parse_custom(input_puzzle).unwrap_err(), expected_err);
+    }
+
+    fn assert_success_xsb(input_level: &str) {
+        parse_xsb(input_level).unwrap(); // TODO write out, compare
+    }
+
+    fn assert_failure_xsb(input_level: &str, expected_err: ParseErr) {
+        assert_eq!(parse_xsb(input_level).unwrap_err(), expected_err);
     }
 }
+

@@ -1,16 +1,30 @@
 use std::cmp::Ordering;
 use std::ops::Add;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Cell {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MapCell {
     Wall,
-    Path(PathCell),
+    Empty,
+    Goal,
+    Remover,
+}
+
+#[derive(Debug)]
+pub struct Map {
+    pub map: Vec<Vec<MapCell>>,
+    pub goals: Vec<Pos>,
+}
+
+impl Map {
+    pub fn new(map: Vec<Vec<MapCell>>, goals: Vec<Pos>) -> Map {
+        Map { map, goals }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct PathCell {
-    pub content: Content,
-    pub tile: Tile,
+pub enum Cell {
+    Wall,
+    Path(Content, Tile),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -28,13 +42,22 @@ pub enum Tile {
 }
 
 #[derive(Debug, Clone)]
-pub struct Map {
+pub struct MapState {
     pub map: Vec<Vec<Cell>>,
     pub goals: Vec<Pos>,
     pub dead_ends: Vec<Vec<bool>>,
 }
 
-impl Map {
+impl MapState {
+    #[allow(unused)] // TODO
+    pub fn new(cells: Vec<Vec<Cell>>, goals: Vec<Pos>) -> MapState {
+        MapState {
+            map: cells,
+            goals: goals,
+            dead_ends: Vec::new(),
+        }
+    }
+
     pub fn at(&self, pos: Pos) -> &Cell {
         &self.map[pos.r as usize][pos.c as usize]
     }
@@ -43,14 +66,14 @@ impl Map {
         &mut self.map[pos.r as usize][pos.c as usize]
     }
 
-    pub fn with_state(self, state: &State) -> Map {
+    pub fn with_state(self, state: &State) -> MapState {
         self.with_boxes(state).with_player(state)
     }
 
-    pub fn with_boxes(mut self, state: &State) -> Map {
+    pub fn with_boxes(mut self, state: &State) -> MapState {
         for pos in &state.boxes {
-            if let Cell::Path(ref mut pc) = *self.at_mut(*pos) {
-                pc.content = Content::Box;
+            if let Cell::Path(Content::Empty, tile) = *self.at(*pos) {
+                *self.at_mut(*pos) = Cell::Path(Content::Box, tile);
             } else {
                 unreachable!();
             }
@@ -58,9 +81,9 @@ impl Map {
         self
     }
 
-    pub fn with_player(mut self, state: &State) -> Map {
-        if let Cell::Path(ref mut pc) = *self.at_mut(state.player_pos) {
-            pc.content = Content::Player;
+    pub fn with_player(mut self, state: &State) -> MapState {
+        if let Cell::Path(Content::Empty, tile) = *self.at(state.player_pos) {
+            *self.at_mut(state.player_pos) = Cell::Path(Content::Player, tile);
         } else {
             unreachable!();
         }
@@ -73,13 +96,13 @@ impl Map {
             for cell in row {
                 match *cell {
                     Cell::Wall => res += "<>",
-                    Cell::Path(ref path) => {
-                        match path.content {
+                    Cell::Path(content, tile) => {
+                        match content {
                             Content::Empty => res += " ",
                             Content::Box => res += "B",
                             Content::Player => res += "P",
                         }
-                        match path.tile {
+                        match tile {
                             Tile::Empty => res += " ",
                             Tile::Goal => res += "_",
                             Tile::Remover => res += "R",
@@ -97,6 +120,12 @@ impl Map {
 pub struct State {
     pub player_pos: Pos,
     pub boxes: Vec<Pos>,
+}
+
+impl State {
+    pub fn new(player_pos: Pos, boxes: Vec<Pos>) -> State {
+        State { player_pos, boxes }
+    }
 }
 
 #[derive(Debug)]
@@ -136,9 +165,25 @@ pub struct Pos {
 }
 
 impl Pos {
+    pub fn new(r: usize, c: usize) -> Pos {
+        Pos {
+            r: r as i32,
+            c: c as i32,
+        }
+    }
+
     pub fn dist(self, other: Pos) -> i32 {
         (self.r - other.r).abs() + (self.c - other.c).abs()
     }
+
+    /*pub fn neighbors(&self) -> [Pos; 4] {
+        [
+            Pos { r: self.r + 1, c: self.c },
+            Pos { r: self.r - 1, c: self.c },
+            Pos { r: self.r, c: self.c + 1 },
+            Pos { r: self.r, c: self.c - 1 },
+        ]
+    }*/
 }
 
 #[derive(Debug, Clone, Copy)]
