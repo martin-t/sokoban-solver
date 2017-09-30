@@ -1,4 +1,6 @@
 use std::cmp::Ordering;
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::ops::Add;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -9,18 +11,29 @@ pub enum MapCell {
     Remover,
 }
 
+impl Display for MapCell {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", match *self {
+            MapCell::Wall => '#',
+            MapCell::Empty => ' ',
+            MapCell::Goal => '.',
+            MapCell::Remover => 'r',
+        })
+    }
+}
+
 #[derive(Debug)]
 pub struct Map {
-    pub map: Vec<Vec<MapCell>>,
+    pub cells: Vec<Vec<MapCell>>,
     pub goals: Vec<Pos>,
 }
 
 impl Map {
     pub fn new(map: Vec<Vec<MapCell>>, goals: Vec<Pos>) -> Map {
-        Map { map, goals }
+        Map { cells: map, goals }
     }
 
-    pub fn create_scratch_map<T>(original: &Vec<Vec<MapCell>>, default: T) -> Vec<Vec<T>>
+    pub fn create_scratch_map<T>(original: &Vec<Vec<MapCell>>, default: T) -> Vec<Vec<T>> // TODO impl Vec instead?
         where T: Copy
     {
         let mut scratch = Vec::new();
@@ -28,6 +41,22 @@ impl Map {
             scratch.push(vec![default; row.len()]);
         }
         scratch
+    }
+
+    pub fn empty_map_state(&self) -> MapState {
+        MapState::new(
+            self.cells.iter().map(|row| {
+                row.iter().map(|cell| {
+                    match *cell {
+                        MapCell::Wall => Cell::Wall,
+                        MapCell::Empty => Cell::Path(Content::Empty, Tile::Empty),
+                        MapCell::Goal => Cell::Path(Content::Empty, Tile::Goal),
+                        MapCell::Remover => Cell::Path(Content::Empty, Tile::Remover),
+                    }
+                }).collect()
+            }).collect(),
+            self.goals.clone()
+        )
     }
 }
 
@@ -175,6 +204,7 @@ pub struct Pos {
 }
 
 impl Pos {
+    // TODO profile with i8
     pub fn new(r: usize, c: usize) -> Pos {
         Pos {
             r: r as i32,

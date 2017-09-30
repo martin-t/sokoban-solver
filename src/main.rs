@@ -3,6 +3,7 @@ extern crate clap;
 mod formatter;
 mod solver;
 mod data;
+mod extensions;
 mod utils;
 
 use std::env;
@@ -29,6 +30,7 @@ fn main() {
         .arg(Arg::with_name("file"))
         .get_matches();
 
+    let custom = matches.is_present("custom");
     let path = matches.value_of("file").unwrap();
 
     let level = utils::load_file(path).unwrap_or_else(|err| {
@@ -37,7 +39,7 @@ fn main() {
         process::exit(1);
     });
 
-    let (mut map, initial_state) = formatter::parse_custom(&level).unwrap_or_else(|err| {
+    let (map, initial_state) = formatter::parse(&level, custom).unwrap_or_else(|err| {
         println!("Failed to parse: {}", err);
         process::exit(1);
     });
@@ -46,6 +48,8 @@ fn main() {
     println!("Initial state:\n{}",
              map.clone().with_state(&initial_state).to_string());*/
     //println!("Expanding: {:?}", expand(&map, &initial_state));
+
+    let mut map = map.empty_map_state();
 
     println!("Dead ends:");
     solver::mark_dead_ends(&mut map);
