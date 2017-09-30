@@ -308,10 +308,9 @@ pub fn parse_xsb(level: &str) -> Result<(Map, State), ParseErr> {
             return Err(ParseErr::RemoverAndGoals);
         }
     } else {
-        // TODO this check is replaced by visiting
-        /*if boxes.len() != goals.len() {
+        if reachable_boxes.len() != reachable_goals.len() {
             return Err(ParseErr::BoxesGoals);
-        }*/
+        }
     }
 
     Ok((Map::new(map, reachable_goals),
