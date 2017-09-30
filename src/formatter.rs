@@ -254,10 +254,7 @@ pub fn parse_xsb(level: &str) -> Result<(Map, State), ParseErr> {
     let player_pos = player_pos.unwrap();
 
     let mut to_visit = vec![(player_pos.r, player_pos.c)];
-    let mut visited = Vec::new();
-    for row in map.iter() {
-        visited.push(vec![false; row.len()]);
-    }
+    let mut visited = Map::create_scratch_map(&map, false);
 
     while !to_visit.is_empty() {
         let (r, c) = to_visit.pop().unwrap();

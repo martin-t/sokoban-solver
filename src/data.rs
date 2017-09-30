@@ -19,6 +19,16 @@ impl Map {
     pub fn new(map: Vec<Vec<MapCell>>, goals: Vec<Pos>) -> Map {
         Map { map, goals }
     }
+
+    pub fn create_scratch_map<T>(original: &Vec<Vec<MapCell>>, default: T) -> Vec<Vec<T>>
+        where T: Copy
+    {
+        let mut scratch = Vec::new();
+        for row in original.iter() {
+            scratch.push(vec![default; row.len()]);
+        }
+        scratch
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
