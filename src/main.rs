@@ -37,7 +37,7 @@ fn main() {
         process::exit(1);
     });
 
-    let (mut map, initial_state) = formatter::parse_custom(&level)q.unwrap_or_else(|err| {
+    let (mut map, initial_state) = formatter::parse_custom(&level).unwrap_or_else(|err| {
         println!("Failed to parse: {}", err);
         process::exit(1);
     });
