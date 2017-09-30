@@ -31,13 +31,13 @@ fn main() {
 
     let path = matches.value_of("file").unwrap();
 
-    let puzzle = utils::load_file(path).unwrap_or_else(|err| {
+    let level = utils::load_file(path).unwrap_or_else(|err| {
         let current_dir = env::current_dir().unwrap();
         println!("Can't read file {} in {:?}: {}", path, current_dir, err);
         process::exit(1);
     });
 
-    let (mut map, initial_state) = formatter::parse_custom(&puzzle).unwrap_or_else(|err| {
+    let (mut map, initial_state) = formatter::parse_custom(&level)q.unwrap_or_else(|err| {
         println!("Failed to parse: {}", err);
         process::exit(1);
     });

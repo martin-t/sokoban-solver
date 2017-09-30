@@ -42,15 +42,15 @@ impl Display for ParseErr {
 }
 
 /// Parses my custom format
-pub fn parse_custom(puzzle: &str) -> Result<(MapState, State), ParseErr> {
-    let puzzle = puzzle.trim(); // no support for weird shapes
+pub fn parse_custom(level: &str) -> Result<(MapState, State), ParseErr> {
+    let level = level.trim(); // no support for weird shapes
 
     let mut map = Vec::new();
     let mut player_pos = None;
     let mut boxes = Vec::new();
     let mut goals = Vec::new();
     let mut remover = None;
-    for (r, line) in puzzle.lines().enumerate() {
+    for (r, line) in level.lines().enumerate() {
         map.push(Vec::new());
         let mut chars = line.chars();
         while let (Some(c1), Some(c2)) = (chars.next(), chars.next()) {
@@ -165,8 +165,8 @@ fn parse_cell_goal(c: char) -> Result<Tile, ()> {
 }
 
 /// Parses (a subset of) the format described [here](http://www.sokobano.de/wiki/index.php?title=Level_format)
-pub fn parse_xsb(puzzle: &str) -> Result<(Map, State), ParseErr> {
-    let puzzle = puzzle.trim_matches('\n');
+pub fn parse_xsb(level: &str) -> Result<(Map, State), ParseErr> {
+    let level = level.trim_matches('\n');
 
     let mut map = Vec::new();
     let mut goals = Vec::new();
@@ -174,7 +174,7 @@ pub fn parse_xsb(puzzle: &str) -> Result<(Map, State), ParseErr> {
     let mut boxes = Vec::new();
     let mut player_pos = None;
 
-    for (r, line) in puzzle.lines().enumerate() {
+    for (r, line) in level.lines().enumerate() {
         let mut line_tiles = Vec::new();
         for (c, char) in line.chars().enumerate() {
             let tile = match char {
@@ -326,57 +326,57 @@ mod tests {
 
     #[test]
     fn parsing_goals() {
-        let puzzle = r"
+        let level = r"
 <><><><><>
 <> _B_<><>
 <>B B <><>
 <>  P_<><>
 <><><><><>
 ";
-        assert_success_custom(puzzle);
+        assert_success_custom(level);
     }
 
     #[test]
     fn parsing_remover() {
-        let puzzle = r"
+        let level = r"
 <><><><><>
 <>  B <><>
 <>B   <><>
 <>  P  R<>
 <><><><><>
 ";
-        assert_success_custom(puzzle);
+        assert_success_custom(level);
     }
 
     #[test]
     fn only_player() {
-        let puzzle = r"
+        let level = r"
 <><><>
 <>P <>
 <><><>
 ";
-        assert_success_custom(puzzle);
+        assert_success_custom(level);
     }
 
     #[test]
     fn nothing() {
-        let puzzle = r"
+        let level = r"
 <><><>
 <>  <>
 <><><>
 ";
-        assert_failure_custom(puzzle, ParseErr::NoPlayer);
+        assert_failure_custom(level, ParseErr::NoPlayer);
     }
 
     #[test]
     fn remover_and_goal() {
-        let puzzle = r"
+        let level = r"
 <><><><>
 <>P  R<>
 <> _  <>
 <><><><>
 ";
-        assert_failure_custom(puzzle, ParseErr::RemoverAndGoals);
+        assert_failure_custom(level, ParseErr::RemoverAndGoals);
     }
 
     #[test]
@@ -427,13 +427,13 @@ mod tests {
         assert_failure_xsb(level, ParseErr::UnreachableBoxes);
     }
 
-    fn assert_success_custom(input_puzzle: &str) {
-        let (map, state) = parse_custom(input_puzzle).unwrap();
-        assert_eq!(map.with_state(&state).to_string(), input_puzzle.trim_left());
+    fn assert_success_custom(input_level: &str) {
+        let (map, state) = parse_custom(input_level).unwrap();
+        assert_eq!(map.with_state(&state).to_string(), input_level.trim_left());
     }
 
-    fn assert_failure_custom(input_puzzle: &str, expected_err: ParseErr) {
-        assert_eq!(parse_custom(input_puzzle).unwrap_err(), expected_err);
+    fn assert_failure_custom(input_level: &str, expected_err: ParseErr) {
+        assert_eq!(parse_custom(input_level).unwrap_err(), expected_err);
     }
 
     fn assert_success_xsb(input_level: &str) {
