@@ -22,11 +22,10 @@ fn main() {
         .arg(Arg::with_name("xsb")
             .short("-x")
             .long("--xsb")
-            .help("parse as XSB format"))
+            .help("parse as XSB format (default)"))
         .group(ArgGroup::with_name("format")
             .arg("custom")
-            .arg("xsb")
-            .required(true))
+            .arg("xsb"))
         .arg(Arg::with_name("file"))
         .get_matches();
 
