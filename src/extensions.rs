@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use data::MapCell;
 
 pub trait Vec2d {

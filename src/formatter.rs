@@ -2,14 +2,10 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 
 use data::*;
-use extensions::Vec2d;
 
 #[derive(Debug, PartialEq)]
 pub enum ParseErr {
     Pos(usize, usize),
-
-    // TODO remove
-    LineLength(usize),
 
     MultiplePlayers,
     MultipleRemovers,
@@ -28,7 +24,6 @@ impl Display for ParseErr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
             ParseErr::Pos(r, c) => write!(f, "Invalid cell at pos: [{}, {}]", r, c),
-            ParseErr::LineLength(l) => write!(f, "Wrong line length on line {}", l),
             ParseErr::MultiplePlayers => write!(f, "Too many players"),
             ParseErr::MultipleRemovers => write!(f, "Multiple removers - only one allowed"),
             ParseErr::NoPlayer => write!(f, "No player"),
