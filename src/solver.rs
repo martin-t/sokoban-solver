@@ -1,6 +1,6 @@
 use std::collections::{BinaryHeap, HashMap, HashSet};
 
-use data::*;
+use data::*; // TODO pick
 
 const UP: Dir = Dir { r: -1, c: 0 };
 const RIGHT: Dir = Dir { r: 0, c: 1 };
@@ -19,6 +19,14 @@ fn heuristic(map: &MapState, state: &State) -> i32 {
 }
 
 pub fn mark_dead_ends(map: &mut MapState) {
+    // TODO test case
+    // ##########
+    // ## #######
+    // ##$#  _###
+    // ## ## ####
+    // #     ####
+    // ##### ####
+    // ##########
     // init first since otherwise we would use this partially initialized in search()
     for r in 0..map.map.len() {
         map.dead_ends.push(Vec::new());
@@ -55,17 +63,6 @@ pub fn mark_dead_ends(map: &mut MapState) {
         //println!();
     }
     //println!();
-
-    for r in 0..map.map.len() {
-        for c in 0..map.map[r].len() {
-            if map.dead_ends[r][c] {
-                print!("{}", 1);
-            } else {
-                print!("{}", 0);
-            }
-        }
-        println!();
-    }
 }
 
 fn heuristic_push(map: &MapState, state: &State) -> i32 {

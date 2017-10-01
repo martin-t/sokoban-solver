@@ -65,3 +65,22 @@ fn main() {
         None => println!("No solution"),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn simplest_xsb() {
+        let level = r"
+#####
+#@$.#
+#####
+";
+        let (map, initial_state) = formatter::parse(level, false).unwrap();
+        let mut map = map.empty_map_state();
+        solver::mark_dead_ends(&mut map);
+        let path = solver::search(&map, &initial_state, false).unwrap();
+        assert_eq!(path.len(), 2); // initial + 1 step
+    }
+}

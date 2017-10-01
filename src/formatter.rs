@@ -1,7 +1,7 @@
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
-use data::*;
+use data::*; // TODO pick
 
 #[derive(Debug, PartialEq)]
 pub enum ParseErr {
@@ -40,7 +40,7 @@ impl Display for ParseErr {
 pub fn parse(level: &str, custom: bool) -> Result<(Map, State), ParseErr> {
     let level = level.trim_matches('\n');
 
-    let (map, goals, remover, boxes, player_pos) = if custom {
+    let (mut map, goals, remover, boxes, player_pos) = if custom {
         parse_custom(level)?
     } else {
         parse_xsb(level)?
@@ -97,6 +97,15 @@ pub fn parse(level: &str, custom: bool) -> Result<(Map, State), ParseErr> {
         }
     }
 
+    // to avoid errors with some code that iterates through all non-walls
+    for r in 0..map.len() {
+        for c in 0..map[r].len() {
+            if !visited[r][c] {
+                map[r][c] = MapCell::Wall;
+            }
+        }
+    }
+
     if remover.is_some() {
         if goals.len() > 0 {
             return Err(ParseErr::RemoverAndGoals);
@@ -112,10 +121,10 @@ pub fn parse(level: &str, custom: bool) -> Result<(Map, State), ParseErr> {
 }
 
 /// Parses my custom format
-pub fn parse_custom(level: &str)
-                    -> Result<
-                        (Vec<Vec<MapCell>>, Vec<Pos>, Option<Pos>, Vec<Pos>, Option<Pos>),
-                        ParseErr>
+fn parse_custom(level: &str)
+                -> Result<
+                    (Vec<Vec<MapCell>>, Vec<Pos>, Option<Pos>, Vec<Pos>, Option<Pos>),
+                    ParseErr>
 {
     let mut map = Vec::new();
     let mut goals = Vec::new();
@@ -163,10 +172,10 @@ pub fn parse_custom(level: &str)
 }
 
 /// Parses (a subset of) the format described [here](http://www.sokobano.de/wiki/index.php?title=Level_format)
-pub fn parse_xsb(level: &str)
-                 -> Result<
-                     (Vec<Vec<MapCell>>, Vec<Pos>, Option<Pos>, Vec<Pos>, Option<Pos>),
-                     ParseErr>
+fn parse_xsb(level: &str)
+             -> Result<
+                 (Vec<Vec<MapCell>>, Vec<Pos>, Option<Pos>, Vec<Pos>, Option<Pos>),
+                 ParseErr>
 {
     let mut map = Vec::new();
     let mut goals = Vec::new();
