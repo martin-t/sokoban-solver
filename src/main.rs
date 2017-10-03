@@ -26,7 +26,8 @@ fn main() {
         .group(ArgGroup::with_name("format")
             .arg("custom")
             .arg("xsb"))
-        .arg(Arg::with_name("file"))
+        .arg(Arg::with_name("file")
+            .required(true))
         .get_matches();
 
     let custom = matches.is_present("custom");
