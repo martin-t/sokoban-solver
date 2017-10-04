@@ -49,17 +49,17 @@ fn main() {
              map.clone().with_state(&initial_state).to_string());*/
     //println!("Expanding: {:?}", expand(&map, &initial_state));
 
-    let mut map = map.empty_map_state();
+    let mut map_state = map.empty_map_state();
 
     println!("Dead ends:");
-    solver::mark_dead_ends(&mut map);
+    solver::mark_dead_ends(&mut map_state);
 
     println!("Solving...");
-    match solver::search(&map, &initial_state, true) {
+    match solver::search(&map_state, &initial_state, true) {
         Some(path) => {
             println!("Found solution:");
             for state in &path {
-                println!("{}", map.clone().with_state(state).to_string());
+                println!("{}", map_state.clone().with_state(state).to_string());
             }
             println!("{} moves", &path.len() - 1);
         }
@@ -79,9 +79,9 @@ mod tests {
 #####
 ";
         let (map, initial_state) = formatter::parse(level, false).unwrap();
-        let mut map = map.empty_map_state();
-        solver::mark_dead_ends(&mut map);
-        let path = solver::search(&map, &initial_state, false).unwrap();
+        let mut map_state = map.empty_map_state();
+        solver::mark_dead_ends(&mut map_state);
+        let path = solver::search(&map_state, &initial_state, false).unwrap();
         assert_eq!(path.len(), 2); // initial + 1 step
     }
 
@@ -95,9 +95,9 @@ mod tests {
 #########
 ";
         let (map, initial_state) = formatter::parse(level, false).unwrap();
-        let mut map = map.empty_map_state();
-        solver::mark_dead_ends(&mut map);
-        assert_eq!(solver::search(&map, &initial_state, false), None);
+        let mut map_state = map.empty_map_state();
+        solver::mark_dead_ends(&mut map_state);
+        assert_eq!(solver::search(&map_state, &initial_state, false), None);
     }
 
     #[test]
@@ -125,9 +125,9 @@ moderate-7.txt";
             println!("{}", file);
             let level = utils::load_file(Path::new("levels/custom").join(file)).unwrap();
             let (map, state) = formatter::parse(&level, true).unwrap();
-            let mut map = map.empty_map_state();
-            solver::mark_dead_ends(&mut map);
-            let path = solver::search(&map, &state, false).unwrap();
+            let mut map_state = map.empty_map_state();
+            solver::mark_dead_ends(&mut map_state);
+            let path = solver::search(&map_state, &state, false).unwrap();
         }
     }
 }
