@@ -84,11 +84,7 @@ mod tests {
 #@$.#
 #####
 ";
-        let (map, initial_state) = formatter::parse(level, false).unwrap();
-        let mut map_state = map.empty_map_state();
-        solver::mark_dead_ends(&mut map_state);
-        let (path, _) = solver::search(&map_state, &initial_state, false);
-        assert_eq!(path.unwrap().len(), 2); // initial + 1 step
+        test_level(level, Some(1), 1);
     }
 
     #[test]
@@ -116,14 +112,13 @@ mod tests {
         // so is suppaplex.txt
 
         let files = "\
-01.txt
-01-one-way-1.txt
-01-one-way-2.txt
-02-long-way.txt
-02-two-boxes.txt
-03-google-images-play.txt
-04-google-images-1.txt
-04-boxxle-1-1.txt
+01-simplest-custom.txt
+02-one-way.txt
+03-long-way.txt
+04-two-boxes.txt
+05-google-images-play.txt
+06-google-images-1.txt
+07-boxxle-1-1.txt
 easy-2.txt
 moderate-6.txt
 moderate-7.txt";
@@ -136,5 +131,17 @@ moderate-7.txt";
             let (path, _) = solver::search(&map_state, &state, false);
             path.unwrap();
         }
+    }
+
+    fn test_level(level: &str, steps: Option<usize>, expands: i32) {
+        let (map, initial_state) = formatter::parse(level, false).unwrap();
+        let mut map_state = map.empty_map_state();
+        solver::mark_dead_ends(&mut map_state);
+        let (path, stats) = solver::search(&map_state, &initial_state, false);
+        match steps {
+            Some(steps) => assert_eq!(path.unwrap().len(), steps + 1), // states = initial state + steps
+            None => assert_eq!(path, None),
+        }
+        assert_eq!(stats.expands, expands);
     }
 }
