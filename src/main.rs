@@ -84,4 +84,50 @@ mod tests {
         let path = solver::search(&map, &initial_state, false).unwrap();
         assert_eq!(path.len(), 2); // initial + 1 step
     }
+
+    #[test]
+    fn no_solution() {
+        let level = r"
+#########
+#  #  . #
+# $@$   #
+#    #. #
+#########
+";
+        let (map, initial_state) = formatter::parse(level, false).unwrap();
+        let mut map = map.empty_map_state();
+        solver::mark_dead_ends(&mut map);
+        assert_eq!(solver::search(&map, &initial_state, false), None);
+    }
+
+    #[test]
+    fn solve_all_custom() {
+        use utils;
+        use formatter;
+        use std::path::Path;
+
+        // original-sokoban-01.txt and original-sokoban-02.txt are too hard for now
+        // so is suppaplex.txt
+
+        let files = "\
+01.txt
+01-one-way-1.txt
+01-one-way-2.txt
+02-long-way.txt
+02-two-boxes.txt
+03-google-images-play.txt
+04-google-images-1.txt
+04-boxxle-1-1.txt
+easy-2.txt
+moderate-6.txt
+moderate-7.txt";
+        for file in files.lines() {
+            println!("{}", file);
+            let level = utils::load_file(Path::new("levels/custom").join(file)).unwrap();
+            let (map, state) = formatter::parse(&level, true).unwrap();
+            let mut map = map.empty_map_state();
+            solver::mark_dead_ends(&mut map);
+            let path = solver::search(&map, &state, false).unwrap();
+        }
+    }
 }
