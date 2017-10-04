@@ -29,7 +29,7 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn new(map: Vec<Vec<MapCell>>, goals: Vec<Pos>) -> Map {
+    pub fn new(map: Vec<Vec<MapCell>>, goals: Vec<Pos>) -> Self {
         Map { cells: map, goals }
     }
 

@@ -20,13 +20,12 @@ fn heuristic(map: &MapState, state: &State) -> i32 {
 
 pub fn mark_dead_ends(map: &mut MapState) {
     // TODO test case
-    // ##########
-    // ## #######
-    // ##$#  _###
-    // ## ## ####
-    // #     ####
-    // ##### ####
-    // ##########
+    // #####
+    // ##@##
+    // ##$##
+    // #  .#
+    // #####
+
     // init first since otherwise we would use this partially initialized in search()
     for r in 0..map.map.len() {
         map.dead_ends.push(Vec::new());
@@ -51,18 +50,14 @@ pub fn mark_dead_ends(map: &mut MapState) {
                     player_pos: player_pos,
                     boxes: vec![box_pos],
                 };
-                if let Some(_) = search(map, &fake_state, false) {
+                if let Some(_) = search(map, &fake_state, false).0 {
                     //print!("cont");
                     continue 'cell; // need to find only one solution
                 }
             }
-            //print!("true");
             map.dead_ends[r][c] = true; // no solution from any direction
-            //print!("|");
         }
-        //println!();
     }
-    //println!();
 }
 
 fn heuristic_push(map: &MapState, state: &State) -> i32 {
@@ -107,10 +102,21 @@ fn heuristic_move(map: &MapState, state: &State) -> i32 {
     closest_box + goal_dist_sum
 }
 
-pub fn search(map: &MapState, initial_state: &State, print_status: bool) -> Option<Vec<State>> {
-    let mut expands = 0;
-    let mut state_counts = Vec::new();
-    state_counts.push(0);
+pub struct Stats {
+    pub expands: i32,
+    pub state_counts: Vec<i32>,
+}
+
+impl Stats {
+    pub fn new() -> Self {
+        Stats { expands: 0, state_counts: vec![0] }
+    }
+}
+
+pub fn search(map: &MapState, initial_state: &State, print_status: bool)
+              -> (Option<Vec<State>>, Stats)
+{
+    let mut stats = Stats::new();
 
     let mut to_visit = BinaryHeap::new();
     let mut closed = HashSet::new();
@@ -129,8 +135,8 @@ pub fn search(map: &MapState, initial_state: &State, print_status: bool) -> Opti
 
         if closed.contains(&current.state) { continue; }
 
-        if current.dist > (state_counts.len() - 1) as i32 {
-            state_counts.push(0);
+        if current.dist > (stats.state_counts.len() - 1) as i32 {
+            stats.state_counts.push(0);
             if print_status {
                 println!("Depth: {}", current.dist);
                 /*if current.dist == 50 {
@@ -141,7 +147,7 @@ pub fn search(map: &MapState, initial_state: &State, print_status: bool) -> Opti
             }
         }
 
-        state_counts[current.dist as usize] += 1;
+        stats.state_counts[current.dist as usize] += 1;
 
         // insert here and not as soon as we discover it
         // otherwise we overwrite the shortest path with longer ones
@@ -150,18 +156,10 @@ pub fn search(map: &MapState, initial_state: &State, print_status: bool) -> Opti
         }
 
         if solved(map, &current.state) {
-            if print_status {
-                println!("Expands: {}", expands);
-                println!("Visited states in depth:");
-                for i in 0..state_counts.len() {
-                    println!("{}: {}", i, state_counts[i]);
-                }
-            }
-
-            return Some(backtrack_path(&prev, &current.state));
+            return (Some(backtrack_path(&prev, &current.state)), stats);
         }
 
-        expands += 1;
+        stats.expands += 1;
         for neighbor_state in expand(&map, &current.state) {
             // TODO this could probably be optimized a bit by allocating on the heap
             // and storing references only (to current state, neighbor state is always different)
@@ -181,11 +179,7 @@ pub fn search(map: &MapState, initial_state: &State, print_status: bool) -> Opti
         closed.insert(current.state);
     }
 
-    if print_status {
-        println!("Expands: {}", expands);
-    }
-
-    None
+    (None, stats)
 }
 
 fn backtrack_path(prev: &HashMap<State, State>, final_state: &State) -> Vec<State> {

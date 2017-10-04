@@ -55,13 +55,19 @@ fn main() {
     solver::mark_dead_ends(&mut map_state);
 
     println!("Solving...");
-    match solver::search(&map_state, &initial_state, true) {
+    let (path, stats) = solver::search(&map_state, &initial_state, true);
+    println!("Expands: {}", stats.expands);
+    println!("Depth / visited states:");
+    for i in 0..stats.state_counts.len() {
+        println!("{}: {}", i, stats.state_counts[i]);
+    }
+    match path {
         Some(path) => {
             println!("Found solution:");
             for state in &path {
                 println!("{}", map_state.clone().with_state(state).to_string());
             }
-            println!("{} moves", &path.len() - 1);
+            println!("{} steps", &path.len() - 1);
         }
         None => println!("No solution"),
     }
@@ -81,8 +87,8 @@ mod tests {
         let (map, initial_state) = formatter::parse(level, false).unwrap();
         let mut map_state = map.empty_map_state();
         solver::mark_dead_ends(&mut map_state);
-        let path = solver::search(&map_state, &initial_state, false).unwrap();
-        assert_eq!(path.len(), 2); // initial + 1 step
+        let (path, _) = solver::search(&map_state, &initial_state, false);
+        assert_eq!(path.unwrap().len(), 2); // initial + 1 step
     }
 
     #[test]
@@ -97,7 +103,7 @@ mod tests {
         let (map, initial_state) = formatter::parse(level, false).unwrap();
         let mut map_state = map.empty_map_state();
         solver::mark_dead_ends(&mut map_state);
-        assert_eq!(solver::search(&map_state, &initial_state, false), None);
+        assert_eq!(solver::search(&map_state, &initial_state, false).0, None);
     }
 
     #[test]
@@ -127,7 +133,8 @@ moderate-7.txt";
             let (map, state) = formatter::parse(&level, true).unwrap();
             let mut map_state = map.empty_map_state();
             solver::mark_dead_ends(&mut map_state);
-            let path = solver::search(&map_state, &state, false).unwrap();
+            let (path, _) = solver::search(&map_state, &state, false);
+            path.unwrap();
         }
     }
 }
