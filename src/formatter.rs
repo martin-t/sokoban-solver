@@ -4,6 +4,12 @@ use std::fmt::{Display, Formatter};
 use data::*; // TODO pick
 
 #[derive(Debug, PartialEq)]
+pub enum Format {
+    Custom,
+    Xsb,
+}
+
+#[derive(Debug, PartialEq)]
 pub enum ParseErr {
     Pos(usize, usize),
 
@@ -37,13 +43,13 @@ impl Display for ParseErr {
     }
 }
 
-pub fn parse(level: &str, custom: bool) -> Result<(Map, State), ParseErr> {
+pub fn parse(level: &str, format: Format) -> Result<(Map, State), ParseErr> {
     let level = level.trim_matches('\n');
 
-    let (mut map, goals, remover, boxes, player_pos) = if custom {
-        parse_custom(level)?
-    } else {
-        parse_xsb(level)?
+
+    let (mut map, goals, remover, boxes, player_pos) = match format {
+        Format::Custom => parse_custom(level)?,
+        Format::Xsb => parse_xsb(level)?,
     };
 
     if player_pos.is_none() {
@@ -359,20 +365,20 @@ mod tests {
     }
 
     fn assert_success_custom(input_level: &str) {
-        let (map, state) = parse(input_level, true).unwrap();
+        let (map, state) = parse(input_level, Format::Custom).unwrap();
         assert_eq!(map.empty_map_state().with_state(&state).to_string(), input_level.trim_left());
     }
 
     fn assert_failure_custom(input_level: &str, expected_err: ParseErr) {
-        assert_eq!(parse(input_level, true).unwrap_err(), expected_err);
+        assert_eq!(parse(input_level, Format::Custom).unwrap_err(), expected_err);
     }
 
     fn assert_success_xsb(input_level: &str) {
-        parse(input_level, false).unwrap(); // TODO write out, compare
+        parse(input_level, Format::Xsb).unwrap(); // TODO write out, compare
     }
 
     fn assert_failure_xsb(input_level: &str, expected_err: ParseErr) {
-        assert_eq!(parse(input_level, false).unwrap_err(), expected_err);
+        assert_eq!(parse(input_level, Format::Xsb).unwrap_err(), expected_err);
     }
 }
 

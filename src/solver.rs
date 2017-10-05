@@ -49,25 +49,26 @@ impl Stats {
 
 impl Debug for Stats {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        write!(f, "created by depth: {:?}", self.created_states)?;
-        write!(f, "visited by depth: {:?}", self.visited_states)?;
-        write!(f, "total created: {}", self.total_created())?;
-        write!(f, "total visited: {}", self.total_visited())
+        writeln!(f, "created by depth: {:?}", self.created_states)?;
+        writeln!(f, "visited by depth: {:?}", self.visited_states)?;
+        writeln!(f, "total created: {}", self.total_created())?;
+        writeln!(f, "total visited: {}", self.total_visited())
     }
 }
 
 impl Display for Stats {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        write!(f, "States created total: {}", self.created_states.iter().sum::<i32>());
-        write!(f, "States visited total: {}", self.visited_states.iter().sum::<i32>());
-        write!(f, "Depth / created states:");
+        writeln!(f, "States created total: {}", self.created_states.iter().sum::<i32>())?;
+        writeln!(f, "States visited total: {}", self.visited_states.iter().sum::<i32>())?;
+        writeln!(f, "Depth / created states:")?;
         for i in 0..self.created_states.len() {
-            write!(f, "{}: {}", i, self.created_states[i]);
+            writeln!(f, "{}: {}", i, self.created_states[i])?;
         }
-        write!(f, "Depth / visited states:");
+        writeln!(f, "Depth / visited states:")?;
         for i in 0..self.visited_states.len() {
-            write!(f, "{}: {}", i, self.visited_states[i]);
+            writeln!(f, "{}: {}", i, self.visited_states[i])?;
         }
+        Ok(())
     }
 }
 
@@ -90,7 +91,9 @@ pub fn search(map: &MapState, initial_state: &State, print_status: bool)
     stats.add_created(&start);
     to_visit.push(start);
     while let Some(current) = to_visit.pop() {
-        if closed.contains(&current.state) { continue; }
+        if closed.contains(&current.state) {
+            continue;
+        }
         if stats.add_visited(&current) && print_status {
             println!("Visited depth: {}", current.dist);
         }

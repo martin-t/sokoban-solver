@@ -11,6 +11,8 @@ use std::process;
 
 use clap::{App, Arg, ArgGroup};
 
+use formatter::Format;
+
 fn main() {
     let matches = App::new("sokoban-solver")
         .author("martin-t")
@@ -30,7 +32,11 @@ fn main() {
             .required(true))
         .get_matches();
 
-    let custom = matches.is_present("custom");
+    let format = if matches.is_present("custom") {
+        Format::Custom
+    } else {
+        Format::Xsb
+    };
     let path = matches.value_of("file").unwrap();
 
     let level = utils::load_file(path).unwrap_or_else(|err| {
@@ -39,7 +45,7 @@ fn main() {
         process::exit(1);
     });
 
-    let (map, initial_state) = formatter::parse(&level, custom).unwrap_or_else(|err| {
+    let (map, initial_state) = formatter::parse(&level, format).unwrap_or_else(|err| {
         println!("Failed to parse: {}", err);
         process::exit(1);
     });
@@ -55,9 +61,9 @@ fn main() {
     solver::mark_dead_ends(&mut map_state);
 
     println!("Solving...");
-    let (steps, stats) = solver::search(&map_state, &initial_state, true);
+    let (path_states, stats) = solver::search(&map_state, &initial_state, true);
     println!("{}", stats);
-    match steps {
+    match path_states {
         Some(path) => {
             println!("Found solution:");
             for state in &path {
@@ -80,7 +86,7 @@ mod tests {
 #@$.#
 #####
 ";
-        test_level(level, false, Some(1), 1);
+        test_level(level, Format::Xsb, Some(1), 2, 2);
     }
 
     #[test]
@@ -92,13 +98,12 @@ mod tests {
 #    #. #
 #########
 ";
-        test_level(level, false, None, 52);
+        test_level(level, Format::Xsb, None, 102, 52);
     }
 
     #[test]
     fn solve_all_custom() {
         use utils;
-        use formatter;
         use std::path::Path;
 
         // original-sokoban-01.txt and original-sokoban-02.txt are too hard for now
@@ -118,21 +123,20 @@ moderate-7.txt";
         for file in files.lines() {
             println!("{}", file);
             let level = utils::load_file(Path::new("levels/custom").join(file)).unwrap();
-            test_level(&level, true, Some(0), 0); // TODO
+            test_level(&level, Format::Custom, Some(0), 0, 0); // FIXME
         }
     }
 
-    fn test_level(level: &str, custom: bool, steps: Option<usize>, expands: i32) {
-        let (map, initial_state) = formatter::parse(level, custom).unwrap();
+    fn test_level(level: &str, format: Format, steps: Option<usize>, created: i32, visited: i32) {
+        let (map, initial_state) = formatter::parse(level, format).unwrap();
         let mut map_state = map.empty_map_state();
         solver::mark_dead_ends(&mut map_state);
-        let (steps, stats) = solver::search(&map_state, &initial_state, false);
+        let (path_states, stats) = solver::search(&map_state, &initial_state, false);
 
-        if steps.is_some() {
-            println!("path len: {}", steps.unwrap().len());
+        if path_states.is_some() {
+            println!("Path len: {}", path_states.unwrap().len());
         }
         println!("{:?}", stats);
-        println!();
 
         /*match steps {
             Some(steps) => assert_eq!(path.unwrap().len(), steps + 1), // states = initial state + steps
