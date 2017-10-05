@@ -55,13 +55,13 @@ fn main() {
     solver::mark_dead_ends(&mut map_state);
 
     println!("Solving...");
-    let (path, stats) = solver::search(&map_state, &initial_state, true);
-    println!("Expands: {}", stats.expands);
-    println!("Depth / visited states:");
-    for i in 0..stats.state_counts.len() {
-        println!("{}: {}", i, stats.state_counts[i]);
-    }
-    match path {
+    let (steps, stats) = solver::search(&map_state, &initial_state, true);
+    //println!("States visited total: {}", states_at_depth.iter().sum::<i32>());
+    //println!("Depth / visited states:");
+    //for i in 0..states_at_depth.len() {
+    //    println!("{}: {}", i, states_at_depth[i]);
+    //}
+    match steps {
         Some(path) => {
             println!("Found solution:");
             for state in &path {
@@ -84,7 +84,7 @@ mod tests {
 #@$.#
 #####
 ";
-        test_level(level, Some(1), 1);
+        test_level(level, false, Some(1), 1);
     }
 
     #[test]
@@ -96,7 +96,7 @@ mod tests {
 #    #. #
 #########
 ";
-        test_level(level, None, 52);
+        test_level(level, false, None, 52);
     }
 
     #[test]
@@ -122,26 +122,27 @@ moderate-7.txt";
         for file in files.lines() {
             println!("{}", file);
             let level = utils::load_file(Path::new("levels/custom").join(file)).unwrap();
-            let (map, state) = formatter::parse(&level, true).unwrap();
-            let mut map_state = map.empty_map_state();
-            solver::mark_dead_ends(&mut map_state);
-            let (path, stats) = solver::search(&map_state, &state, false);
-            println!("{}", path.unwrap().len());
-            println!("{:?}", stats);
-            println!("{}", stats.state_counts.iter().sum::<i32>());
-            println!();
+            test_level(&level, true, Some(0), 0); // TODO
         }
     }
 
-    fn test_level(level: &str, steps: Option<usize>, expands: i32) {
-        let (map, initial_state) = formatter::parse(level, false).unwrap();
+    fn test_level(level: &str, custom: bool, steps: Option<usize>, expands: i32) {
+        let (map, initial_state) = formatter::parse(level, custom).unwrap();
         let mut map_state = map.empty_map_state();
         solver::mark_dead_ends(&mut map_state);
-        let (path, stats) = solver::search(&map_state, &initial_state, false);
-        match steps {
+        let (steps, stats) = solver::search(&map_state, &initial_state, false);
+
+        if steps.is_some() { println!("path len: {}", steps.unwrap().len()); }
+        println!("created by depth: {:?}", stats.created_states);
+        println!("visited by depth: {:?}", stats.visited_states);
+        println!("total created: {}", stats.total_created());
+        println!("total visited: {}", stats.total_visited());
+        println!();
+
+        /*match steps {
             Some(steps) => assert_eq!(path.unwrap().len(), steps + 1), // states = initial state + steps
             None => assert_eq!(path, None),
         }
-        assert_eq!(stats.expands, expands);
+        assert_eq!(states_at_depth.iter().sum::<i32>(), expands + 1);*/
     }
 }

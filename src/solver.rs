@@ -10,14 +10,98 @@ const DIRECTIONS: [Dir; 4] = [UP, RIGHT, DOWN, LEFT];
 
 #[derive(Debug)]
 pub struct Stats {
-    pub expands: i32,
-    pub state_counts: Vec<i32>,
+    pub created_states: Vec<i32>,
+    pub visited_states: Vec<i32>,
 }
 
 impl Stats {
-    pub fn new() -> Self {
-        Stats { expands: 0, state_counts: vec![0] }
+    fn new() -> Self {
+        Stats { created_states: vec![], visited_states: vec![] }
     }
+
+    pub fn total_created(&self) -> i32 {
+        self.created_states.iter().sum::<i32>()
+    }
+
+    pub fn total_visited(&self) -> i32 {
+        self.visited_states.iter().sum::<i32>()
+    }
+
+    fn add_created(&mut self, state: &SearchState) -> bool {
+        add(self.created_states, state)
+    }
+
+    fn add_visited(&mut self, state: &SearchState) -> bool {
+        add(self.visited_states, state)
+    }
+
+    fn add(counts: &mut Vec<i32>, state: &SearchState) -> bool {
+        // new depth (dist always increases by one at a time)
+        if state.dist == counts.len() {
+            counts.push(1);
+            true
+        } else {
+            counts[state.dist] += 1;
+            false
+        }
+    }
+}
+
+pub fn search(map: &MapState, initial_state: &State, print_status: bool)
+              -> (Option<Vec<State>>, Stats)
+{
+    let mut stats = Stats::new();
+
+    let mut to_visit = BinaryHeap::new();
+    let mut closed = HashSet::new();
+    let mut prev = HashMap::new();
+
+    let h = heuristic(&map, &initial_state);
+    let start = SearchState {
+        state: initial_state.clone(),
+        prev: None,
+        dist: 0,
+        h: h,
+    };
+    stats.add_created(&start);
+    to_visit.push(start);
+    while let Some(current) = to_visit.pop() {
+        if closed.contains(&current.state) { continue; }
+        if stats.add_visited(&current) && print_status {
+            println!("Visited depth: {}", current.dist);
+        }
+
+        // insert here and not as soon as we discover it
+        // otherwise we overwrite the shortest path with longer ones
+        if let Some(p) = current.prev {
+            prev.insert(current.state.clone(), p.clone());
+        }
+
+        if solved(map, &current.state) {
+            return (Some(backtrack_path(&prev, &current.state)), stats);
+        }
+
+        for neighbor_state in expand(&map, &current.state) {
+            // TODO this could probably be optimized a bit by allocating on the heap
+            // and storing references only (to current state, neighbor state is always different)
+            //prev.insert(neighbor_state.clone(), current.state.clone());
+
+            // rust's binary heap doesn't support update_key() so we always insert and then ignore duplicates
+            let h = heuristic(&map, &neighbor_state);
+            let next = SearchState {
+                state: neighbor_state,
+                prev: Some(current.state.clone()),
+                dist: current.dist + 1,
+                h: h,
+            };
+            stats.add_created(&next);
+            to_visit.push(next);
+        }
+
+        closed.insert(current.state);
+    }
+
+    (None, stats)
 }
 
 fn expand(map: &MapState, state: &State) -> Vec<State> {
@@ -112,76 +196,6 @@ fn heuristic_move(map: &MapState, state: &State) -> i32 {
     }
 
     closest_box + goal_dist_sum
-}
-
-pub fn search(map: &MapState, initial_state: &State, print_status: bool)
-              -> (Option<Vec<State>>, Stats)
-{
-    let mut stats = Stats::new();
-
-    let mut to_visit = BinaryHeap::new();
-    let mut closed = HashSet::new();
-    let mut prev = HashMap::new();
-
-    let h = heuristic(&map, &initial_state);
-    let start = SearchState {
-        state: initial_state.clone(),
-        prev: None,
-        dist: 0,
-        h: h,
-    };
-    to_visit.push(start);
-    while let Some(current) = to_visit.pop() {
-        //println!("Trying (dist {}):\n{}", current.dist, map.clone().with_state(&current.state).to_string());
-
-        if closed.contains(&current.state) { continue; }
-
-        // dist increases by one at a time
-        if current.dist == stats.state_counts.len() as i32 {
-            stats.state_counts.push(0);
-            if print_status {
-                println!("Depth: {}", current.dist);
-                /*if current.dist == 50 {
-                    for ss in &to_visit {
-                        println!("{}", map.clone().with_state(&ss.state).to_string());
-                    }
-                }*/
-            }
-        }
-
-        stats.state_counts[current.dist as usize] += 1;
-
-        // insert here and not as soon as we discover it
-        // otherwise we overwrite the shortest path with longer ones
-        if let Some(p) = current.prev {
-            prev.insert(current.state.clone(), p.clone());
-        }
-
-        if solved(map, &current.state) {
-            return (Some(backtrack_path(&prev, &current.state)), stats);
-        }
-
-        stats.expands += 1;
-        for neighbor_state in expand(&map, &current.state) {
-            // TODO this could probably be optimized a bit by allocating on the heap
-            // and storing references only (to current state, neighbor state is always different)
-            //prev.insert(neighbor_state.clone(), current.state.clone());
-
-            // rust's binary heap doesn't support update_key() so we always insert and then ignore duplicates
-            let h = heuristic(&map, &neighbor_state);
-            let next = SearchState {
-                state: neighbor_state,
-                prev: Some(current.state.clone()),
-                dist: current.dist + 1,
-                h: h,
-            };
-            to_visit.push(next);
-        }
-
-        closed.insert(current.state);
-    }
-
-    (None, stats)
 }
 
 fn backtrack_path(prev: &HashMap<State, State>, final_state: &State) -> Vec<State> {
