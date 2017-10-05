@@ -56,11 +56,7 @@ fn main() {
 
     println!("Solving...");
     let (steps, stats) = solver::search(&map_state, &initial_state, true);
-    //println!("States visited total: {}", states_at_depth.iter().sum::<i32>());
-    //println!("Depth / visited states:");
-    //for i in 0..states_at_depth.len() {
-    //    println!("{}: {}", i, states_at_depth[i]);
-    //}
+    println!("{}", stats);
     match steps {
         Some(path) => {
             println!("Found solution:");
@@ -132,11 +128,10 @@ moderate-7.txt";
         solver::mark_dead_ends(&mut map_state);
         let (steps, stats) = solver::search(&map_state, &initial_state, false);
 
-        if steps.is_some() { println!("path len: {}", steps.unwrap().len()); }
-        println!("created by depth: {:?}", stats.created_states);
-        println!("visited by depth: {:?}", stats.visited_states);
-        println!("total created: {}", stats.total_created());
-        println!("total visited: {}", stats.total_visited());
+        if steps.is_some() {
+            println!("path len: {}", steps.unwrap().len());
+        }
+        println!("{:?}", stats);
         println!();
 
         /*match steps {

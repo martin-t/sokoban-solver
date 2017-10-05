@@ -1,4 +1,5 @@
 use std::collections::{BinaryHeap, HashMap, HashSet};
+use std::fmt::{Debug, Display, Formatter, Result};
 
 use data::*; // TODO pick
 
@@ -8,7 +9,6 @@ const DOWN: Dir = Dir { r: 1, c: 0 };
 const LEFT: Dir = Dir { r: 0, c: -1 };
 const DIRECTIONS: [Dir; 4] = [UP, RIGHT, DOWN, LEFT];
 
-#[derive(Debug)]
 pub struct Stats {
     pub created_states: Vec<i32>,
     pub visited_states: Vec<i32>,
@@ -28,21 +28,45 @@ impl Stats {
     }
 
     fn add_created(&mut self, state: &SearchState) -> bool {
-        add(self.created_states, state)
+        Self::add(&mut self.created_states, state)
     }
 
     fn add_visited(&mut self, state: &SearchState) -> bool {
-        add(self.visited_states, state)
+        Self::add(&mut self.visited_states, state)
     }
 
     fn add(counts: &mut Vec<i32>, state: &SearchState) -> bool {
         // new depth (dist always increases by one at a time)
-        if state.dist == counts.len() {
+        if state.dist as usize == counts.len() {
             counts.push(1);
             true
         } else {
-            counts[state.dist] += 1;
+            counts[state.dist as usize] += 1;
             false
+        }
+    }
+}
+
+impl Debug for Stats {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        write!(f, "created by depth: {:?}", self.created_states)?;
+        write!(f, "visited by depth: {:?}", self.visited_states)?;
+        write!(f, "total created: {}", self.total_created())?;
+        write!(f, "total visited: {}", self.total_visited())
+    }
+}
+
+impl Display for Stats {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        write!(f, "States created total: {}", self.created_states.iter().sum::<i32>());
+        write!(f, "States visited total: {}", self.visited_states.iter().sum::<i32>());
+        write!(f, "Depth / created states:");
+        for i in 0..self.created_states.len() {
+            write!(f, "{}: {}", i, self.created_states[i]);
+        }
+        write!(f, "Depth / visited states:");
+        for i in 0..self.visited_states.len() {
+            write!(f, "{}: {}", i, self.visited_states[i]);
         }
     }
 }
