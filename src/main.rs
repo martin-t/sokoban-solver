@@ -96,10 +96,7 @@ mod tests {
 #    #. #
 #########
 ";
-        let (map, initial_state) = formatter::parse(level, false).unwrap();
-        let mut map_state = map.empty_map_state();
-        solver::mark_dead_ends(&mut map_state);
-        assert_eq!(solver::search(&map_state, &initial_state, false).0, None);
+        test_level(level, None, 52);
     }
 
     #[test]
@@ -128,8 +125,11 @@ moderate-7.txt";
             let (map, state) = formatter::parse(&level, true).unwrap();
             let mut map_state = map.empty_map_state();
             solver::mark_dead_ends(&mut map_state);
-            let (path, _) = solver::search(&map_state, &state, false);
-            path.unwrap();
+            let (path, stats) = solver::search(&map_state, &state, false);
+            println!("{}", path.unwrap().len());
+            println!("{:?}", stats);
+            println!("{}", stats.state_counts.iter().sum::<i32>());
+            println!();
         }
     }
 

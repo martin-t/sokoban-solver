@@ -8,6 +8,18 @@ const DOWN: Dir = Dir { r: 1, c: 0 };
 const LEFT: Dir = Dir { r: 0, c: -1 };
 const DIRECTIONS: [Dir; 4] = [UP, RIGHT, DOWN, LEFT];
 
+#[derive(Debug)]
+pub struct Stats {
+    pub expands: i32,
+    pub state_counts: Vec<i32>,
+}
+
+impl Stats {
+    pub fn new() -> Self {
+        Stats { expands: 0, state_counts: vec![0] }
+    }
+}
+
 fn expand(map: &MapState, state: &State) -> Vec<State> {
     //expand_move(map, state)
     expand_push(map, state)
@@ -102,17 +114,6 @@ fn heuristic_move(map: &MapState, state: &State) -> i32 {
     closest_box + goal_dist_sum
 }
 
-pub struct Stats {
-    pub expands: i32,
-    pub state_counts: Vec<i32>,
-}
-
-impl Stats {
-    pub fn new() -> Self {
-        Stats { expands: 0, state_counts: vec![0] }
-    }
-}
-
 pub fn search(map: &MapState, initial_state: &State, print_status: bool)
               -> (Option<Vec<State>>, Stats)
 {
@@ -135,7 +136,8 @@ pub fn search(map: &MapState, initial_state: &State, print_status: bool)
 
         if closed.contains(&current.state) { continue; }
 
-        if current.dist > (stats.state_counts.len() - 1) as i32 {
+        // dist increases by one at a time
+        if current.dist == stats.state_counts.len() as i32 {
             stats.state_counts.push(0);
             if print_status {
                 println!("Depth: {}", current.dist);
