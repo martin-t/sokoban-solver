@@ -11,16 +11,21 @@ const DIRECTIONS: [Dir; 4] = [UP, RIGHT, DOWN, LEFT];
 
 pub struct Stats {
     pub created_states: Vec<i32>,
+    pub duplicate_states: Vec<i32>,
     pub visited_states: Vec<i32>,
 }
 
 impl Stats {
     fn new() -> Self {
-        Stats { created_states: vec![], visited_states: vec![] }
+        Stats { created_states: vec![], duplicate_states: vec![], visited_states: vec![] }
     }
 
     pub fn total_created(&self) -> i32 {
         self.created_states.iter().sum::<i32>()
+    }
+
+    pub fn total_duplicate(&self) -> i32 {
+        self.duplicate_states.iter().sum::<i32>()
     }
 
     pub fn total_visited(&self) -> i32 {
@@ -31,38 +36,50 @@ impl Stats {
         Self::add(&mut self.created_states, state)
     }
 
+    fn add_duplicate(&mut self, state: &SearchState) -> bool {
+        Self::add(&mut self.duplicate_states, state)
+    }
+
     fn add_visited(&mut self, state: &SearchState) -> bool {
         Self::add(&mut self.visited_states, state)
     }
 
     fn add(counts: &mut Vec<i32>, state: &SearchState) -> bool {
-        // new depth (dist always increases by one at a time)
-        if state.dist as usize == counts.len() {
-            counts.push(1);
-            true
-        } else {
-            counts[state.dist as usize] += 1;
-            false
+        let mut ret = false;
+
+        // while because some depths might be skipped - duplicates or tunnel optimizations (NYI)
+        while state.dist as usize >= counts.len() {
+            counts.push(0);
+            ret = true;
         }
+        counts[state.dist as usize] += 1;
+        ret
     }
 }
 
 impl Debug for Stats {
     fn fmt(&self, f: &mut Formatter) -> Result {
         writeln!(f, "created by depth: {:?}", self.created_states)?;
+        writeln!(f, "reached duplicates: {:?}", self.duplicate_states)?;
         writeln!(f, "visited by depth: {:?}", self.visited_states)?;
         writeln!(f, "total created: {}", self.total_created())?;
+        writeln!(f, "total reached duplicates: {}", self.total_duplicate())?;
         writeln!(f, "total visited: {}", self.total_visited())
     }
 }
 
 impl Display for Stats {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        writeln!(f, "States created total: {}", self.created_states.iter().sum::<i32>())?;
-        writeln!(f, "States visited total: {}", self.visited_states.iter().sum::<i32>())?;
+        writeln!(f, "States created total: {}", self.total_created())?;
+        writeln!(f, "Reached duplicates total: {}", self.total_duplicate())?;
+        writeln!(f, "States visited total: {}", self.total_visited())?;
         writeln!(f, "Depth / created states:")?;
         for i in 0..self.created_states.len() {
             writeln!(f, "{}: {}", i, self.created_states[i])?;
+        }
+        writeln!(f, "Depth / found duplicates:")?;
+        for i in 0..self.duplicate_states.len() {
+            writeln!(f, "{}: {}", i, self.duplicate_states[i])?;
         }
         writeln!(f, "Depth / visited states:")?;
         for i in 0..self.visited_states.len() {
@@ -92,6 +109,7 @@ pub fn search(map: &MapState, initial_state: &State, print_status: bool)
     to_visit.push(start);
     while let Some(current) = to_visit.pop() {
         if closed.contains(&current.state) {
+            stats.add_duplicate(&current);
             continue;
         }
         if stats.add_visited(&current) && print_status {

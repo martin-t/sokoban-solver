@@ -1,7 +1,7 @@
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
-use data::*; // TODO pick
+use data::{Map, MapCell, Pos, State};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Format {
