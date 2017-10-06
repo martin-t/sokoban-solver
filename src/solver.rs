@@ -133,7 +133,7 @@ pub fn search(map: &MapState, initial_state: &State, print_status: bool)
             //prev.insert(neighbor_state.clone(), current.state.clone());
 
             // insert and then ignore duplicates
-            let h = heuristic(&map, &initial_state);
+            let h = heuristic(&map, &neighbor_state);
             let next = SearchState {
                 state: neighbor_state,
                 prev: Some(current.state.clone()),

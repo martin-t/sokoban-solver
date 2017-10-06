@@ -125,7 +125,7 @@ mod tests {
             }
         }
         println!("{:?}", stats);
-        //assert_eq!(stats.total_created(), created);
-        //assert_eq!(stats.total_visited(), visited);
+        assert_eq!(stats.total_created(), created);
+        assert_eq!(stats.total_visited(), visited);
     }
 }
