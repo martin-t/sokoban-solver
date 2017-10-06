@@ -95,7 +95,8 @@ pub fn search(map: &MapState, initial_state: &State, print_status: bool)
             continue;
         }
         if stats.add_visited(&current) && print_status {
-            println!("Visited depth: {}", current.dist);
+            println!("Visited new depth: {}", current.dist);
+            println!("{:?}", stats);
         }
 
         // insert here and not as soon as we discover it
@@ -113,8 +114,8 @@ pub fn search(map: &MapState, initial_state: &State, print_status: bool)
             // and storing references only (to current state, neighbor state is always different)
             //prev.insert(neighbor_state.clone(), current.state.clone());
 
-            // rust's binary heap doesn't support update_key() so we always insert and then ignore duplicates
-            let h = heuristic(&map, &neighbor_state);
+            // insert and then ignore duplicates
+            let h = heuristic(&map, &initial_state);
             let next = SearchState {
                 state: neighbor_state,
                 prev: Some(current.state.clone()),
