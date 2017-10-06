@@ -80,68 +80,52 @@ mod tests {
     use super::*;
 
     #[test]
-    fn simplest_xsb() {
-        let level = r"
-#####
-#@$.#
-#####
-";
-        test_level(level, Format::Xsb, Some(1), 2, 2);
-    }
-
-    #[test]
-    fn no_solution() {
-        let level = r"
-#########
-#  #  . #
-# $@$   #
-#    #. #
-#########
-";
-        test_level(level, Format::Xsb, None, 102, 52);
-    }
-
-    #[test]
     fn solve_all_custom() {
-        use utils;
-        use std::path::Path;
-
         // original-sokoban-01.txt and original-sokoban-02.txt are too hard for now
         // so is suppaplex.txt
 
-        let files = "\
-01-simplest-custom.txt
-02-one-way.txt
-03-long-way.txt
-04-two-boxes.txt
-05-google-images-play.txt
-06-google-images-1.txt
-07-boxxle-1-1.txt
-easy-2.txt
-moderate-6.txt
-moderate-7.txt";
-        for file in files.lines() {
-            println!("{}", file);
-            let level = utils::load_file(Path::new("levels/custom").join(file)).unwrap();
-            test_level(&level, Format::Custom, Some(0), 0, 0); // FIXME
+        let files = [
+            (Format::Xsb, "levels/custom/01-simplest-xsb.txt", Some(2), 2, 2),
+            (Format::Custom, "levels/custom/01-simplest-custom.txt", Some(2), 2, 2),
+            (Format::Custom, "levels/custom/02-one-way.txt", Some(4), 4, 4),
+            (Format::Custom, "levels/custom/03-long-way.txt", Some(9), 10, 9),
+            (Format::Custom, "levels/custom/04-two-boxes.txt", Some(21), 313, 148),
+            (Format::Custom, "levels/custom/05-google-images-play.txt", Some(4), 11, 6),
+            (Format::Custom, "levels/custom/06-google-images-1.txt", Some(10), 341, 117),
+            (Format::Custom, "levels/custom/07-boxxle-1-1.txt", Some(32), 1563, 983),
+            (Format::Xsb, "levels/custom/no-solution-parking.txt", None, 102, 52),
+            (Format::Custom, "levels/custom/easy-2.txt", Some(11), 4673, 488),
+            (Format::Custom, "levels/custom/moderate-6.txt", Some(33), 211, 137),
+            (Format::Custom, "levels/custom/moderate-7.txt", Some(6), 21, 12),
+        ];
+        for &(format, file, expected_path_states, created, visited) in files.iter() {
+            test_level(format, file, expected_path_states, created, visited);
         }
     }
 
-    fn test_level(level: &str, format: Format, steps: Option<usize>, created: i32, visited: i32) {
-        let (map, initial_state) = formatter::parse(level, format).unwrap();
+    /// `path_states` includes initial state
+    fn test_level(format: Format, level_path: &str, expected_path_states: Option<usize>, created: i32, visited: i32) {
+        use utils;
+
+        println!("{}", level_path);
+        let level = utils::load_file(level_path).unwrap();
+        let (map, initial_state) = formatter::parse(&level, format).unwrap();
         let mut map_state = map.empty_map_state();
         solver::mark_dead_ends(&mut map_state);
         let (path_states, stats) = solver::search(&map_state, &initial_state, false);
 
-        if path_states.is_some() {
-            println!("Path len: {}", path_states.unwrap().len());
+        match path_states {
+            Some(states) => {
+                println!("Path len: {}", states.len());
+                assert_eq!(states.len(), expected_path_states.unwrap());
+            }
+            None => {
+                println!("No solution");
+                assert_eq!(None, expected_path_states);
+            }
         }
         println!("{:?}", stats);
-
-        /*match steps {
-            Some(steps) => assert_eq!(path.unwrap().len(), steps + 1), // states = initial state + steps
-            None => assert_eq!(path, None),
-        }
-        assert_eq!(states_at_depth.iter().sum::<i32>(), expands + 1);*/
+        assert_eq!(stats.total_created(), created);
+        assert_eq!(stats.total_visited(), visited);
     }
 }

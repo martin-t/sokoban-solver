@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 
 use data::*; // TODO pick
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Format {
     Custom,
     Xsb,
