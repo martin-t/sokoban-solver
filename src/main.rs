@@ -1,6 +1,10 @@
 #![cfg_attr(test, feature(proc_macro))]
+#![cfg_attr(test, feature(test))]
+
 #[cfg(test)]
 extern crate test_case_derive;
+#[cfg(test)]
+extern crate test;
 
 extern crate clap;
 
@@ -82,6 +86,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use test_case_derive::test_case;
+    use test::Bencher;
     use super::*;
     use formatter::Format::*;
 
@@ -123,5 +128,15 @@ mod tests {
         writeln!(stdout, "{:?}", stats).unwrap();
         assert_eq!(stats.total_created(), created);
         assert_eq!(stats.total_visited(), visited);
+    }
+
+    #[bench]
+    fn bench_simplest(b: &mut Bencher) {
+        let level = utils::load_file("levels/boxxle1/1.txt").unwrap();
+        let (map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
+        let mut map_state = map.empty_map_state();
+        solver::mark_dead_ends(&mut map_state);
+
+        b.iter(|| solver::search(&map_state, &initial_state, false));
     }
 }
