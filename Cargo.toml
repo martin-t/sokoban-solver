@@ -3,5 +3,8 @@ name = "sokoban-solver"
 version = "0.1.0"
 authors = ["Martin Taibr <taibr.martin@gmail.com>"]
 
+[dev-dependencies]
+test-case-derive = "0.*"
+
 [dependencies]
 clap = "2.*"

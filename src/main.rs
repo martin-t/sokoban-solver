@@ -1,3 +1,7 @@
+#![cfg_attr(test, feature(proc_macro))]
+#[cfg(test)]
+extern crate test_case_derive;
+
 extern crate clap;
 
 mod formatter;
@@ -77,54 +81,46 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use test_case_derive::test_case;
     use super::*;
+    use formatter::Format::*;
 
-    #[test]
-    fn solve_all_custom() {
-        // original-sokoban-01.txt and original-sokoban-02.txt are too hard for now
-        // so is suppaplex.txt
-
-        let files = [
-            (Format::Xsb, "levels/custom/01-simplest-xsb.txt", Some(2), 2, 2),
-            (Format::Custom, "levels/custom/01-simplest-custom.txt", Some(2), 2, 2),
-            (Format::Custom, "levels/custom/02-one-way.txt", Some(4), 4, 4),
-            (Format::Custom, "levels/custom/03-long-way.txt", Some(9), 10, 9),
-            (Format::Custom, "levels/custom/04-two-boxes.txt", Some(21), 313, 148),
-            (Format::Custom, "levels/custom/05-google-images-play.txt", Some(4), 11, 6),
-            (Format::Custom, "levels/custom/06-google-images-1.txt", Some(10), 341, 117),
-            (Format::Custom, "levels/custom/07-boxxle-1-1.txt", Some(32), 1563, 983),
-            (Format::Xsb, "levels/custom/no-solution-parking.txt", None, 102, 52),
-            (Format::Custom, "levels/custom/easy-2.txt", Some(11), 4673, 488),
-            (Format::Custom, "levels/custom/moderate-6.txt", Some(33), 211, 137),
-            (Format::Custom, "levels/custom/moderate-7.txt", Some(6), 21, 12),
-        ];
-        for &(format, file, expected_path_states, created, visited) in files.iter() {
-            test_level(format, file, expected_path_states, created, visited);
-        }
-    }
-
-    /// `path_states` includes initial state
+    /// `expected_path_states` includes initial state
+    #[test_case(Xsb, "levels/custom/01-simplest-xsb.txt", Some(2), 2, 2)]
+    #[test_case(Custom, "levels/custom/01-simplest-custom.txt", Some(2), 2, 2)]
+    #[test_case(Custom, "levels/custom/02-one-way.txt", Some(4), 4, 4)]
+    #[test_case(Custom, "levels/custom/03-long-way.txt", Some(9), 10, 9)]
+    #[test_case(Custom, "levels/custom/04-two-boxes.txt", Some(21), 313, 148)]
+    #[test_case(Custom, "levels/custom/05-google-images-play.txt", Some(4), 11, 6)]
+    #[test_case(Custom, "levels/custom/06-google-images-1.txt", Some(10), 341, 117)]
+    #[test_case(Custom, "levels/custom/07-boxxle-1-1.txt", Some(32), 1563, 983)]
+    #[test_case(Xsb, "levels/custom/no-solution-parking.txt", None, 102, 52)]
+    #[test_case(Custom, "levels/custom/easy-2.txt", Some(11), 4673, 488)]
+    #[test_case(Custom, "levels/custom/moderate-6.txt", Some(33), 211, 137)]
+    #[test_case(Custom, "levels/custom/moderate-7.txt", Some(6), 21, 12)]
     fn test_level(format: Format, level_path: &str, expected_path_states: Option<usize>, created: i32, visited: i32) {
-        use utils;
+        use std::io::Write;
 
-        println!("{}", level_path);
         let level = utils::load_file(level_path).unwrap();
         let (map, initial_state) = formatter::parse(&level, format).unwrap();
         let mut map_state = map.empty_map_state();
         solver::mark_dead_ends(&mut map_state);
         let (path_states, stats) = solver::search(&map_state, &initial_state, false);
 
+        let stdout = std::io::stdout();
+        let mut stdout = stdout.lock();
+        writeln!(stdout, "{}", level_path).unwrap();
         match path_states {
             Some(states) => {
-                println!("Path len: {}", states.len());
+                writeln!(stdout, "Path len: {}", states.len()).unwrap();
                 assert_eq!(states.len(), expected_path_states.unwrap());
             }
             None => {
-                println!("No solution");
+                writeln!(stdout, "No solution").unwrap();
                 assert_eq!(None, expected_path_states);
             }
         }
-        println!("{:?}", stats);
+        writeln!(stdout, "{:?}", stats).unwrap();
         assert_eq!(stats.total_created(), created);
         assert_eq!(stats.total_visited(), visited);
     }
