@@ -1,5 +1,6 @@
 #![cfg_attr(test, feature(proc_macro))]
 #![cfg_attr(test, feature(test))]
+#![cfg_attr(test, feature(inclusive_range_syntax))]
 
 #[cfg(test)]
 extern crate test_case_derive;
@@ -7,6 +8,7 @@ extern crate test_case_derive;
 extern crate test;
 
 extern crate clap;
+extern crate separator;
 
 mod formatter;
 mod solver;
@@ -85,6 +87,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use std::io::Write;
     use test_case_derive::test_case;
     use test::Bencher;
     use super::*;
@@ -103,9 +106,7 @@ mod tests {
     #[test_case(Custom, "levels/custom/easy-2.txt", Some(11), 4673, 488)]
     #[test_case(Custom, "levels/custom/moderate-6.txt", Some(33), 211, 137)]
     #[test_case(Custom, "levels/custom/moderate-7.txt", Some(6), 21, 12)]
-    fn test_level(format: Format, level_path: &str, expected_path_states: Option<usize>, created: i32, visited: i32) {
-        use std::io::Write;
-
+    fn test_custom(format: Format, level_path: &str, expected_path_states: Option<usize>, created: i32, visited: i32) {
         let level = utils::load_file(level_path).unwrap();
         let (map, initial_state) = formatter::parse(&level, format).unwrap();
         let mut map_state = map.empty_map_state();
@@ -130,6 +131,42 @@ mod tests {
         assert_eq!(stats.total_visited(), visited);
     }
 
+    #[test]
+    fn test_boxxle1() {
+        use std::thread;
+
+        let mut threads = Vec::new();
+        // 6 and 9 are a bit slow in debug mode
+        for i in [1, 2, 3, 4, 5, 7, 8, 10].iter() {
+            //for i in 1 ... 108 {
+            threads.push(thread::spawn(move || {
+                let level_path = format!("levels/boxxle1/{}.txt", i);
+
+                let level = utils::load_file(&level_path).unwrap();
+                let (map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
+                let mut map_state = map.empty_map_state();
+                solver::mark_dead_ends(&mut map_state);
+                let (path_states, stats) = solver::search(&map_state, &initial_state, false);
+
+                let stdout = std::io::stdout();
+                let mut out = stdout.lock();
+                writeln!(out, "{}", level_path).unwrap();
+                match path_states {
+                    Some(states) => {
+                        writeln!(out, "Path len: {}", states.len()).unwrap();
+                    }
+                    None => {
+                        writeln!(out, "No solution").unwrap();
+                    }
+                }
+                writeln!(out, "{:?}", stats).unwrap();
+            }));
+        }
+        for t in threads {
+            t.join().unwrap();
+        }
+    }
+
     #[bench]
     fn bench_simplest(b: &mut Bencher) {
         let level = utils::load_file("levels/boxxle1/1.txt").unwrap();
@@ -137,6 +174,8 @@ mod tests {
         let mut map_state = map.empty_map_state();
         solver::mark_dead_ends(&mut map_state);
 
-        b.iter(|| solver::search(&map_state, &initial_state, false));
+        b.iter(|| {
+            solver::search(&map_state, &initial_state, false)
+        });
     }
 }

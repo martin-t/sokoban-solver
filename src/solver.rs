@@ -1,6 +1,8 @@
 use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::fmt::{Debug, Display, Formatter, Result};
 
+use separator::Separatable;
+
 use data::*; // TODO pick
 
 const UP: Dir = Dir { r: -1, c: 0 };
@@ -62,17 +64,17 @@ impl Debug for Stats {
         writeln!(f, "created by depth: {:?}", self.created_states)?;
         writeln!(f, "reached duplicates: {:?}", self.duplicate_states)?;
         writeln!(f, "visited by depth: {:?}", self.visited_states)?;
-        writeln!(f, "total created: {}", self.total_created())?;
-        writeln!(f, "total reached duplicates: {}", self.total_duplicate())?;
-        writeln!(f, "total visited: {}", self.total_visited())
+        writeln!(f, "total created: {}", self.total_created().separated_string())?;
+        writeln!(f, "total reached duplicates: {}", self.total_duplicate().separated_string())?;
+        writeln!(f, "total visited: {}", self.total_visited().separated_string())
     }
 }
 
 impl Display for Stats {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        writeln!(f, "States created total: {}", self.total_created())?;
-        writeln!(f, "Reached duplicates total: {}", self.total_duplicate())?;
-        writeln!(f, "States visited total: {}", self.total_visited())?;
+        writeln!(f, "States created total: {}", self.total_created().separated_string())?;
+        writeln!(f, "Reached duplicates total: {}", self.total_duplicate().separated_string())?;
+        writeln!(f, "States visited total: {}", self.total_visited().separated_string())?;
         writeln!(f, "Depth / created states:")?;
         for i in 0..self.created_states.len() {
             writeln!(f, "{}: {}", i, self.created_states[i])?;
