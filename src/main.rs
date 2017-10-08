@@ -148,8 +148,12 @@ mod tests {
                 solver::mark_dead_ends(&mut map_state);
                 let (path_states, stats) = solver::search(&map_state, &initial_state, false);
 
-                let stdout = std::io::stdout();
-                let mut out = stdout.lock();
+                //let stdout = std::io::stdout();
+                //let mut out = stdout.lock();
+
+                use std::fs::File;
+                let mut out = File::create(format!("levels/boxxle1-results/{}.txt", i)).unwrap();
+
                 writeln!(out, "{}", level_path).unwrap();
                 match path_states {
                     Some(states) => {
@@ -168,7 +172,7 @@ mod tests {
     }
 
     #[bench]
-    fn bench_simplest(b: &mut Bencher) {
+    fn bench_boxxle1_1(b: &mut Bencher) {
         let level = utils::load_file("levels/boxxle1/1.txt").unwrap();
         let (map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
         let mut map_state = map.empty_map_state();
