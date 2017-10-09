@@ -1,0 +1,9 @@
+levels/boxxle1/8.txt
+Path len: 17
+created by depth: [1, 5, 20, 75, 200, 493, 839, 1055, 1412, 1889, 1789, 1285, 834, 442, 124, 18, 1]
+reached duplicates: [0, 0, 0, 18, 68, 182, 255, 318, 461, 520, 411, 286, 179, 60, 22]
+visited by depth: [1, 5, 20, 47, 110, 200, 274, 335, 434, 443, 355, 242, 162, 66, 17, 2, 1]
+total created: 10,482
+total reached duplicates: 2,780
+total visited: 2,714
+

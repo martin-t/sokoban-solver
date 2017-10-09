@@ -49,7 +49,7 @@ fn main() {
     };
     let path = matches.value_of("file").unwrap();
 
-    let level = utils::load_file(path).unwrap_or_else(|err| {
+    let level = utils::read_file(path).unwrap_or_else(|err| {
         let current_dir = env::current_dir().unwrap();
         println!("Can't read file {} in {:?}: {}", path, current_dir, err);
         process::exit(1);
@@ -87,9 +87,9 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use std::io::Write;
     use test_case_derive::test_case;
     use test::Bencher;
+
     use super::*;
     use formatter::Format::*;
 
@@ -107,7 +107,9 @@ mod tests {
     #[test_case(Custom, "levels/custom/moderate-6.txt", Some(33), 211, 137)]
     #[test_case(Custom, "levels/custom/moderate-7.txt", Some(6), 21, 12)]
     fn test_custom(format: Format, level_path: &str, expected_path_states: Option<usize>, created: i32, visited: i32) {
-        let level = utils::load_file(level_path).unwrap();
+        use std::io::Write;
+
+        let level = utils::read_file(level_path).unwrap();
         let (map, initial_state) = formatter::parse(&level, format).unwrap();
         let mut map_state = map.empty_map_state();
         solver::mark_dead_ends(&mut map_state);
@@ -133,6 +135,7 @@ mod tests {
 
     #[test]
     fn test_boxxle1() {
+        use std::fmt::Write;
         use std::thread;
 
         let mut threads = Vec::new();
@@ -142,18 +145,13 @@ mod tests {
             threads.push(thread::spawn(move || {
                 let level_path = format!("levels/boxxle1/{}.txt", i);
 
-                let level = utils::load_file(&level_path).unwrap();
+                let level = utils::read_file(&level_path).unwrap();
                 let (map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
                 let mut map_state = map.empty_map_state();
                 solver::mark_dead_ends(&mut map_state);
                 let (path_states, stats) = solver::search(&map_state, &initial_state, false);
 
-                //let stdout = std::io::stdout();
-                //let mut out = stdout.lock();
-
-                use std::fs::File;
-                let mut out = File::create(format!("levels/boxxle1-results/{}.txt", i)).unwrap();
-
+                let mut out = String::new();
                 writeln!(out, "{}", level_path).unwrap();
                 match path_states {
                     Some(states) => {
@@ -164,6 +162,11 @@ mod tests {
                     }
                 }
                 writeln!(out, "{:?}", stats).unwrap();
+
+                let result_file = format!("levels/boxxle1-results/{}.txt", i);
+                println!("{}", out);
+                assert_eq!(out, utils::read_file(result_file).unwrap()); // for testing
+                //utils::write_file(result_file, out).unwrap(); // for updating
             }));
         }
         for t in threads {
@@ -173,7 +176,7 @@ mod tests {
 
     #[bench]
     fn bench_boxxle1_1(b: &mut Bencher) {
-        let level = utils::load_file("levels/boxxle1/1.txt").unwrap();
+        let level = utils::read_file("levels/boxxle1/1.txt").unwrap();
         let (map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
         let mut map_state = map.empty_map_state();
         solver::mark_dead_ends(&mut map_state);
