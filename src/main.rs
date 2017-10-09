@@ -185,4 +185,16 @@ mod tests {
             solver::search(&map_state, &initial_state, false)
         });
     }
+
+    #[bench]
+    fn bench_boxxle1_5(b: &mut Bencher) {
+        let level = utils::read_file("levels/boxxle1/5.txt").unwrap();
+        let (map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
+        let mut map_state = map.empty_map_state();
+        solver::mark_dead_ends(&mut map_state);
+
+        b.iter(|| {
+            solver::search(&map_state, &initial_state, false)
+        });
+    }
 }
