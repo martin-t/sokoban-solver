@@ -23,29 +23,88 @@ impl Display for MapCell {
 }
 
 #[derive(Debug)]
+pub struct MyVec2d<T>(pub Vec<Vec<T>>); // TODO rename :)
+
+impl<T> MyVec2d<T> {
+    pub fn create_scratch_map<U>(&self, default: U) -> MyVec2d<U>
+        where U: Copy
+    {
+        let mut scratch = Vec::new();
+        for row in self.0.iter() {
+            scratch.push(vec![default; row.len()]);
+        }
+        MyVec2d(scratch)
+    }
+}
+
+use std::ops::{Index, IndexMut};
+
+impl<T> Index<Pos> for MyVec2d<T> {
+    type Output = T;
+
+    fn index(&self, index: Pos) -> &Self::Output {
+        &self.0[index.r as usize][index.c as usize]
+    }
+}
+
+impl<T> IndexMut<Pos> for MyVec2d<T> {
+    fn index_mut(&mut self, index: Pos) -> &mut Self::Output {
+        &mut self.0[index.r as usize][index.c as usize]
+    }
+}
+
+#[derive(Debug)]
 pub struct Map {
-    pub cells: Vec<Vec<MapCell>>,
+    pub map: MyVec2d<MapCell>,
     pub goals: Vec<Pos>,
+    pub dead_ends: MyVec2d<bool>,
 }
 
 impl Map {
-    pub fn new(map: Vec<Vec<MapCell>>, goals: Vec<Pos>) -> Self {
-        Map { cells: map, goals }
+    pub fn new(map: MyVec2d<MapCell>, goals: Vec<Pos>) -> Self {
+        let dead_ends = map.create_scratch_map(false);
+        Map {
+            map,
+            goals,
+            dead_ends,
+        }
     }
 
-    pub fn create_scratch_map<T>(original: &Vec<Vec<MapCell>>, default: T) -> Vec<Vec<T>> // TODO impl Vec instead?
-        where T: Copy
-    {
-        let mut scratch = Vec::new();
-        for row in original.iter() {
-            scratch.push(vec![default; row.len()]);
+    pub fn print(&self, state: &State) {
+        let mut state_grid = self.map.create_scratch_map(0);
+        for &b in state.boxes.iter() {
+            state_grid[b] = 1;
         }
-        scratch
+        state_grid[state.player_pos] = 2;
+        for r in 0..self.map.0.len() {
+            for c in 0..self.map.0[r].len() {
+                let pos = Pos::new(r, c);
+                let cell = self.map[pos];
+                if cell == MapCell::Wall {
+                    print!("<>");
+                    continue;
+                }
+                match state_grid[pos] {
+                    0 => print!(" "),
+                    1 => print!("B"),
+                    2 => print!("P"),
+                    _ => unreachable!(),
+                }
+                match cell {
+                    MapCell::Empty => print!(" "),
+                    MapCell::Goal => print!("_"),
+                    MapCell::Remover => print!("R"),
+                    _ => unreachable!(),
+                }
+            }
+            println!();
+        }
+        println!();
     }
 
     pub fn empty_map_state(&self) -> MapState {
         MapState::new(
-            self.cells.iter().map(|row| {
+            self.map.0.iter().map(|row| {
                 row.iter().map(|cell| {
                     match *cell {
                         MapCell::Wall => Cell::Wall,
@@ -88,7 +147,6 @@ pub struct MapState {
 }
 
 impl MapState {
-    #[allow(unused)] // TODO
     pub fn new(cells: Vec<Vec<Cell>>, goals: Vec<Pos>) -> MapState {
         MapState {
             map: cells,
@@ -159,6 +217,7 @@ impl MapState {
 pub struct State {
     pub player_pos: Pos,
     pub boxes: Vec<Pos>,
+    // TODO keep this sorted to discover duplicates
 }
 
 impl State {
@@ -215,15 +274,6 @@ impl Pos {
     pub fn dist(self, other: Pos) -> i32 {
         (self.r - other.r).abs() + (self.c - other.c).abs()
     }
-
-    /*pub fn neighbors(&self) -> [Pos; 4] {
-        [
-            Pos { r: self.r + 1, c: self.c },
-            Pos { r: self.r - 1, c: self.c },
-            Pos { r: self.r, c: self.c + 1 },
-            Pos { r: self.r, c: self.c - 1 },
-        ]
-    }*/
 }
 
 #[derive(Debug, Clone, Copy)]

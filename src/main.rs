@@ -55,29 +55,19 @@ fn main() {
         process::exit(1);
     });
 
-    let (map, initial_state) = formatter::parse(&level, format).unwrap_or_else(|err| {
+    let (mut map, initial_state) = formatter::parse(&level, format).unwrap_or_else(|err| {
         println!("Failed to parse: {}", err);
         process::exit(1);
     });
 
-    /*println!("Empty map:\n{}", map.to_string());
-    println!("Initial state:\n{}",
-             map.clone().with_state(&initial_state).to_string());*/
-    //println!("Expanding: {:?}", expand(&map, &initial_state));
-
-    let mut map_state = map.empty_map_state();
-
-    println!("Dead ends:");
-    solver::mark_dead_ends(&mut map_state);
-
     println!("Solving...");
-    let (path_states, stats) = solver::search(&map_state, &initial_state, true);
+    let (path_states, stats) = solver::solve(&mut map, &initial_state, true);
     println!("{}", stats);
     match path_states {
         Some(path) => {
             println!("Found solution:");
             for state in &path {
-                println!("{}", map_state.clone().with_state(state).to_string());
+                map.print(&state);
             }
             println!("{} steps", &path.len() - 1);
         }
@@ -107,13 +97,16 @@ mod tests {
     #[test_case(Custom, "levels/custom/moderate-6.txt", Some(33), 211, 137)]
     #[test_case(Custom, "levels/custom/moderate-7.txt", Some(6), 21, 12)]
     fn test_custom(format: Format, level_path: &str, expected_path_states: Option<usize>, created: i32, visited: i32) {
+        test_level(format, level_path, expected_path_states, created, visited);
+    }
+
+    // separate fn to get stack traces with correct line numbers
+    fn test_level(format: Format, level_path: &str, expected_path_states: Option<usize>, created: i32, visited: i32) {
         use std::io::Write;
 
         let level = utils::read_file(level_path).unwrap();
-        let (map, initial_state) = formatter::parse(&level, format).unwrap();
-        let mut map_state = map.empty_map_state();
-        solver::mark_dead_ends(&mut map_state);
-        let (path_states, stats) = solver::search(&map_state, &initial_state, false);
+        let (mut map, initial_state) = formatter::parse(&level, format).unwrap();
+        let (path_states, stats) = solver::solve(&mut map, &initial_state, false);
 
         let stdout = std::io::stdout();
         let mut stdout = stdout.lock();
@@ -135,6 +128,9 @@ mod tests {
 
     #[test]
     fn test_boxxle1() {
+        // TODO separate worse vs better - keep stats per step
+        // TODO print all info - steps, etc.
+        // TODO one test for debugging
         use std::fmt::Write;
         use std::thread;
 
@@ -146,10 +142,9 @@ mod tests {
                 let level_path = format!("levels/boxxle1/{}.txt", i);
 
                 let level = utils::read_file(&level_path).unwrap();
-                let (map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
-                let mut map_state = map.empty_map_state();
-                solver::mark_dead_ends(&mut map_state);
-                let (path_states, stats) = solver::search(&map_state, &initial_state, false);
+                let (mut map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
+                let (path_states, stats) = solver::solve(&mut map, &initial_state, false);
+
 
                 let mut out = String::new();
                 writeln!(out, "{}", level_path).unwrap();
@@ -177,24 +172,20 @@ mod tests {
     #[bench]
     fn bench_boxxle1_1(b: &mut Bencher) {
         let level = utils::read_file("levels/boxxle1/1.txt").unwrap();
-        let (map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
-        let mut map_state = map.empty_map_state();
-        solver::mark_dead_ends(&mut map_state);
+        let (mut map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
 
         b.iter(|| {
-            solver::search(&map_state, &initial_state, false)
+            solver::solve(&mut map, &initial_state, false)
         });
     }
 
     #[bench]
     fn bench_boxxle1_5(b: &mut Bencher) {
         let level = utils::read_file("levels/boxxle1/5.txt").unwrap();
-        let (map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
-        let mut map_state = map.empty_map_state();
-        solver::mark_dead_ends(&mut map_state);
+        let (mut map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
 
         b.iter(|| {
-            solver::search(&map_state, &initial_state, false)
+            solver::solve(&mut map, &initial_state, false)
         });
     }
 }

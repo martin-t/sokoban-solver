@@ -4,6 +4,7 @@ pub trait Vec2d {
     fn print(&self);
 }
 
+// TODO all printing to streams/formatters
 impl Vec2d for Vec<Vec<bool>> {
     fn print(&self) {
         for row in self.iter() {
@@ -12,6 +13,7 @@ impl Vec2d for Vec<Vec<bool>> {
             }
             println!();
         }
+        println!();
     }
 }
 
@@ -23,5 +25,6 @@ impl Vec2d for Vec<Vec<MapCell>> {
             }
             println!();
         }
+        println!();
     }
 }

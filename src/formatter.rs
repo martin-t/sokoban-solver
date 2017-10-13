@@ -1,7 +1,7 @@
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
-use data::{Map, MapCell, Pos, State};
+use data::{Map, MapCell, MyVec2d, Pos, State};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Format {
@@ -16,6 +16,7 @@ pub enum ParseErr {
     MultiplePlayers,
     MultipleRemovers,
     NoPlayer,
+    TooManyBoxes,
 
     IncompleteBorder,
     UnreachableBoxes,
@@ -33,6 +34,7 @@ impl Display for ParseErr {
             ParseErr::MultiplePlayers => write!(f, "Too many players"),
             ParseErr::MultipleRemovers => write!(f, "Multiple removers - only one allowed"),
             ParseErr::NoPlayer => write!(f, "No player"),
+            ParseErr::TooManyBoxes => write!(f, "More than 255 boxes"),
             ParseErr::IncompleteBorder => write!(f, "Player can exit the level because of missing border"),
             ParseErr::UnreachableBoxes => write!(f, "Boxes that are not on goal but can't be reached"),
             ParseErr::UnreachableGoals => write!(f, "Goals that don't have a box but can't be reached"),
@@ -47,40 +49,45 @@ pub fn parse(level: &str, format: Format) -> Result<(Map, State), ParseErr> {
     let level = level.trim_matches('\n');
 
 
-    let (mut map, goals, remover, boxes, player_pos) = match format {
+    let (map, goals, remover, boxes, player_pos) = match format {
         Format::Custom => parse_custom(level)?,
         Format::Xsb => parse_xsb(level)?,
     };
+    let mut map = MyVec2d(map);
 
     if player_pos.is_none() {
         return Err(ParseErr::NoPlayer);
     }
     let player_pos = player_pos.unwrap();
 
+    if boxes.len() > 255 {
+        return Err(ParseErr::TooManyBoxes);
+    }
+
     let mut to_visit = vec![(player_pos.r, player_pos.c)];
-    let mut visited = Map::create_scratch_map(&map, false);
+    let mut visited = map.create_scratch_map(false);
 
     while !to_visit.is_empty() {
         let (r, c) = to_visit.pop().unwrap();
-        visited[r as usize][c as usize] = true;
+        visited.0[r as usize][c as usize] = true;
 
         let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
         for &(nr, nc) in neighbors.iter() {
             // this is the only place we need to check bounds
             // everything after that will be surrounded by walls
             // TODO make sure we're not wasting time bounds checking anywhere else
-            if nr < 0 || nc < 0 || nr as usize >= map.len() || nc as usize >= map[nr as usize].len() {
+            if nr < 0 || nc < 0 || nr as usize >= map.0.len() || nc as usize >= map.0[nr as usize].len() {
                 // we got out of bounds without hitting a wall
                 return Err(ParseErr::IncompleteBorder);
             }
-            if !visited[nr as usize][nc as usize] && map[nr as usize][nc as usize] != MapCell::Wall {
+            if !visited.0[nr as usize][nc as usize] && map.0[nr as usize][nc as usize] != MapCell::Wall {
                 to_visit.push((nr, nc));
             }
         }
     }
 
     if let Some(pos) = remover {
-        if !visited[pos.r as usize][pos.c as usize] {
+        if !visited.0[pos.r as usize][pos.c as usize] {
             return Err(ParseErr::UnreachableRemover);
         }
     }
@@ -88,7 +95,7 @@ pub fn parse(level: &str, format: Format) -> Result<(Map, State), ParseErr> {
     let mut reachable_boxes = Vec::new();
     for &pos in boxes.iter() {
         let (r, c) = (pos.r as usize, pos.c as usize);
-        if visited[r][c] {
+        if visited.0[r][c] {
             reachable_boxes.push(pos);
         } else if !goals.contains(&pos) {
             return Err(ParseErr::UnreachableBoxes);
@@ -96,7 +103,7 @@ pub fn parse(level: &str, format: Format) -> Result<(Map, State), ParseErr> {
     }
     for &pos in goals.iter() {
         let (r, c) = (pos.r as usize, pos.c as usize);
-        if visited[r][c] {
+        if visited.0[r][c] {
             reachable_goals.push(pos);
         } else if !boxes.contains(&pos) {
             return Err(ParseErr::UnreachableGoals);
@@ -104,10 +111,10 @@ pub fn parse(level: &str, format: Format) -> Result<(Map, State), ParseErr> {
     }
 
     // to avoid errors with some code that iterates through all non-walls
-    for r in 0..map.len() {
-        for c in 0..map[r].len() {
-            if !visited[r][c] {
-                map[r][c] = MapCell::Wall;
+    for r in 0..map.0.len() {
+        for c in 0..map.0[r].len() {
+            if !visited.0[r][c] {
+                map.0[r][c] = MapCell::Wall;
             }
         }
     }
@@ -366,7 +373,8 @@ mod tests {
 
     fn assert_success_custom(input_level: &str) {
         let (map, state) = parse(input_level, Format::Custom).unwrap();
-        assert_eq!(map.empty_map_state().with_state(&state).to_string(), input_level.trim_left());
+        //assert_eq!(map.empty_map_state().with_state(&state).to_string(), input_level.trim_left());
+        assert!(false);
     }
 
     fn assert_failure_custom(input_level: &str, expected_err: ParseErr) {
