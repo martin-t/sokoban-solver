@@ -486,7 +486,7 @@ mod tests {
     use formatter;
 
     #[test]
-    fn test_epxand_push() {
+    fn test_expand_push() {
         let level = r"
 <><><><><><>
 <> _B_B_ _<>
