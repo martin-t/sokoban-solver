@@ -101,119 +101,9 @@ impl Map {
         }
         println!();
     }
-
-    pub fn empty_map_state(&self) -> MapState {
-        MapState::new(
-            self.map.0.iter().map(|row| {
-                row.iter().map(|cell| {
-                    match *cell {
-                        MapCell::Wall => Cell::Wall,
-                        MapCell::Empty => Cell::Path(Content::Empty, Tile::Empty),
-                        MapCell::Goal => Cell::Path(Content::Empty, Tile::Goal),
-                        MapCell::Remover => Cell::Path(Content::Empty, Tile::Remover),
-                    }
-                }).collect()
-            }).collect(),
-            self.goals.clone()
-        )
-    }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Cell {
-    Wall,
-    Path(Content, Tile),
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Content {
-    Empty,
-    Player,
-    Box,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Tile {
-    Empty,
-    Goal,
-    Remover,
-}
-
-#[derive(Debug, Clone)]
-pub struct MapState {
-    pub map: Vec<Vec<Cell>>,
-    pub goals: Vec<Pos>,
-    pub dead_ends: Vec<Vec<bool>>,
-}
-
-impl MapState {
-    pub fn new(cells: Vec<Vec<Cell>>, goals: Vec<Pos>) -> MapState {
-        MapState {
-            map: cells,
-            goals: goals,
-            dead_ends: Vec::new(),
-        }
-    }
-
-    pub fn at(&self, pos: Pos) -> &Cell {
-        &self.map[pos.r as usize][pos.c as usize]
-    }
-
-    pub fn at_mut(&mut self, pos: Pos) -> &mut Cell {
-        &mut self.map[pos.r as usize][pos.c as usize]
-    }
-
-    pub fn with_state(self, state: &State) -> MapState {
-        self.with_boxes(state).with_player(state)
-    }
-
-    pub fn with_boxes(mut self, state: &State) -> MapState {
-        for pos in &state.boxes {
-            if let Cell::Path(Content::Empty, tile) = *self.at(*pos) {
-                *self.at_mut(*pos) = Cell::Path(Content::Box, tile);
-            } else {
-                unreachable!();
-            }
-        }
-        self
-    }
-
-    pub fn with_player(mut self, state: &State) -> MapState {
-        if let Cell::Path(Content::Empty, tile) = *self.at(state.player_pos) {
-            *self.at_mut(state.player_pos) = Cell::Path(Content::Player, tile);
-        } else {
-            unreachable!();
-        }
-        self
-    }
-
-    pub fn to_string(&self) -> String {
-        let mut res = String::new();
-        for row in &self.map {
-            for cell in row {
-                match *cell {
-                    Cell::Wall => res += "<>",
-                    Cell::Path(content, tile) => {
-                        match content {
-                            Content::Empty => res += " ",
-                            Content::Box => res += "B",
-                            Content::Player => res += "P",
-                        }
-                        match tile {
-                            Tile::Empty => res += " ",
-                            Tile::Goal => res += "_",
-                            Tile::Remover => res += "R",
-                        }
-                    }
-                }
-            }
-            res += "\n";
-        }
-        res
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash)]
 pub struct State {
     pub player_pos: Pos,
     pub boxes: Vec<Pos>,
@@ -256,7 +146,7 @@ impl PartialEq for SearchState {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Pos {
     pub r: i32,
     pub c: i32,
