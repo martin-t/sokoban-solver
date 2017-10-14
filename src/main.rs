@@ -77,6 +77,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    // TODO test_eq - actual vs expected instead of left vs right
     use test_case_derive::test_case;
     use test::Bencher;
 

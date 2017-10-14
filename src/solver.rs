@@ -95,14 +95,25 @@ impl Display for Stats {
 pub fn solve(mut map: &mut Map, initial_state: &State, print_status: bool)
              -> (Option<Vec<State>>, Stats) {
     let mut map_state = map.empty_map_state();
-    mark_dead_ends(&mut map, &mut map_state);
 
-    search(map, &map_state, initial_state, print_status)
+    mark_dead_ends_old(&mut map_state, &mut map);
+    mark_dead_ends_new(&mut map, &mut map_state);
+
+    /*use extensions::Vec2d;
+    map.print(initial_state);
+    map.dead_ends.0.print();
+    panic!();*/
+
+    println!("actual search");
+    search(map, &map_state, initial_state, print_status, true)
+    //search(map, initial_state, print_status)
 }
 
-pub fn search(map: &Map, map_state: &MapState, initial_state: &State, print_status: bool)
+pub fn search(map: &Map, map_state: &MapState, initial_state: &State, print_status: bool, actual: bool)
+//pub fn search(map: &Map, initial_state: &State, print_status: bool)
               -> (Option<Vec<State>>, Stats)
 {
+    println!("searching");
     let mut stats = Stats::new();
 
     let mut to_visit = BinaryHeap::new();
@@ -139,26 +150,29 @@ pub fn search(map: &Map, map_state: &MapState, initial_state: &State, print_stat
         }
 
         let neighbor_states_old = expand_push_old(&map_state, &current.state);
-        let neighbor_states = expand(&map, &current.state);
+        if actual {
+            let neighbor_states = expand(&map, &current.state);
 
-        if neighbor_states.len() != neighbor_states_old.len() {
-            use extensions::Vec2d;
+            if neighbor_states.len() != neighbor_states_old.len() {
+                use extensions::Vec2d;
 
-            println!("DIFFERENT old {} new {}", neighbor_states_old.len(), neighbor_states.len());
-            map.print(&current.state);
-            println!("old neighbor states:");
-            map_state.dead_ends.print();
-            for n in neighbor_states_old.iter() {
-                map.print(n);
+                println!("DIFFERENT old {} new {}", neighbor_states_old.len(), neighbor_states.len());
+                map.print(&current.state);
+                println!("old neighbor states:");
+                map_state.dead_ends.print();
+                for n in neighbor_states_old.iter() {
+                    map.print(n);
+                }
+                println!("new neighbor states:");
+                map.dead_ends.0.print();
+                for n in neighbor_states.iter() {
+                    map.print(n);
+                }
+                panic!();
             }
-            println!("new neighbor states:");
-            map.dead_ends.0.print();
-            for n in neighbor_states.iter() {
-                map.print(n);
-            }
-            panic!();
         }
 
+        //for neighbor_state in neighbor_states_old {
         for neighbor_state in neighbor_states_old {
             // TODO this could probably be optimized a bit by allocating on the heap
             // and storing references only (to current state, neighbor state is always different)
@@ -191,15 +205,7 @@ fn heuristic(map: &Map, state: &State) -> i32 {
     heuristic_push(map, state)
 }
 
-pub fn mark_dead_ends(map: &mut Map, map_state: &mut MapState) {
-    // TODO test case
-    // #####
-    // ##@##
-    // ##$##
-    // #  .#
-    // #####
-
-    // OLD
+pub fn mark_dead_ends_old(map_state: &mut MapState, map: &mut Map) {
     // init first since otherwise we would use this partially initialized in search()
     for r in 0..map_state.map.len() {
         map_state.dead_ends.push(Vec::new());
@@ -224,7 +230,7 @@ pub fn mark_dead_ends(map: &mut Map, map_state: &mut MapState) {
                     player_pos: player_pos,
                     boxes: vec![box_pos],
                 };
-                if let Some(_) = search(map, map_state, &fake_state, false).0 {
+                if let Some(_) = search(map, map_state, &fake_state, false, false).0 {
                     //print!("cont");
                     continue 'cell_old; // need to find only one solution
                 }
@@ -232,8 +238,16 @@ pub fn mark_dead_ends(map: &mut Map, map_state: &mut MapState) {
             map_state.dead_ends[r][c] = true; // no solution from any direction
         }
     }
+}
 
-    // NEW - has to be second
+pub fn mark_dead_ends_new(map: &mut Map, map_state: &MapState) {
+    // TODO test case
+    // #####
+    // ##@##
+    // ##$##
+    // #  .#
+    // #####
+
     for r in 0..map.map.0.len() {
         // TODO make .0 private
         'cell: for c in 0..map.map.0[r].len() {
@@ -253,7 +267,8 @@ pub fn mark_dead_ends(map: &mut Map, map_state: &mut MapState) {
                     player_pos: player_pos,
                     boxes: vec![box_pos],
                 };
-                if let Some(_) = search(map, map_state, &fake_state, false).0 {
+                //if let Some(_) = search(map, map_state, &fake_state, false).0 {
+                if let Some(_) = search(map, map_state, &fake_state, false, false).0 {
                     //print!("cont");
                     continue 'cell; // need to find only one solution
                 }
@@ -338,13 +353,14 @@ fn expand_push(map: &Map, state: &State) -> Vec<State> {
         box_grid[*b] = i as u8;
     }
 
-    // need to find each box and each direction from which it can be pushed
-    let mut reached = map.map.create_scratch_map(false);
+    // find each box and each direction from which it can be pushed
+    let mut reachable = map.map.create_scratch_map(false);
+    reachable[state.player_pos] = true;
     let mut to_visit = vec![state.player_pos];
+
     while !to_visit.is_empty() {
         let player_pos = to_visit.pop().unwrap();
         for &dir in DIRECTIONS.iter() {
-            reached[player_pos] = true;
 
             let move_pos = player_pos + dir;
             if map.map[move_pos] == MapCell::Wall {
@@ -362,8 +378,9 @@ fn expand_push(map: &Map, state: &State) -> Vec<State> {
                     // TODO normalize player pos
                     new_states.push(State::new(move_pos, new_boxes));
                 }
-            } else if !reached[move_pos] {
+            } else if !reachable[move_pos] {
                 // new_pos is empty and not yet visited
+                reachable[move_pos] = true;
                 to_visit.push(move_pos);
             }
         }
@@ -462,3 +479,32 @@ fn expand_move(map: &MapState, state: &State) -> Vec<State> {
 
     new_states
 }*/
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use formatter;
+
+    #[test]
+    fn test_epxand_push() {
+        let level = r"
+<><><><><><>
+<> _B_B_ _<>
+<>B_B     <>
+<><>P     <>
+<><>  B <><>
+<>      <>
+<><>    <>
+<><><><><>
+";
+        let (mut map, state) = formatter::parse(&level, formatter::Format::Custom).unwrap();
+        let mut map_state = map.empty_map_state();
+        mark_dead_ends_old(&mut map_state, &mut map);
+        mark_dead_ends_new(&mut map, &mut map_state);
+        let neighbor_states = expand(&map, &state);
+        /*for n in neighbor_states.iter() {
+            map.print(n);
+        }*/
+        assert_eq!(neighbor_states.len(), 2);
+    }
+}
