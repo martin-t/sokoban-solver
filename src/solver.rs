@@ -277,7 +277,6 @@ fn solved(map: &Map, state: &State) -> bool {
 fn expand_push(map: &Map, state: &State) -> Vec<State> {
     let mut new_states = Vec::new();
 
-    // TODO faster to initialize to 0? could use boxes[0] for player pos
     let mut box_grid = map.map.create_scratch_map(255);
     for (i, b) in state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
