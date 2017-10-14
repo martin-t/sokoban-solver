@@ -1,9 +1,9 @@
 levels/boxxle1/10.txt
 Path len: 14
-created by depth: [1, 2, 7, 15, 36, 71, 152, 316, 475, 606, 433, 154, 12, 5]
-reached duplicates: [0, 0, 0, 3, 9, 18, 55, 127, 189, 209, 110, 21, 1]
-visited by depth: [1, 2, 7, 12, 27, 53, 97, 166, 207, 175, 83, 8, 2, 1]
-total created: 2,285
-total reached duplicates: 742
-total visited: 841
+created by depth: [1, 2, 7, 15, 36, 71, 152, 315, 469, 593, 426, 141, 24, 16]
+reached duplicates: [0, 0, 0, 3, 9, 18, 55, 122, 178, 183, 96, 14, 1]
+visited by depth: [1, 2, 7, 12, 27, 53, 96, 163, 202, 171, 74, 8, 4, 1]
+total created: 2,268
+total reached duplicates: 679
+total visited: 821
 

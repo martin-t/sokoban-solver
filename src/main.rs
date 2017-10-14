@@ -91,12 +91,12 @@ mod tests {
     #[test_case(Custom, "levels/custom/03-long-way.txt", Some(9), 10, 9)]
     #[test_case(Custom, "levels/custom/04-two-boxes.txt", Some(21), 313, 148)]
     #[test_case(Custom, "levels/custom/05-google-images-play.txt", Some(4), 11, 6)]
-    #[test_case(Custom, "levels/custom/06-google-images-1.txt", Some(10), 341, 117)]
-    #[test_case(Custom, "levels/custom/07-boxxle-1-1.txt", Some(32), 1563, 983)]
+    #[test_case(Custom, "levels/custom/06-google-images-1.txt", Some(10), 578, 180)]
+    #[test_case(Custom, "levels/custom/07-boxxle-1-1.txt", Some(32), 1552, 977)]
     #[test_case(Xsb, "levels/custom/no-solution-parking.txt", None, 102, 52)]
-    #[test_case(Custom, "levels/custom/easy-2.txt", Some(11), 4673, 488)]
+    #[test_case(Custom, "levels/custom/easy-2.txt", Some(11), 4583, 480)]
     #[test_case(Custom, "levels/custom/moderate-6.txt", Some(33), 211, 137)]
-    #[test_case(Custom, "levels/custom/moderate-7.txt", Some(6), 21, 12)]
+    #[test_case(Custom, "levels/custom/moderate-7.txt", Some(6), 24, 14)]
     fn test_custom(format: Format, level_path: &str, expected_path_states: Option<usize>, created: i32, visited: i32) {
         test_level(format, level_path, expected_path_states, created, visited);
     }
@@ -162,7 +162,7 @@ mod tests {
                 let result_file = format!("levels/boxxle1-results/{}.txt", i);
                 println!("{}", out);
                 assert_eq!(out, utils::read_file(result_file).unwrap()); // for testing
-                //utils::write_file(result_file, out).unwrap(); // for updating
+                //utils::write_file(result_file, &out).unwrap(); // for updating
             }));
         }
         for t in threads {
