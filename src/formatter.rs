@@ -373,8 +373,7 @@ mod tests {
 
     fn assert_success_custom(input_level: &str) {
         let (map, state) = parse(input_level, Format::Custom).unwrap();
-        //assert_eq!(map.empty_map_state().with_state(&state).to_string(), input_level.trim_left());
-        assert!(false);
+        assert_eq!(map.to_string(&state, Format::Custom), input_level.trim_left_matches('\n'));
     }
 
     fn assert_failure_custom(input_level: &str, expected_err: ParseErr) {
@@ -382,7 +381,8 @@ mod tests {
     }
 
     fn assert_success_xsb(input_level: &str) {
-        parse(input_level, Format::Xsb).unwrap(); // TODO write out, compare
+        let (map, state) = parse(input_level, Format::Xsb).unwrap();
+        assert_eq!(map.to_string(&state, Format::Xsb), input_level.trim_left_matches('\n'));
     }
 
     fn assert_failure_xsb(input_level: &str, expected_err: ParseErr) {

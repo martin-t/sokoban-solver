@@ -81,14 +81,16 @@ impl Map {
         }
     }
 
-    pub fn print(&self, state: &State, format: Format) {
+    pub fn to_string(&self, state: &State, format: Format) -> String {
         match format {
-            Format::Custom => self.print_custom(state),
-            Format::Xsb => self.print_xsb(state),
+            Format::Custom => self.to_string_custom(state),
+            Format::Xsb => self.to_string_xsb(state),
         }
     }
 
-    fn print_custom(&self, state: &State) {
+    fn to_string_custom(&self, state: &State) -> String {
+        let mut ret = String::new();
+
         let mut state_grid = self.original_map.create_scratch_map(Content::Empty);
         for &b in state.boxes.iter() {
             state_grid[b] = Content::Box;
@@ -100,27 +102,30 @@ impl Map {
                 let pos = Pos::new(r, c);
                 let cell = self.original_map[pos];
                 if cell == MapCell::Wall {
-                    print!("<>");
+                    ret.push_str("<>");
                     continue;
                 }
-                match state_grid[pos] {
-                    Content::Empty => print!(" "),
-                    Content::Box => print!("B"),
-                    Content::Player => print!("P"),
-                }
-                match cell {
-                    MapCell::Empty => print!(" "),
-                    MapCell::Goal => print!("_"),
-                    MapCell::Remover => print!("R"),
+                ret.push(match state_grid[pos] {
+                    Content::Empty => ' ',
+                    Content::Box => 'B',
+                    Content::Player => 'P',
+                });
+                ret.push(match cell {
+                    MapCell::Empty => ' ',
+                    MapCell::Goal => '_',
+                    MapCell::Remover => 'R',
                     _ => unreachable!(),
-                }
+                });
             }
-            println!();
+            ret.push('\n');
         }
-        println!();
+
+        ret
     }
 
-    fn print_xsb(&self, state: &State) {
+    fn to_string_xsb(&self, state: &State) -> String {
+        let mut ret = String::new();
+
         let mut state_grid = self.original_map.create_scratch_map(Content::Empty);
         for &b in state.boxes.iter() {
             state_grid[b] = Content::Box;
@@ -132,23 +137,24 @@ impl Map {
                 let pos = Pos::new(r, c);
                 let cell = self.original_map[pos];
 
-                match (cell, state_grid[pos]) {
-                    (MapCell::Wall, Content::Empty) => print!("#"),
+                ret.push(match (cell, state_grid[pos]) {
+                    (MapCell::Wall, Content::Empty) => '#',
                     (MapCell::Wall, _) => unreachable!(),
-                    (MapCell::Empty, Content::Empty) => print!(" "),
-                    (MapCell::Empty, Content::Box) => print!("$"),
-                    (MapCell::Empty, Content::Player) => print!("@"),
-                    (MapCell::Goal, Content::Empty) => print!("."),
-                    (MapCell::Goal, Content::Box) => print!("*"),
-                    (MapCell::Goal, Content::Player) => print!("+"),
-                    (MapCell::Remover, Content::Empty) => print!("r"),
+                    (MapCell::Empty, Content::Empty) => ' ',
+                    (MapCell::Empty, Content::Box) => '$',
+                    (MapCell::Empty, Content::Player) => '@',
+                    (MapCell::Goal, Content::Empty) => '.',
+                    (MapCell::Goal, Content::Box) => '*',
+                    (MapCell::Goal, Content::Player) => '+',
+                    (MapCell::Remover, Content::Empty) => 'r',
                     (MapCell::Remover, Content::Box) => unreachable!(),
-                    (MapCell::Remover, Content::Player) => print!("R"),
-                }
+                    (MapCell::Remover, Content::Player) => 'R',
+                });
             }
-            println!();
+            ret.push('\n');
         }
-        println!();
+
+        ret
     }
 }
 
