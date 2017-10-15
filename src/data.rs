@@ -3,6 +3,8 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::ops::Add;
 
+use formatter::Format;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MapCell {
     Wall,
@@ -22,7 +24,7 @@ impl Display for MapCell {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MyVec2d<T>(pub Vec<Vec<T>>); // TODO rename :)
 
 impl<T> MyVec2d<T> {
@@ -53,48 +55,95 @@ impl<T> IndexMut<Pos> for MyVec2d<T> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
+enum Content {
+    Empty,
+    Box,
+    Player,
+}
+
+#[derive(Debug, Clone)]
 pub struct Map {
+    pub original_map: MyVec2d<MapCell>,
     pub map: MyVec2d<MapCell>,
     pub goals: Vec<Pos>,
     pub dead_ends: MyVec2d<bool>,
 }
 
 impl Map {
-    pub fn new(map: MyVec2d<MapCell>, goals: Vec<Pos>) -> Self {
+    pub fn new(original_map: MyVec2d<MapCell>, map: MyVec2d<MapCell>, goals: Vec<Pos>) -> Self {
         let dead_ends = map.create_scratch_map(false);
         Map {
+            original_map,
             map,
             goals,
             dead_ends,
         }
     }
 
-    pub fn print(&self, state: &State) {
-        let mut state_grid = self.map.create_scratch_map(0);
-        for &b in state.boxes.iter() {
-            state_grid[b] = 1;
+    pub fn print(&self, state: &State, format: Format) {
+        match format {
+            Format::Custom => self.print_custom(state),
+            Format::Xsb => self.print_xsb(state),
         }
-        state_grid[state.player_pos] = 2;
-        for r in 0..self.map.0.len() {
-            for c in 0..self.map.0[r].len() {
+    }
+
+    fn print_custom(&self, state: &State) {
+        let mut state_grid = self.original_map.create_scratch_map(Content::Empty);
+        for &b in state.boxes.iter() {
+            state_grid[b] = Content::Box;
+        }
+        state_grid[state.player_pos] = Content::Player;
+
+        for r in 0..self.original_map.0.len() {
+            for c in 0..self.original_map.0[r].len() {
                 let pos = Pos::new(r, c);
-                let cell = self.map[pos];
+                let cell = self.original_map[pos];
                 if cell == MapCell::Wall {
                     print!("<>");
                     continue;
                 }
                 match state_grid[pos] {
-                    0 => print!(" "),
-                    1 => print!("B"),
-                    2 => print!("P"),
-                    _ => unreachable!(),
+                    Content::Empty => print!(" "),
+                    Content::Box => print!("B"),
+                    Content::Player => print!("P"),
                 }
                 match cell {
                     MapCell::Empty => print!(" "),
                     MapCell::Goal => print!("_"),
                     MapCell::Remover => print!("R"),
                     _ => unreachable!(),
+                }
+            }
+            println!();
+        }
+        println!();
+    }
+
+    fn print_xsb(&self, state: &State) {
+        let mut state_grid = self.original_map.create_scratch_map(Content::Empty);
+        for &b in state.boxes.iter() {
+            state_grid[b] = Content::Box;
+        }
+        state_grid[state.player_pos] = Content::Player;
+
+        for r in 0..self.original_map.0.len() {
+            for c in 0..self.original_map.0[r].len() {
+                let pos = Pos::new(r, c);
+                let cell = self.original_map[pos];
+
+                match (cell, state_grid[pos]) {
+                    (MapCell::Wall, Content::Empty) => print!("#"),
+                    (MapCell::Wall, _) => unreachable!(),
+                    (MapCell::Empty, Content::Empty) => print!(" "),
+                    (MapCell::Empty, Content::Box) => print!("$"),
+                    (MapCell::Empty, Content::Player) => print!("@"),
+                    (MapCell::Goal, Content::Empty) => print!("."),
+                    (MapCell::Goal, Content::Box) => print!("*"),
+                    (MapCell::Goal, Content::Player) => print!("+"),
+                    (MapCell::Remover, Content::Empty) => print!("r"),
+                    (MapCell::Remover, Content::Box) => unreachable!(),
+                    (MapCell::Remover, Content::Player) => print!("R"),
                 }
             }
             println!();

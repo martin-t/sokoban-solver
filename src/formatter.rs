@@ -48,12 +48,11 @@ impl Display for ParseErr {
 pub fn parse(level: &str, format: Format) -> Result<(Map, State), ParseErr> {
     let level = level.trim_matches('\n');
 
-
     let (map, goals, remover, boxes, player_pos) = match format {
         Format::Custom => parse_custom(level)?,
         Format::Xsb => parse_xsb(level)?,
     };
-    let mut map = MyVec2d(map);
+    let original_map = MyVec2d(map);
 
     if player_pos.is_none() {
         return Err(ParseErr::NoPlayer);
@@ -65,7 +64,7 @@ pub fn parse(level: &str, format: Format) -> Result<(Map, State), ParseErr> {
     }
 
     let mut to_visit = vec![(player_pos.r, player_pos.c)];
-    let mut visited = map.create_scratch_map(false);
+    let mut visited = original_map.create_scratch_map(false);
 
     while !to_visit.is_empty() {
         let (r, c) = to_visit.pop().unwrap();
@@ -76,11 +75,11 @@ pub fn parse(level: &str, format: Format) -> Result<(Map, State), ParseErr> {
             // this is the only place we need to check bounds
             // everything after that will be surrounded by walls
             // TODO make sure we're not wasting time bounds checking anywhere else
-            if nr < 0 || nc < 0 || nr as usize >= map.0.len() || nc as usize >= map.0[nr as usize].len() {
+            if nr < 0 || nc < 0 || nr as usize >= original_map.0.len() || nc as usize >= original_map.0[nr as usize].len() {
                 // we got out of bounds without hitting a wall
                 return Err(ParseErr::IncompleteBorder);
             }
-            if !visited.0[nr as usize][nc as usize] && map.0[nr as usize][nc as usize] != MapCell::Wall {
+            if !visited.0[nr as usize][nc as usize] && original_map.0[nr as usize][nc as usize] != MapCell::Wall {
                 to_visit.push((nr, nc));
             }
         }
@@ -111,10 +110,11 @@ pub fn parse(level: &str, format: Format) -> Result<(Map, State), ParseErr> {
     }
 
     // to avoid errors with some code that iterates through all non-walls
-    for r in 0..map.0.len() {
-        for c in 0..map.0[r].len() {
+    let mut processed_map = original_map.clone();
+    for r in 0..processed_map.0.len() {
+        for c in 0..processed_map.0[r].len() {
             if !visited.0[r][c] {
-                map.0[r][c] = MapCell::Wall;
+                processed_map.0[r][c] = MapCell::Wall;
             }
         }
     }
@@ -129,7 +129,7 @@ pub fn parse(level: &str, format: Format) -> Result<(Map, State), ParseErr> {
         }
     }
 
-    Ok((Map::new(map, reachable_goals),
+    Ok((Map::new(original_map, processed_map, reachable_goals),
         State::new(player_pos, reachable_boxes)))
 }
 

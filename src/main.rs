@@ -67,7 +67,7 @@ fn main() {
         Some(path) => {
             println!("Found solution:");
             for state in &path {
-                map.print(&state);
+                map.print(&state, format);
             }
             println!("{} steps", &path.len() - 1);
         }
