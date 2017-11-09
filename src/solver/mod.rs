@@ -1,96 +1,17 @@
+pub mod a_star;
+
 use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::fmt::{Debug, Display, Formatter, Result};
 
-use separator::Separatable;
-
-use data::*; // TODO pick
+use self::a_star::{SearchState, Stats};
+use data::{Pos, Dir};
+use level::{Level, Map, MapCell, State, MyVec2d};
 
 const UP: Dir = Dir { r: -1, c: 0 };
 const RIGHT: Dir = Dir { r: 0, c: 1 };
 const DOWN: Dir = Dir { r: 1, c: 0 };
 const LEFT: Dir = Dir { r: 0, c: -1 };
 const DIRECTIONS: [Dir; 4] = [UP, RIGHT, DOWN, LEFT];
-
-pub struct Stats {
-    pub created_states: Vec<i32>,
-    pub duplicate_states: Vec<i32>,
-    pub visited_states: Vec<i32>,
-}
-
-impl Stats {
-    // TODO remove pub
-    pub fn new() -> Self {
-        Stats { created_states: vec![], duplicate_states: vec![], visited_states: vec![] }
-    }
-
-    pub fn total_created(&self) -> i32 {
-        self.created_states.iter().sum::<i32>()
-    }
-
-    pub fn total_duplicate(&self) -> i32 {
-        self.duplicate_states.iter().sum::<i32>()
-    }
-
-    pub fn total_visited(&self) -> i32 {
-        self.visited_states.iter().sum::<i32>()
-    }
-
-    pub fn add_created(&mut self, state: &SearchState) -> bool {
-        Self::add(&mut self.created_states, state)
-    }
-
-    pub fn add_duplicate(&mut self, state: &SearchState) -> bool {
-        Self::add(&mut self.duplicate_states, state)
-    }
-
-    pub fn add_visited(&mut self, state: &SearchState) -> bool {
-        Self::add(&mut self.visited_states, state)
-    }
-
-    pub fn add(counts: &mut Vec<i32>, state: &SearchState) -> bool {
-        let mut ret = false;
-
-        // while because some depths might be skipped - duplicates or tunnel optimizations (NYI)
-        while state.dist as usize >= counts.len() {
-            counts.push(0);
-            ret = true;
-        }
-        counts[state.dist as usize] += 1;
-        ret
-    }
-}
-
-impl Debug for Stats {
-    fn fmt(&self, f: &mut Formatter) -> Result {
-        writeln!(f, "created by depth: {:?}", self.created_states)?;
-        writeln!(f, "reached duplicates: {:?}", self.duplicate_states)?;
-        writeln!(f, "visited by depth: {:?}", self.visited_states)?;
-        writeln!(f, "total created: {}", self.total_created().separated_string())?;
-        writeln!(f, "total reached duplicates: {}", self.total_duplicate().separated_string())?;
-        writeln!(f, "total visited: {}", self.total_visited().separated_string())
-    }
-}
-
-impl Display for Stats {
-    fn fmt(&self, f: &mut Formatter) -> Result {
-        writeln!(f, "States created total: {}", self.total_created().separated_string())?;
-        writeln!(f, "Reached duplicates total: {}", self.total_duplicate().separated_string())?;
-        writeln!(f, "States visited total: {}", self.total_visited().separated_string())?;
-        writeln!(f, "Depth / created states:")?;
-        for i in 0..self.created_states.len() {
-            writeln!(f, "{}: {}", i, self.created_states[i])?;
-        }
-        writeln!(f, "Depth / found duplicates:")?;
-        for i in 0..self.duplicate_states.len() {
-            writeln!(f, "{}: {}", i, self.duplicate_states[i])?;
-        }
-        writeln!(f, "Depth / visited states:")?;
-        for i in 0..self.visited_states.len() {
-            writeln!(f, "{}: {}", i, self.visited_states[i])?;
-        }
-        Ok(())
-    }
-}
 
 pub fn solve(mut map: &mut Map, initial_state: &State, print_status: bool)
              -> (Option<Vec<State>>, Stats) {
@@ -100,7 +21,6 @@ pub fn solve(mut map: &mut Map, initial_state: &State, print_status: bool)
 }
 
 pub fn search(map: &Map, initial_state: &State, print_status: bool)
-//pub fn search(map: &Map, initial_state: &State, print_status: bool)
               -> (Option<Vec<State>>, Stats)
 {
     let mut stats = Stats::new();
@@ -299,8 +219,10 @@ fn expand_push(map: &Map, state: &State) -> Vec<State> {
             if box_index < 255 {
                 // new_pos has a box
                 let push_dest = move_pos + dir;
-                if box_grid[push_dest] == 255 && map.map[push_dest] != MapCell::Wall && !map.dead_ends[push_dest] {
+                if box_grid[push_dest] == 255
+                    && map.map[push_dest] != MapCell::Wall && !map.dead_ends[push_dest] {
                     // new state to explore
+
                     let mut new_boxes = state.boxes.clone();
                     new_boxes[box_index as usize] = push_dest;
                     // TODO normalize player pos
@@ -357,7 +279,8 @@ fn expand_move(map: &MapState, state: &State) -> Vec<State> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use formatter;
+    use data::Format;
+    use parser;
 
     #[test]
     fn test_expand_push() {
@@ -371,7 +294,7 @@ mod tests {
 <><>    <>
 <><><><><>
 ";
-        let (mut map, state) = formatter::parse(&level, formatter::Format::Custom).unwrap();
+        let (mut map, state) = parser::parse(&level, Format::Custom).unwrap();
         mark_dead_ends(&mut map);
         let neighbor_states = expand(&map, &state);
         /*for n in neighbor_states.iter() {

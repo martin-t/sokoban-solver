@@ -1,13 +1,8 @@
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
-use data::{Map, MapCell, MyVec2d, Pos, State};
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Format {
-    Custom,
-    Xsb,
-}
+use data::{Format, Pos};
+use level::{Map, MapCell, MyVec2d, State};
 
 #[derive(Debug, PartialEq)]
 pub enum ParseErr {
@@ -237,6 +232,7 @@ fn parse_xsb(level: &str)
                 }
                 'R' => {
                     // this is player on remover, box on remover makes no sense
+                    // TODO box on remover in custom
                     if player_pos.is_some() {
                         return Err(ParseErr::MultiplePlayers);
                     }

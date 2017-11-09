@@ -10,8 +10,9 @@ extern crate test;
 extern crate clap;
 extern crate separator;
 
-mod formatter;
+mod parser;
 mod solver;
+mod level;
 mod data;
 mod extensions;
 mod utils;
@@ -21,7 +22,7 @@ use std::process;
 
 use clap::{App, Arg, ArgGroup};
 
-use formatter::Format;
+use data::Format;
 
 fn main() {
     let matches = App::new("sokoban-solver")
@@ -55,7 +56,7 @@ fn main() {
         process::exit(1);
     });
 
-    let (mut map, initial_state) = formatter::parse(&level, format).unwrap_or_else(|err| {
+    let (mut map, initial_state) = parser::parse(&level, format).unwrap_or_else(|err| {
         println!("Failed to parse: {}", err);
         process::exit(1);
     });
@@ -81,7 +82,7 @@ mod tests {
     use test::Bencher;
 
     use super::*;
-    use formatter::Format::*;
+    use data::Format::*;
 
     /// `expected_path_states` includes initial state
     #[test_case(Xsb, "levels/custom/01-simplest-xsb.txt", Some(2), 2, 2)]
@@ -105,7 +106,7 @@ mod tests {
         use std::io::Write;
 
         let level = utils::read_file(level_path).unwrap();
-        let (mut map, initial_state) = formatter::parse(&level, format).unwrap();
+        let (mut map, initial_state) = parser::parse(&level, format).unwrap();
         let (path_states, stats) = solver::solve(&mut map, &initial_state, false);
 
         let stdout = std::io::stdout();
@@ -142,7 +143,7 @@ mod tests {
                 let level_path = format!("levels/boxxle1/{}.txt", i);
 
                 let level = utils::read_file(&level_path).unwrap();
-                let (mut map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
+                let (mut map, initial_state) = parser::parse(&level, Format::Xsb).unwrap();
                 let (path_states, stats) = solver::solve(&mut map, &initial_state, false);
 
 
@@ -172,7 +173,7 @@ mod tests {
     #[bench]
     fn bench_boxxle1_1(b: &mut Bencher) {
         let level = utils::read_file("levels/boxxle1/1.txt").unwrap();
-        let (mut map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
+        let (mut map, initial_state) = parser::parse(&level, Format::Xsb).unwrap();
 
         b.iter(|| {
             solver::solve(&mut map, &initial_state, false)
@@ -182,7 +183,7 @@ mod tests {
     #[bench]
     fn bench_boxxle1_5(b: &mut Bencher) {
         let level = utils::read_file("levels/boxxle1/5.txt").unwrap();
-        let (mut map, initial_state) = formatter::parse(&level, Format::Xsb).unwrap();
+        let (mut map, initial_state) = parser::parse(&level, Format::Xsb).unwrap();
 
         b.iter(|| {
             solver::solve(&mut map, &initial_state, false)

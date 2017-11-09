@@ -1,4 +1,4 @@
-use data::MapCell;
+use level::MapCell;
 
 pub trait Vec2d {
     fn print(&self);
