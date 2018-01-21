@@ -136,8 +136,8 @@ mod tests {
         use std::thread;
 
         let mut threads = Vec::new();
-        // 6 and 9 are a bit slow in debug mode
-        for i in [1, 2, 3, 4, 5, 7, 8, 10].iter() {
+        // 2, 6 and 9 are a bit slow in debug mode
+        for i in [1, 3, 4, 5, 7, 8, 10].iter() {
             //for i in 1 ... 108 {
             threads.push(thread::spawn(move || {
                 let level_path = format!("levels/boxxle1/{}.txt", i);
