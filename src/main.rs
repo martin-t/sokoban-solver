@@ -52,7 +52,7 @@ fn main() {
 
     let level = utils::read_file(path).unwrap_or_else(|err| {
         let current_dir = env::current_dir().unwrap();
-        println!("Can't read file {} in {:?}: {}", path, current_dir, err);
+        println!("Can't read file {} in {}: {}", path, current_dir.display(), err);
         process::exit(1);
     });
 
