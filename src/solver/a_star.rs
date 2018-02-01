@@ -1,5 +1,4 @@
 use std::cmp::Ordering;
-use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::fmt::{Debug, Display, Formatter, Result};
 
 use separator::Separatable;
@@ -70,7 +69,7 @@ impl Display for Stats {
     fn fmt(&self, f: &mut Formatter) -> Result {
         writeln!(f, "States created total: {}", self.total_created().separated_string())?;
         writeln!(f, "Reached duplicates total: {}", self.total_duplicate().separated_string())?;
-        writeln!(f, "States visited total: {}", self.total_visited().separated_string())?;
+        writeln!(f, "States visited total: {}", self.total_visited().separated_string())?; // TODO does this mean unique?
         writeln!(f, "Depth / created states:")?;
         for i in 0..self.created_states.len() {
             writeln!(f, "{}: {}", i, self.created_states[i])?;

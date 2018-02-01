@@ -56,19 +56,20 @@ fn main() {
         process::exit(1);
     });
 
-    let (mut map, initial_state) = parser::parse(&level, format).unwrap_or_else(|err| {
+    let level = parser::parse(&level, format).unwrap_or_else(|err| {
         println!("Failed to parse: {}", err);
         process::exit(1);
     });
 
     println!("Solving...");
-    let (path_states, stats) = solver::solve(&mut map, &initial_state, true);
-    println!("{}", stats);
-    match path_states {
+    // TODO use steps instead?
+    let solver_ok = solver::solve(&level,  true).unwrap();
+    println!("{}", solver_ok.stats);
+    match solver_ok.path_states {
         Some(path) => {
             println!("Found solution:");
             for state in &path {
-                println!("{}", map.to_string(&state, format));
+                println!("{}", level.map.to_string(&state, format));
             }
             println!("{} steps", &path.len() - 1);
         }
@@ -106,13 +107,13 @@ mod tests {
         use std::io::Write;
 
         let level = utils::read_file(level_path).unwrap();
-        let (mut map, initial_state) = parser::parse(&level, format).unwrap();
-        let (path_states, stats) = solver::solve(&mut map, &initial_state, false);
+        let level = parser::parse(&level, format).unwrap();
+        let solution = solver::solve(&level, false).unwrap();
 
         let stdout = std::io::stdout();
         let mut stdout = stdout.lock();
         writeln!(stdout, "{}", level_path).unwrap();
-        match path_states {
+        match solution.path_states {
             Some(states) => {
                 writeln!(stdout, "Path len: {}", states.len()).unwrap();
                 assert_eq!(states.len(), expected_path_states.unwrap());
@@ -122,9 +123,9 @@ mod tests {
                 assert_eq!(None, expected_path_states);
             }
         }
-        writeln!(stdout, "{:?}", stats).unwrap();
-        assert_eq!(stats.total_created(), created);
-        assert_eq!(stats.total_visited(), visited);
+        writeln!(stdout, "{:?}", solution.stats).unwrap();
+        assert_eq!(solution.stats.total_created(), created);
+        assert_eq!(solution.stats.total_visited(), visited);
     }
 
     #[test]
@@ -143,13 +144,12 @@ mod tests {
                 let level_path = format!("levels/boxxle1/{}.txt", i);
 
                 let level = utils::read_file(&level_path).unwrap();
-                let (mut map, initial_state) = parser::parse(&level, Format::Xsb).unwrap();
-                let (path_states, stats) = solver::solve(&mut map, &initial_state, false);
-
+                let level = parser::parse(&level, Format::Xsb).unwrap();
+                let solution = solver::solve(&level, false).unwrap();
 
                 let mut out = String::new();
                 writeln!(out, "{}", level_path).unwrap();
-                match path_states {
+                match solution.path_states {
                     Some(states) => {
                         writeln!(out, "Path len: {}", states.len()).unwrap();
                     }
@@ -157,7 +157,7 @@ mod tests {
                         writeln!(out, "No solution").unwrap();
                     }
                 }
-                writeln!(out, "{:?}", stats).unwrap();
+                writeln!(out, "{:?}", solution.stats).unwrap();
 
                 let result_file = format!("levels/boxxle1-results/{}.txt", i);
                 println!("{}", out);
@@ -173,20 +173,20 @@ mod tests {
     #[bench]
     fn bench_boxxle1_1(b: &mut Bencher) {
         let level = utils::read_file("levels/boxxle1/1.txt").unwrap();
-        let (mut map, initial_state) = parser::parse(&level, Format::Xsb).unwrap();
+        let level = parser::parse(&level, Format::Xsb).unwrap();
 
         b.iter(|| {
-            solver::solve(&mut map, &initial_state, false)
+            solver::solve(&level, false)
         });
     }
 
     #[bench]
     fn bench_boxxle1_5(b: &mut Bencher) {
         let level = utils::read_file("levels/boxxle1/5.txt").unwrap();
-        let (mut map, initial_state) = parser::parse(&level, Format::Xsb).unwrap();
+        let level = parser::parse(&level, Format::Xsb).unwrap();
 
         b.iter(|| {
-            solver::solve(&mut map, &initial_state, false)
+            solver::solve(&level, false)
         });
     }
 }

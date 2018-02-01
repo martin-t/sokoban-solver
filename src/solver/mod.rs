@@ -1,11 +1,52 @@
 pub mod a_star;
+mod level;
 
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::collections::{BinaryHeap, HashMap, HashSet};
-use std::fmt::{Debug, Display, Formatter, Result};
+
+use data::{Pos, Dir};
+use level::{Level, Map, Vec2d, MapCell, State};
 
 use self::a_star::{SearchState, Stats};
-use data::{Pos, Dir};
-use level::{Level, Map, MapCell, State, MyVec2d};
+use self::level::SolverLevel;
+
+#[derive(Debug, PartialEq)]
+pub enum SolverErr {
+    TooLarge,
+    IncompleteBorder,
+    UnreachableBoxes,
+    UnreachableGoals,
+    //UnreachableRemover,
+    TooMany,
+    BoxesGoals,
+}
+
+impl Display for SolverErr {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match *self {
+            SolverErr::TooLarge => write!(f, "Map oo large"),
+            SolverErr::IncompleteBorder => write!(f, "Player can exit the level because of missing border"),
+            SolverErr::UnreachableBoxes => write!(f, "Boxes that are not on goal but can't be reached"),
+            SolverErr::UnreachableGoals => write!(f, "Goals that don't have a box but can't be reached"),
+            //SolverErr::UnreachableRemover => write!(f, "Remover is not reachable"),
+            SolverErr::TooMany => write!(f, "More than 255 reachable boxes or goals"),
+            SolverErr::BoxesGoals => write!(f, "Different number of reachable boxes and goals"),
+        }
+    }
+}
+
+pub struct SolverOk {
+    // TODO probably wanna use Dirs or Moves eventually
+    pub path_states: Option<Vec<State>>,
+    pub stats: Stats,
+}
+
+impl SolverOk {
+    fn new(path_states: Option<Vec<State>>, stats: Stats) -> Self {
+        Self { path_states, stats }
+    }
+}
 
 const UP: Dir = Dir { r: -1, c: 0 };
 const RIGHT: Dir = Dir { r: 0, c: 1 };
@@ -13,15 +54,104 @@ const DOWN: Dir = Dir { r: 1, c: 0 };
 const LEFT: Dir = Dir { r: 0, c: -1 };
 const DIRECTIONS: [Dir; 4] = [UP, RIGHT, DOWN, LEFT];
 
-pub fn solve(mut map: &mut Map, initial_state: &State, print_status: bool)
+/*pub fn solve(mut map: &mut Map, initial_state: &State, print_status: bool)
              -> (Option<Vec<State>>, Stats) {
     mark_dead_ends(&mut map);
 
     search(map, initial_state, print_status)
+}*/
+
+pub fn solve(level: &Level, print_status: bool) -> Result<SolverOk, SolverErr> {
+    let solver_level = processed_map(level)?;
+    Ok(search(&solver_level, print_status))
 }
 
-pub fn search(map: &Map, initial_state: &State, print_status: bool)
-              -> (Option<Vec<State>>, Stats)
+pub fn processed_map(level: &Level) -> Result<SolverLevel, SolverErr> {
+    // Only guarantees we have here is the player exists and therefore map is at least 1x1.
+    // Do some more low level checking so we can omit some checks later.
+
+    if level.map.grid.0.len() > 255 || level.map.grid.0[0].len() > 255 {
+        return Err(SolverErr::TooLarge);
+    }
+
+    let mut to_visit = vec![(level.state.player_pos.r, level.state.player_pos.c)];
+    let mut visited = level.map.grid.create_scratch_map(false).0;
+
+    while !to_visit.is_empty() {
+        let (r, c) = to_visit.pop().unwrap();
+        visited[r as usize][c as usize] = true;
+
+        let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
+        for &(nr, nc) in neighbors.iter() {
+            // this is the only place we need to check bounds
+            // everything after that will be surrounded by walls
+            // TODO make sure we're not wasting time bounds checking anywhere else
+            if nr < 0
+                || nc < 0
+                || nr as usize >= level.map.grid.0.len()
+                || nc as usize >= level.map.grid.0[nr as usize].len() {
+                // we got out of bounds without hitting a wall
+                return Err(SolverErr::IncompleteBorder);
+            }
+
+            if !visited[nr as usize][nc as usize] && level.map.grid.0[nr as usize][nc as usize] != MapCell::Wall {
+                to_visit.push((nr, nc));
+            }
+        }
+    }
+
+    // TODO move into specialized function when removers work
+    /*if let Some(pos) = remover {
+        if !visited.0[pos.r as usize][pos.c as usize] {
+            return Err(SolverErr::UnreachableRemover);
+        }
+    }*/
+
+    let mut reachable_goals = Vec::new();
+    let mut reachable_boxes = Vec::new();
+    for &pos in level.state.boxes.iter() {
+        let (r, c) = (pos.r as usize, pos.c as usize);
+        if visited[r][c] {
+            reachable_boxes.push(pos);
+        } else if !level.map.goals.contains(&pos) {
+            return Err(SolverErr::UnreachableBoxes);
+        }
+    }
+    for &pos in level.map.goals.iter() {
+        let (r, c) = (pos.r as usize, pos.c as usize);
+        if visited[r][c] {
+            reachable_goals.push(pos);
+        } else if !level.state.boxes.contains(&pos) {
+            return Err(SolverErr::UnreachableGoals);
+        }
+    }
+
+    // FIXME maybe do this first and use it instead of visited when detecting reachability in specialized fns?
+    // to avoid errors with some code that iterates through all non-walls
+    let mut processed_grid = level.map.grid.clone();
+    for r in 0..processed_grid.0.len() {
+        for c in 0..processed_grid.0[r].len() {
+            if !visited[r][c] {
+                processed_grid.0[r][c] = MapCell::Wall;
+            }
+        }
+    }
+
+    if reachable_boxes.len() != reachable_goals.len() {
+        return Err(SolverErr::BoxesGoals);
+    }
+
+    if reachable_boxes.len() > 255 {
+        return Err(SolverErr::TooMany);
+    }
+
+    let processed_map = Map::new(processed_grid, reachable_goals);
+    let clean_state = State::new(level.state.player_pos, reachable_boxes);
+    let dead_ends = find_dead_ends(&processed_map);
+    Ok(SolverLevel::new(processed_map, clean_state, dead_ends))
+}
+
+pub fn search(level: &SolverLevel, print_status: bool) -> SolverOk
 {
     let mut stats = Stats::new();
 
@@ -29,9 +159,9 @@ pub fn search(map: &Map, initial_state: &State, print_status: bool)
     let mut closed = HashSet::new();
     let mut prev = HashMap::new();
 
-    let h = heuristic(&map, &initial_state);
+    let h = heuristic(&level.map, &level.state);
     let start = SearchState {
-        state: initial_state.clone(),
+        state: level.state.clone(),
         prev: None,
         dist: 0,
         h: h,
@@ -54,16 +184,18 @@ pub fn search(map: &Map, initial_state: &State, print_status: bool)
             prev.insert(current.state.clone(), p.clone());
         }
 
-        if solved(&map, &current.state) {
-            return (Some(backtrack_path(&prev, &current.state)), stats);
+        if solved(&level.map, &current.state) {
+            return SolverOk::new(
+                Some(backtrack_path(&prev, &current.state)),
+                stats);
         }
 
-        for neighbor_state in expand(&map, &current.state) {
+        for neighbor_state in expand(&level.map, &current.state, &level.dead_ends) {
             // TODO this could probably be optimized a bit by allocating on the heap
             // and storing references only (to current state, neighbor state is always different)
 
             // insert and then ignore duplicates
-            let h = heuristic(&map, &neighbor_state);
+            let h = heuristic(&level.map, &neighbor_state);
             let next = SearchState {
                 state: neighbor_state,
                 prev: Some(current.state.clone()),
@@ -77,12 +209,12 @@ pub fn search(map: &Map, initial_state: &State, print_status: bool)
         closed.insert(current.state);
     }
 
-    (None, stats)
+    SolverOk::new(None, stats)
 }
 
-fn expand(map: &Map, state: &State) -> Vec<State> {
+fn expand(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
     //expand_move(map, state)
-    expand_push(map, state)
+    expand_push(map, state, dead_ends)
 }
 
 fn heuristic(map: &Map, state: &State) -> i32 {
@@ -90,7 +222,7 @@ fn heuristic(map: &Map, state: &State) -> i32 {
     heuristic_push(map, state)
 }
 
-pub fn mark_dead_ends(map: &mut Map) {
+fn find_dead_ends(map: &Map) -> Vec2d<bool> {
     // TODO test case
     // #####
     // ##@##
@@ -98,34 +230,38 @@ pub fn mark_dead_ends(map: &mut Map) {
     // #  .#
     // #####
 
-    for r in 0..map.map.0.len() {
+    let mut dead_ends = map.grid.create_scratch_map(false);
+
+    for r in 0..map.grid.0.len() {
         // TODO make .0 private
-        'cell: for c in 0..map.map.0[r].len() {
-            let box_pos = Pos { r: r as i32, c: c as i32 };
-            if map.map[box_pos] == MapCell::Wall {
+        'cell: for c in 0..map.grid.0[r].len() {
+            let box_pos = Pos::new(r, c);
+            if map.grid[box_pos] == MapCell::Wall {
                 //print!("w");
                 continue;
             }
 
             for dir in DIRECTIONS.iter() {
                 let player_pos = box_pos + *dir;
-                if map.map[player_pos] == MapCell::Wall {
+                if map.grid[player_pos] == MapCell::Wall {
                     continue;
                 }
 
                 let fake_state = State {
-                    player_pos: player_pos,
+                    player_pos,
                     boxes: vec![box_pos],
                 };
-                //if let Some(_) = search(map, map_state, &fake_state, false).0 {
-                if let Some(_) = search(map, &fake_state, false).0 {
+                let fake_level = SolverLevel::new(map.clone(), fake_state, dead_ends.clone());
+                if let Some(_) = search(&fake_level, false).path_states {
                     //print!("cont");
                     continue 'cell; // need to find only one solution
                 }
             }
-            map.dead_ends.0[r][c] = true; // no solution from any direction
+            dead_ends.0[r][c] = true; // no solution from any direction
         }
     }
+
+    dead_ends
 }
 
 fn heuristic_push(map: &Map, state: &State) -> i32 {
@@ -187,23 +323,23 @@ fn backtrack_path(prev: &HashMap<State, State>, final_state: &State) -> Vec<Stat
 fn solved(map: &Map, state: &State) -> bool {
     // to detect dead ends, this has to test all boxes are on a goal, not that all goals have a box
     for pos in &state.boxes {
-        if map.map[*pos] != MapCell::Goal {
+        if map.grid[*pos] != MapCell::Goal {
             return false;
         }
     }
     true
 }
 
-fn expand_push(map: &Map, state: &State) -> Vec<State> {
+fn expand_push(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
     let mut new_states = Vec::new();
 
-    let mut box_grid = map.map.create_scratch_map(255);
+    let mut box_grid = map.grid.create_scratch_map(255);
     for (i, b) in state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }
 
     // find each box and each direction from which it can be pushed
-    let mut reachable = map.map.create_scratch_map(false);
+    let mut reachable = map.grid.create_scratch_map(false);
     reachable[state.player_pos] = true;
     let mut to_visit = vec![state.player_pos];
 
@@ -211,7 +347,7 @@ fn expand_push(map: &Map, state: &State) -> Vec<State> {
         let player_pos = to_visit.pop().unwrap();
         for &dir in DIRECTIONS.iter() {
             let move_pos = player_pos + dir;
-            if map.map[move_pos] == MapCell::Wall {
+            if map.grid[move_pos] == MapCell::Wall {
                 continue;
             }
 
@@ -220,7 +356,7 @@ fn expand_push(map: &Map, state: &State) -> Vec<State> {
                 // new_pos has a box
                 let push_dest = move_pos + dir;
                 if box_grid[push_dest] == 255
-                    && map.map[push_dest] != MapCell::Wall && !map.dead_ends[push_dest] {
+                    && map.grid[push_dest] != MapCell::Wall && !dead_ends[push_dest] {
                     // new state to explore
 
                     let mut new_boxes = state.boxes.clone();
@@ -283,7 +419,21 @@ mod tests {
     use parser;
 
     #[test]
+    fn test_unreachable_boxes() {
+        let level = r"
+########
+#@$.#$.#
+########
+";
+        let level = parser::parse(level, Format::Xsb).unwrap();
+        assert_eq!(processed_map(&level).unwrap_err(), SolverErr::UnreachableBoxes);
+    }
+
+    #[test]
     fn test_expand_push() {
+        // at some point expand could detect some moves multiple times
+        // TODO test unsolvable map and total numbers of generated states
+
         let level = r"
 <><><><><><>
 <> _B_B_ _<>
@@ -294,12 +444,9 @@ mod tests {
 <><>    <>
 <><><><><>
 ";
-        let (mut map, state) = parser::parse(&level, Format::Custom).unwrap();
-        mark_dead_ends(&mut map);
-        let neighbor_states = expand(&map, &state);
-        /*for n in neighbor_states.iter() {
-            map.print(n);
-        }*/
+        let level = parser::parse(&level, Format::Custom).unwrap();
+        let solver_level = processed_map(&level).unwrap();
+        let neighbor_states = expand(&solver_level.map, &solver_level.state, &solver_level.dead_ends);
         assert_eq!(neighbor_states.len(), 2);
     }
 }

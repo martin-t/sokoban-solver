@@ -1,5 +1,6 @@
 use level::MapCell;
 
+// TODO not used - unify with MyVec2d
 pub trait Vec2d {
     fn print(&self);
 }

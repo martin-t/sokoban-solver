@@ -2,137 +2,59 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 
 use data::{Format, Pos};
-use level::{Map, MapCell, MyVec2d, State};
+use level::{Level, Map, MapCell, Vec2d, State};
 
 #[derive(Debug, PartialEq)]
-pub enum ParseErr {
+pub enum ParserErr {
     Pos(usize, usize),
-
     MultiplePlayers,
     MultipleRemovers,
     NoPlayer,
-    TooManyBoxes,
-
-    IncompleteBorder,
-    UnreachableBoxes,
-    UnreachableGoals,
-    UnreachableRemover,
-
     RemoverAndGoals,
-    BoxesGoals,
 }
 
-impl Display for ParseErr {
+impl Display for ParserErr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
-            ParseErr::Pos(r, c) => write!(f, "Invalid cell at pos: [{}, {}]", r, c),
-            ParseErr::MultiplePlayers => write!(f, "Too many players"),
-            ParseErr::MultipleRemovers => write!(f, "Multiple removers - only one allowed"),
-            ParseErr::NoPlayer => write!(f, "No player"),
-            ParseErr::TooManyBoxes => write!(f, "More than 255 boxes"),
-            ParseErr::IncompleteBorder => write!(f, "Player can exit the level because of missing border"),
-            ParseErr::UnreachableBoxes => write!(f, "Boxes that are not on goal but can't be reached"),
-            ParseErr::UnreachableGoals => write!(f, "Goals that don't have a box but can't be reached"),
-            ParseErr::UnreachableRemover => write!(f, "Remover is not reachable"),
-            ParseErr::RemoverAndGoals => write!(f, "Both remover and goals"),
-            ParseErr::BoxesGoals => write!(f, "Different number of boxes and goals"),
+            ParserErr::Pos(r, c) => write!(f, "Invalid cell at pos: [{}, {}]", r, c),
+            ParserErr::MultiplePlayers => write!(f, "Too many players"),
+            ParserErr::MultipleRemovers => write!(f, "Multiple removers - only one allowed"),
+            ParserErr::NoPlayer => write!(f, "No player"),
+            ParserErr::RemoverAndGoals => write!(f, "Both remover and goals"),
         }
     }
 }
 
-pub fn parse(level: &str, format: Format) -> Result<(Map, State), ParseErr> {
+pub fn parse(level: &str, format: Format) -> Result<Level, ParserErr> {
+    // trim so we can specify levels using raw strings more easily
     let level = level.trim_matches('\n');
 
-    let (map, goals, remover, boxes, player_pos) = match format {
+    let (grid, goals, remover, boxes, player_pos) = match format {
         Format::Custom => parse_custom(level)?,
         Format::Xsb => parse_xsb(level)?,
     };
-    let original_map = MyVec2d(map);
+    let player_pos = player_pos.ok_or(ParserErr::NoPlayer)?;
+    // if player exists, it means size is at least 1x1
+    let grid = Vec2d(grid);
 
-    if player_pos.is_none() {
-        return Err(ParseErr::NoPlayer);
-    }
-    let player_pos = player_pos.unwrap();
-
-    if boxes.len() > 255 {
-        return Err(ParseErr::TooManyBoxes);
-    }
-
-    let mut to_visit = vec![(player_pos.r, player_pos.c)];
-    let mut visited = original_map.create_scratch_map(false);
-
-    while !to_visit.is_empty() {
-        let (r, c) = to_visit.pop().unwrap();
-        visited.0[r as usize][c as usize] = true;
-
-        let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
-        for &(nr, nc) in neighbors.iter() {
-            // this is the only place we need to check bounds
-            // everything after that will be surrounded by walls
-            // TODO make sure we're not wasting time bounds checking anywhere else
-            if nr < 0 || nc < 0 || nr as usize >= original_map.0.len() || nc as usize >= original_map.0[nr as usize].len() {
-                // we got out of bounds without hitting a wall
-                return Err(ParseErr::IncompleteBorder);
-            }
-            if !visited.0[nr as usize][nc as usize] && original_map.0[nr as usize][nc as usize] != MapCell::Wall {
-                to_visit.push((nr, nc));
-            }
-        }
-    }
-
-    if let Some(pos) = remover {
-        if !visited.0[pos.r as usize][pos.c as usize] {
-            return Err(ParseErr::UnreachableRemover);
-        }
-    }
-    let mut reachable_goals = Vec::new();
-    let mut reachable_boxes = Vec::new();
-    for &pos in boxes.iter() {
-        let (r, c) = (pos.r as usize, pos.c as usize);
-        if visited.0[r][c] {
-            reachable_boxes.push(pos);
-        } else if !goals.contains(&pos) {
-            return Err(ParseErr::UnreachableBoxes);
-        }
-    }
-    for &pos in goals.iter() {
-        let (r, c) = (pos.r as usize, pos.c as usize);
-        if visited.0[r][c] {
-            reachable_goals.push(pos);
-        } else if !boxes.contains(&pos) {
-            return Err(ParseErr::UnreachableGoals);
-        }
-    }
-
-    // to avoid errors with some code that iterates through all non-walls
-    let mut processed_map = original_map.clone();
-    for r in 0..processed_map.0.len() {
-        for c in 0..processed_map.0[r].len() {
-            if !visited.0[r][c] {
-                processed_map.0[r][c] = MapCell::Wall;
-            }
-        }
-    }
-
-    if remover.is_some() {
+    if let Some(_remover) = remover {
         if goals.len() > 0 {
-            return Err(ParseErr::RemoverAndGoals);
+            Err(ParserErr::RemoverAndGoals)
+        } else {
+            unimplemented!();
         }
     } else {
-        if reachable_boxes.len() != reachable_goals.len() {
-            return Err(ParseErr::BoxesGoals);
-        }
+        Ok(Level::new(
+            Map::new(grid, goals),
+            State::new(player_pos, boxes)))
     }
-
-    Ok((Map::new(original_map, processed_map, reachable_goals),
-        State::new(player_pos, reachable_boxes)))
 }
 
 /// Parses my custom format
 fn parse_custom(level: &str)
                 -> Result<
                     (Vec<Vec<MapCell>>, Vec<Pos>, Option<Pos>, Vec<Pos>, Option<Pos>),
-                    ParseErr>
+                    ParserErr>
 {
     let mut map = Vec::new();
     let mut goals = Vec::new();
@@ -148,17 +70,17 @@ fn parse_custom(level: &str)
 
             match c1 {
                 '<' => {
-                    if c2 != '>' { return Err(ParseErr::Pos(r, c)); }
+                    if c2 != '>' { return Err(ParserErr::Pos(r, c)); }
                     map[r].push(MapCell::Wall);
                     continue; // skip parsing c2
                 }
                 ' ' => {}
                 'B' => boxes.push(Pos::new(r, c)),
                 'P' => {
-                    if player_pos.is_some() { return Err(ParseErr::MultiplePlayers); }
+                    if player_pos.is_some() { return Err(ParserErr::MultiplePlayers); }
                     player_pos = Some(Pos::new(r, c));
                 }
-                _ => return Err(ParseErr::Pos(r, c)),
+                _ => return Err(ParserErr::Pos(r, c)),
             }
             match c2 {
                 ' ' => map[r].push(MapCell::Empty),
@@ -167,11 +89,11 @@ fn parse_custom(level: &str)
                     map[r].push(MapCell::Goal);
                 }
                 'R' => {
-                    if remover.is_some() { return Err(ParseErr::MultipleRemovers); }
+                    if remover.is_some() { return Err(ParserErr::MultipleRemovers); }
                     remover = Some(Pos::new(r, c));
                     map[r].push(MapCell::Remover);
                 }
-                _ => return Err(ParseErr::Pos(r, c)),
+                _ => return Err(ParserErr::Pos(r, c)),
             }
         }
     }
@@ -183,7 +105,7 @@ fn parse_custom(level: &str)
 fn parse_xsb(level: &str)
              -> Result<
                  (Vec<Vec<MapCell>>, Vec<Pos>, Option<Pos>, Vec<Pos>, Option<Pos>),
-                 ParseErr>
+                 ParserErr>
 {
     let mut map = Vec::new();
     let mut goals = Vec::new();
@@ -200,14 +122,14 @@ fn parse_xsb(level: &str)
                 }
                 'p' | '@' => {
                     if player_pos.is_some() {
-                        return Err(ParseErr::MultiplePlayers);
+                        return Err(ParserErr::MultiplePlayers);
                     }
                     player_pos = Some(Pos::new(r, c));
                     MapCell::Empty
                 }
                 'P' | '+' => {
                     if player_pos.is_some() {
-                        return Err(ParseErr::MultiplePlayers);
+                        return Err(ParserErr::MultiplePlayers);
                     }
                     player_pos = Some(Pos::new(r, c));
                     goals.push(Pos::new(r, c));
@@ -225,7 +147,7 @@ fn parse_xsb(level: &str)
                 }
                 'r' => {
                     if remover.is_some() {
-                        return Err(ParseErr::MultipleRemovers);
+                        return Err(ParserErr::MultipleRemovers);
                     }
                     remover = Some(Pos::new(r, c));
                     MapCell::Remover
@@ -234,11 +156,11 @@ fn parse_xsb(level: &str)
                     // this is player on remover, box on remover makes no sense
                     // TODO box on remover in custom
                     if player_pos.is_some() {
-                        return Err(ParseErr::MultiplePlayers);
+                        return Err(ParserErr::MultiplePlayers);
                     }
                     player_pos = Some(Pos::new(r, c));
                     if remover.is_some() {
-                        return Err(ParseErr::MultipleRemovers);
+                        return Err(ParserErr::MultipleRemovers);
                     }
                     remover = Some(Pos::new(r, c));
                     MapCell::Remover
@@ -250,7 +172,7 @@ fn parse_xsb(level: &str)
                 ' ' | '-' | '_' => {
                     MapCell::Empty
                 }
-                _ => return Err(ParseErr::Pos(r, c))
+                _ => return Err(ParserErr::Pos(r, c))
             };
             line_tiles.push(tile);
         }
@@ -265,6 +187,33 @@ mod tests {
     use super::*;
 
     #[test]
+    fn custom_fail_empty() {
+        let level = "";
+        assert_failure_custom(level, ParserErr::NoPlayer); // TODO better error?
+    }
+
+    #[test]
+    fn custom_fail_no_player() {
+        let level = r"
+<><><>
+<>  <>
+<><><>
+";
+        assert_failure_custom(level, ParserErr::NoPlayer);
+    }
+
+    #[test]
+    fn custom_fail_remover_and_goals() {
+        let level = r"
+<><><><>
+<>P  R<>
+<> _  <>
+<><><><>
+";
+        assert_failure_custom(level, ParserErr::RemoverAndGoals);
+    }
+
+    #[test]
     fn custom_goals() {
         let level = r"
 <><><><><>
@@ -277,6 +226,7 @@ mod tests {
     }
 
     #[test]
+    #[should_panic] // TODO remove when remover is implemented
     fn custom_remover() {
         let level = r"
 <><><><><>
@@ -299,28 +249,17 @@ mod tests {
     }
 
     #[test]
-    fn custom_f1() {
+    fn xsb_fail_pos() {
         let level = r"
-<><><>
-<>  <>
-<><><>
+#####
+#@X.#
+#####
 ";
-        assert_failure_custom(level, ParseErr::NoPlayer);
+        assert_failure_xsb(level, ParserErr::Pos(1, 2));
     }
 
     #[test]
-    fn custom_f2() {
-        let level = r"
-<><><><>
-<>P  R<>
-<> _  <>
-<><><><>
-";
-        assert_failure_custom(level, ParseErr::RemoverAndGoals);
-    }
-
-    #[test]
-    fn xsb1() {
+    fn xsb_simplest() {
         let level = r"
 #####
 #@$.#
@@ -330,7 +269,8 @@ mod tests {
     }
 
     #[test]
-    fn xsb2() {
+    fn xsb_corner_boxes() {
+        // TODO also test solution shows the corner boxes
         let level = r"
 *###*
 #@$.#
@@ -340,7 +280,7 @@ mod tests {
     }
 
     #[test]
-    fn xsb3() {
+    fn xsb_original_1() {
         let level = r"
     #####
     #   #
@@ -357,32 +297,22 @@ mod tests {
         assert_success_xsb(level);
     }
 
-    #[test]
-    fn xsb_f1() {
-        let level = r"
-########
-#@$.#$.#
-########
-";
-        assert_failure_xsb(level, ParseErr::UnreachableBoxes);
-    }
-
-    fn assert_success_custom(input_level: &str) {
-        let (map, state) = parse(input_level, Format::Custom).unwrap();
-        assert_eq!(map.to_string(&state, Format::Custom), input_level.trim_left_matches('\n'));
-    }
-
-    fn assert_failure_custom(input_level: &str, expected_err: ParseErr) {
+    fn assert_failure_custom(input_level: &str, expected_err: ParserErr) {
         assert_eq!(parse(input_level, Format::Custom).unwrap_err(), expected_err);
     }
 
-    fn assert_success_xsb(input_level: &str) {
-        let (map, state) = parse(input_level, Format::Xsb).unwrap();
-        assert_eq!(map.to_string(&state, Format::Xsb), input_level.trim_left_matches('\n'));
+    fn assert_success_custom(input_level: &str) {
+        let level = parse(input_level, Format::Custom).unwrap();
+        assert_eq!(level.to_string(Format::Custom), input_level.trim_left_matches('\n'));
     }
 
-    fn assert_failure_xsb(input_level: &str, expected_err: ParseErr) {
+    fn assert_failure_xsb(input_level: &str, expected_err: ParserErr) {
         assert_eq!(parse(input_level, Format::Xsb).unwrap_err(), expected_err);
+    }
+
+    fn assert_success_xsb(input_level: &str) {
+        let level = parse(input_level, Format::Xsb).unwrap();
+        assert_eq!(level.to_string(Format::Xsb), input_level.trim_left_matches('\n'));
     }
 }
 
