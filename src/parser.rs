@@ -189,7 +189,7 @@ mod tests {
     #[test]
     fn custom_fail_empty() {
         let level = "";
-        assert_failure_custom(level, ParserErr::NoPlayer); // TODO better error?
+        assert_failure_custom(level, ParserErr::NoPlayer);
     }
 
     #[test]
