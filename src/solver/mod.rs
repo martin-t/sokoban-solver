@@ -54,13 +54,6 @@ const DOWN: Dir = Dir { r: 1, c: 0 };
 const LEFT: Dir = Dir { r: 0, c: -1 };
 const DIRECTIONS: [Dir; 4] = [UP, RIGHT, DOWN, LEFT];
 
-/*pub fn solve(mut map: &mut Map, initial_state: &State, print_status: bool)
-             -> (Option<Vec<State>>, Stats) {
-    mark_dead_ends(&mut map);
-
-    search(map, initial_state, print_status)
-}*/
-
 pub fn solve(level: &Level, print_status: bool) -> Result<SolverOk, SolverErr> {
     let solver_level = processed_map(level)?;
     Ok(search(&solver_level, print_status))

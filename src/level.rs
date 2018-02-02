@@ -16,6 +16,7 @@ impl Level {
         Level { map, state }
     }
 
+    #[allow(dead_code)]
     pub fn to_string(&self, format: Format) -> String {
         self.map.to_string(&self.state, format)
     }

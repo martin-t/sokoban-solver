@@ -6,13 +6,12 @@ use separator::Separatable;
 use level::State;
 
 pub struct Stats {
-    pub created_states: Vec<i32>,
-    pub duplicate_states: Vec<i32>,
-    pub visited_states: Vec<i32>,
+    created_states: Vec<i32>,
+    duplicate_states: Vec<i32>,
+    visited_states: Vec<i32>,
 }
 
 impl Stats {
-    // TODO remove pub
     pub fn new() -> Self {
         Stats { created_states: vec![], duplicate_states: vec![], visited_states: vec![] }
     }
@@ -41,7 +40,7 @@ impl Stats {
         Self::add(&mut self.visited_states, state)
     }
 
-    pub fn add(counts: &mut Vec<i32>, state: &SearchState) -> bool {
+    fn add(counts: &mut Vec<i32>, state: &SearchState) -> bool {
         let mut ret = false;
 
         // while because some depths might be skipped - duplicates or tunnel optimizations (NYI)
@@ -94,24 +93,23 @@ pub struct SearchState {
     pub h: i32,
 }
 
-impl Ord for SearchState {
-    fn cmp(&self, other: &Self) -> Ordering {
-        // intentionally reversed for BinaryHeap
-        //other.heuristic().cmp(&self.heuristic())
-        (other.dist + other.h).cmp(&(self.dist + self.h))
-    }
-}
-
 impl PartialOrd for SearchState {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Eq for SearchState {}
+impl Ord for SearchState {
+    fn cmp(&self, other: &Self) -> Ordering {
+        // intentionally reversed for BinaryHeap
+        (other.dist + other.h).cmp(&(self.dist + self.h))
+    }
+}
 
 impl PartialEq for SearchState {
     fn eq(&self, other: &Self) -> bool {
         self.state == other.state
     }
 }
+
+impl Eq for SearchState {}
