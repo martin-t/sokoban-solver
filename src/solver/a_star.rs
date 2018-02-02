@@ -75,28 +75,23 @@ impl Display for Stats {
         writeln!(f, "Unique states visited total: {}", visited.separated_string())?;
         writeln!(f, "Reached duplicates before solution found: {}", duplicates.separated_string())?;
         writeln!(f, "Created but not reached total: {}", left.separated_string())?;
+        writeln!(f, "")?;
 
-        // TODO make these a table
         writeln!(f, "Depth / created states:")?;
-        for i in 0..self.created_states.len() {
-            writeln!(f, "{}: {}", i, self.created_states[i])?;
-        }
-        writeln!(f, "Depth / reached duplicates before solution found:")?;
-        for i in 0..self.duplicate_states.len() {
-            writeln!(f, "{}: {}", i, self.duplicate_states[i])?;
-        }
-        writeln!(f, "Depth / unique visited states:")?;
-        for i in 0..self.visited_states.len() {
-            writeln!(f, "{}: {}", i, self.visited_states[i])?;
-        }
-        writeln!(f, "Depth / created but not reached states:")?;
-        for i in 0..self.created_states.len() {
+        writeln!(f, "|                   Depth / reached duplicates before solution found:")?;
+        writeln!(f, "|                   |                   Depth / unique visited states:")?;
+        writeln!(f, "|                   |                   |                   Depth / created but not reached states:")?;
+        for i in 0..self.created_states.len() { // created_states should be the longest vec
+            let depth = format!("{}: ", i);
             let visited =
                 if i < self.visited_states.len() { self.visited_states[i] } else { 0 };
             let duplicates =
                 if i < self.duplicate_states.len() { self.duplicate_states[i] } else { 0 };
             let left = self.created_states[i] - visited - duplicates;
-            writeln!(f, "{}: {}", i, left)?;
+            writeln!(f, "{0:<5}{1:<15}{0:<5}{2:<15}{0:<5}{3:<15}{0:<5}{4:<15}",
+                     depth,
+                     self.created_states[i].separated_string(), visited.separated_string(),
+                     duplicates.separated_string(), left.separated_string())?;
         }
         Ok(())
     }
