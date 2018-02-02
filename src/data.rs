@@ -7,7 +7,6 @@ pub enum Format {
 }
 
 // TODO profile with i8,u8,usize
-// TODO do Hash manually if used at all?
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Pos {
