@@ -124,7 +124,7 @@ mod tests {
         assert_eq!(solution.stats.total_unique_visited(), visited);
     }
 
-    // 2, 6 and 9 are a bit slow in debug mode
+    // boxxle1: 2, 6 and 9 are a bit slow in debug mode
     #[test_case("boxxle1", "1.txt", Xsb)]
     //#[test_case("boxxle1", "2.txt", Xsb)]
     #[test_case("boxxle1", "3.txt", Xsb)]
@@ -163,8 +163,8 @@ mod tests {
         }
         writeln!(out, "{:?}", solution.stats).unwrap();
         println!("{}", out);
-        assert_eq!(out, utils::read_file(result_file).unwrap()); // for testing
-        //utils::write_file(result_file, &out).unwrap(); // for updating
+        //utils::write_file(&result_file, &out).unwrap(); // uncomment to update results
+        assert_eq!(out, utils::read_file(&result_file).unwrap());
     }
 
     #[bench]

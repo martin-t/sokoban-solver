@@ -56,29 +56,31 @@ impl Stats {
 
 impl Debug for Stats {
     fn fmt(&self, f: &mut Formatter) -> Result {
+        writeln!(f, "total created / unique visited / reached duplicates:", )?;
+        writeln!(f, "{:16}{:17}{}", // or "      {:12}{:19}{}" and 2 spaces around slashes
+                 self.total_created().separated_string(),
+                 self.total_unique_visited().separated_string(),
+                 self.total_reached_duplicates().separated_string())?;
         writeln!(f, "created by depth: {:?}", self.created_states)?;
-        writeln!(f, "reached duplicates by depth: {:?}", self.duplicate_states)?;
         writeln!(f, "unique visited by depth: {:?}", self.visited_states)?;
-        writeln!(f, "total created: {}", self.total_created().separated_string())?;
-        writeln!(f, "total reached duplicates: {}", self.total_reached_duplicates().separated_string())?;
-        writeln!(f, "total unique visited: {}", self.total_unique_visited().separated_string())
+        writeln!(f, "reached duplicates by depth: {:?}", self.duplicate_states)
     }
 }
 
 impl Display for Stats {
     fn fmt(&self, f: &mut Formatter) -> Result {
         let created = self.total_created();
-        let duplicates = self.total_reached_duplicates();
         let visited = self.total_unique_visited();
+        let duplicates = self.total_reached_duplicates();
         let left = created - visited - duplicates;
         writeln!(f, "States created total: {}", created.separated_string())?;
         writeln!(f, "Unique states visited total: {}", visited.separated_string())?;
-        writeln!(f, "Reached duplicates before solution found: {}", duplicates.separated_string())?;
+        writeln!(f, "Reached duplicates found: {}", duplicates.separated_string())?;
         writeln!(f, "Created but not reached total: {}", left.separated_string())?;
         writeln!(f, "")?;
 
         writeln!(f, "Depth / created states:")?;
-        writeln!(f, "|                   Depth / reached duplicates before solution found:")?;
+        writeln!(f, "|                   Depth / reached duplicates found:")?;
         writeln!(f, "|                   |                   Depth / unique visited states:")?;
         writeln!(f, "|                   |                   |                   Depth / created but not reached states:")?;
         for i in 0..self.created_states.len() { // created_states should be the longest vec
@@ -88,10 +90,12 @@ impl Display for Stats {
             let duplicates =
                 if i < self.duplicate_states.len() { self.duplicate_states[i] } else { 0 };
             let left = self.created_states[i] - visited - duplicates;
-            writeln!(f, "{0:<5}{1:<15}{0:<5}{2:<15}{0:<5}{3:<15}{0:<5}{4:<15}",
+            writeln!(f, "{0:<5}{1:<15}{0:<5}{2:<15}{0:<5}{3:<15}{0:<5}{4}",
                      depth,
-                     self.created_states[i].separated_string(), visited.separated_string(),
-                     duplicates.separated_string(), left.separated_string())?;
+                     self.created_states[i].separated_string(),
+                     visited.separated_string(),
+                     duplicates.separated_string(),
+                     left.separated_string())?;
         }
         Ok(())
     }

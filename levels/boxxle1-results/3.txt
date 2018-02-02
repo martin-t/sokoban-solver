@@ -1,9 +1,8 @@
 levels/boxxle1/3.txt
 Path len: 15
+total created / unique visited / reached duplicates:
+144             86               23
 created by depth: [1, 1, 2, 3, 2, 5, 6, 8, 12, 22, 27, 21, 17, 16, 1]
-reached duplicates by depth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 6, 6, 3, 4]
 unique visited by depth: [1, 1, 2, 3, 2, 4, 5, 7, 11, 15, 13, 8, 8, 5, 1]
-total created: 144
-total reached duplicates: 23
-total unique visited: 86
+reached duplicates by depth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 6, 6, 3, 4]
 
