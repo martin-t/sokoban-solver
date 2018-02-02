@@ -125,7 +125,7 @@ mod tests {
         }
         writeln!(stdout, "{:?}", solution.stats).unwrap();
         assert_eq!(solution.stats.total_created(), created);
-        assert_eq!(solution.stats.total_visited(), visited);
+        assert_eq!(solution.stats.total_unique_visited(), visited);
     }
 
     #[test]

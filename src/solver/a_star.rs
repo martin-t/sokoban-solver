@@ -5,10 +5,11 @@ use separator::Separatable;
 
 use level::State;
 
+#[derive(PartialEq, Eq)]
 pub struct Stats {
     created_states: Vec<i32>,
-    duplicate_states: Vec<i32>,
     visited_states: Vec<i32>,
+    duplicate_states: Vec<i32>,
 }
 
 impl Stats {
@@ -20,24 +21,24 @@ impl Stats {
         self.created_states.iter().sum::<i32>()
     }
 
-    pub fn total_duplicate(&self) -> i32 {
-        self.duplicate_states.iter().sum::<i32>()
+    pub fn total_unique_visited(&self) -> i32 {
+        self.visited_states.iter().sum::<i32>()
     }
 
-    pub fn total_visited(&self) -> i32 {
-        self.visited_states.iter().sum::<i32>()
+    pub fn total_reached_duplicates(&self) -> i32 {
+        self.duplicate_states.iter().sum::<i32>()
     }
 
     pub fn add_created(&mut self, state: &SearchState) -> bool {
         Self::add(&mut self.created_states, state)
     }
 
-    pub fn add_duplicate(&mut self, state: &SearchState) -> bool {
-        Self::add(&mut self.duplicate_states, state)
+    pub fn add_unique_visited(&mut self, state: &SearchState) -> bool {
+        Self::add(&mut self.visited_states, state)
     }
 
-    pub fn add_visited(&mut self, state: &SearchState) -> bool {
-        Self::add(&mut self.visited_states, state)
+    pub fn add_reached_duplicate(&mut self, state: &SearchState) -> bool {
+        Self::add(&mut self.duplicate_states, state)
     }
 
     fn add(counts: &mut Vec<i32>, state: &SearchState) -> bool {
@@ -56,30 +57,46 @@ impl Stats {
 impl Debug for Stats {
     fn fmt(&self, f: &mut Formatter) -> Result {
         writeln!(f, "created by depth: {:?}", self.created_states)?;
-        writeln!(f, "reached duplicates: {:?}", self.duplicate_states)?;
-        writeln!(f, "visited by depth: {:?}", self.visited_states)?;
+        writeln!(f, "reached duplicates by depth: {:?}", self.duplicate_states)?;
+        writeln!(f, "unique visited by depth: {:?}", self.visited_states)?;
         writeln!(f, "total created: {}", self.total_created().separated_string())?;
-        writeln!(f, "total reached duplicates: {}", self.total_duplicate().separated_string())?;
-        writeln!(f, "total visited: {}", self.total_visited().separated_string())
+        writeln!(f, "total reached duplicates: {}", self.total_reached_duplicates().separated_string())?;
+        writeln!(f, "total unique visited: {}", self.total_unique_visited().separated_string())
     }
 }
 
 impl Display for Stats {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        writeln!(f, "States created total: {}", self.total_created().separated_string())?;
-        writeln!(f, "Reached duplicates total: {}", self.total_duplicate().separated_string())?;
-        writeln!(f, "States visited total: {}", self.total_visited().separated_string())?; // TODO does this mean unique?
+        let created = self.total_created();
+        let duplicates = self.total_reached_duplicates();
+        let visited = self.total_unique_visited();
+        let left = created - visited - duplicates;
+        writeln!(f, "States created total: {}", created.separated_string())?;
+        writeln!(f, "Unique states visited total: {}", visited.separated_string())?;
+        writeln!(f, "Reached duplicates before solution found: {}", duplicates.separated_string())?;
+        writeln!(f, "Created but not reached total: {}", left.separated_string())?;
+
+        // TODO make these a table
         writeln!(f, "Depth / created states:")?;
         for i in 0..self.created_states.len() {
             writeln!(f, "{}: {}", i, self.created_states[i])?;
         }
-        writeln!(f, "Depth / found duplicates:")?;
+        writeln!(f, "Depth / reached duplicates before solution found:")?;
         for i in 0..self.duplicate_states.len() {
             writeln!(f, "{}: {}", i, self.duplicate_states[i])?;
         }
-        writeln!(f, "Depth / visited states:")?;
+        writeln!(f, "Depth / unique visited states:")?;
         for i in 0..self.visited_states.len() {
             writeln!(f, "{}: {}", i, self.visited_states[i])?;
+        }
+        writeln!(f, "Depth / created but not reached states:")?;
+        for i in 0..self.created_states.len() {
+            let visited =
+                if i < self.visited_states.len() { self.visited_states[i] } else { 0 };
+            let duplicates =
+                if i < self.duplicate_states.len() { self.duplicate_states[i] } else { 0 };
+            let left = self.created_states[i] - visited - duplicates;
+            writeln!(f, "{}: {}", i, left)?;
         }
         Ok(())
     }

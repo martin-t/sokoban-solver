@@ -163,10 +163,10 @@ pub fn search(level: &SolverLevel, print_status: bool) -> SolverOk
     to_visit.push(start);
     while let Some(current) = to_visit.pop() {
         if closed.contains(&current.state) {
-            stats.add_duplicate(&current);
+            stats.add_reached_duplicate(&current);
             continue;
         }
-        if stats.add_visited(&current) && print_status {
+        if stats.add_unique_visited(&current) && print_status {
             println!("Visited new depth: {}", current.dist);
             println!("{:?}", stats);
         }
