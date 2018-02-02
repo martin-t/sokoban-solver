@@ -63,7 +63,7 @@ fn main() {
 
     println!("Solving...");
     // TODO use steps instead?
-    let solver_ok = solver::solve(&level,  true).unwrap();
+    let solver_ok = solver::solve(&level, true).unwrap();
     println!("{}", solver_ok.stats);
     match solver_ok.path_states {
         Some(path) => {
@@ -86,19 +86,19 @@ mod tests {
     use data::Format::*;
 
     /// `expected_path_states` includes initial state
-    #[test_case(Xsb, "levels/custom/01-simplest-xsb.txt", Some(2), 2, 2)]
-    #[test_case(Custom, "levels/custom/01-simplest-custom.txt", Some(2), 2, 2)]
-    #[test_case(Custom, "levels/custom/02-one-way.txt", Some(4), 4, 4)]
-    #[test_case(Custom, "levels/custom/03-long-way.txt", Some(9), 10, 9)]
-    #[test_case(Custom, "levels/custom/04-two-boxes.txt", Some(21), 313, 148)]
-    #[test_case(Custom, "levels/custom/05-google-images-play.txt", Some(4), 11, 6)]
-    #[test_case(Custom, "levels/custom/06-google-images-1.txt", Some(10), 578, 180)]
-    #[test_case(Custom, "levels/custom/07-boxxle-1-1.txt", Some(32), 1552, 977)]
-    #[test_case(Xsb, "levels/custom/no-solution-parking.txt", None, 102, 52)]
-    #[test_case(Custom, "levels/custom/easy-2.txt", Some(11), 4583, 480)]
-    #[test_case(Custom, "levels/custom/moderate-6.txt", Some(33), 211, 137)]
-    #[test_case(Custom, "levels/custom/moderate-7.txt", Some(6), 24, 14)]
-    fn test_custom(format: Format, level_path: &str, expected_path_states: Option<usize>, created: i32, visited: i32) {
+    #[test_case("levels/custom/01-simplest-xsb.txt", Xsb, Some(2), 2, 2)]
+    #[test_case("levels/custom/01-simplest-custom.txt", Custom, Some(2), 2, 2)]
+    #[test_case("levels/custom/02-one-way.txt", Custom, Some(4), 4, 4)]
+    #[test_case("levels/custom/03-long-way.txt", Custom, Some(9), 10, 9)]
+    #[test_case("levels/custom/04-two-boxes.txt", Custom, Some(21), 313, 148)]
+    #[test_case("levels/custom/05-google-images-play.txt", Custom, Some(4), 11, 6)]
+    #[test_case("levels/custom/06-google-images-1.txt", Custom, Some(10), 578, 180)]
+    #[test_case("levels/custom/07-boxxle-1-1.txt", Custom, Some(32), 1552, 977)]
+    #[test_case("levels/custom/no-solution-parking.txt", Xsb, None, 102, 52)]
+    #[test_case("levels/custom/easy-2.txt", Custom, Some(11), 4583, 480)]
+    #[test_case("levels/custom/moderate-6.txt", Custom, Some(33), 211, 137)]
+    #[test_case("levels/custom/moderate-7.txt", Custom, Some(6), 24, 14)]
+    fn test_custom(level_path: &str, format: Format, expected_path_states: Option<usize>, created: i32, visited: i32) {
         test_level(format, level_path, expected_path_states, created, visited);
     }
 
@@ -124,46 +124,47 @@ mod tests {
         assert_eq!(solution.stats.total_unique_visited(), visited);
     }
 
-    #[test]
-    fn test_boxxle1() {
-        // TODO separate worse vs better - keep stats per step
-        // TODO print all info - steps, etc.
-        // TODO one test for debugging
+    // 2, 6 and 9 are a bit slow in debug mode
+    #[test_case("boxxle1", "1.txt", Xsb)]
+    //#[test_case("boxxle1", "2.txt", Xsb)]
+    #[test_case("boxxle1", "3.txt", Xsb)]
+    #[test_case("boxxle1", "4.txt", Xsb)]
+    #[test_case("boxxle1", "5.txt", Xsb)]
+    //#[test_case("boxxle1", "6.txt", Xsb)]
+    #[test_case("boxxle1", "7.txt", Xsb)]
+    #[test_case("boxxle1", "8.txt", Xsb)]
+    //#[test_case("boxxle1", "9.txt", Xsb)]
+    #[test_case("boxxle1", "10.txt", Xsb)]
+    fn test_boxxle1(level_pack: &str, level_name: &str, format: Format) {
+        test_level2(level_pack, level_name, format);
+    }
+
+    fn test_level2(level_pack: &str, level_name: &str, format: Format) {
+        // TODO readable stats, per step?
+        // TODO one test for debugging - readable output
         use std::fmt::Write;
-        use std::thread;
 
-        let mut threads = Vec::new();
-        // 2, 6 and 9 are a bit slow in debug mode
-        for i in [1, 3, 4, 5, 7, 8, 10].iter() {
-            //for i in 1 ... 108 {
-            threads.push(thread::spawn(move || {
-                let level_path = format!("levels/boxxle1/{}.txt", i);
+        let level_path = format!("levels/{}/{}", level_pack, level_name);
+        let result_file = format!("levels/{}-results/{}", level_pack, level_name);
 
-                let level = utils::read_file(&level_path).unwrap();
-                let level = parser::parse(&level, Format::Xsb).unwrap();
-                let solution = solver::solve(&level, false).unwrap();
+        let level = utils::read_file(&level_path).unwrap();
+        let level = parser::parse(&level, format).unwrap();
+        let solution = solver::solve(&level, false).unwrap();
 
-                let mut out = String::new();
-                writeln!(out, "{}", level_path).unwrap();
-                match solution.path_states {
-                    Some(states) => {
-                        writeln!(out, "Path len: {}", states.len()).unwrap();
-                    }
-                    None => {
-                        writeln!(out, "No solution").unwrap();
-                    }
-                }
-                writeln!(out, "{:?}", solution.stats).unwrap();
-
-                let result_file = format!("levels/boxxle1-results/{}.txt", i);
-                println!("{}", out);
-                assert_eq!(out, utils::read_file(result_file).unwrap()); // for testing
-                //utils::write_file(result_file, &out).unwrap(); // for updating
-            }));
+        let mut out = String::new();
+        writeln!(out, "{}", level_path).unwrap();
+        match solution.path_states {
+            Some(states) => {
+                writeln!(out, "Path len: {}", states.len()).unwrap();
+            }
+            None => {
+                writeln!(out, "No solution").unwrap();
+            }
         }
-        for t in threads {
-            t.join().unwrap();
-        }
+        writeln!(out, "{:?}", solution.stats).unwrap();
+        println!("{}", out);
+        assert_eq!(out, utils::read_file(result_file).unwrap()); // for testing
+        //utils::write_file(result_file, &out).unwrap(); // for updating
     }
 
     #[bench]
