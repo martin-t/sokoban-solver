@@ -104,26 +104,22 @@ mod tests {
 
     // separate fn to get stack traces with correct line numbers
     fn test_level(format: Format, level_path: &str, expected_path_states: Option<usize>, created: i32, visited: i32) {
-        use std::io::Write;
-
         let level = utils::read_file(level_path).unwrap();
         let level = parser::parse(&level, format).unwrap();
         let solution = solver::solve(&level, false).unwrap();
 
-        let stdout = std::io::stdout();
-        let mut stdout = stdout.lock();
-        writeln!(stdout, "{}", level_path).unwrap();
+        println!("{}", level_path);
         match solution.path_states {
             Some(states) => {
-                writeln!(stdout, "Path len: {}", states.len()).unwrap();
+                println!("Path len: {}", states.len());
                 assert_eq!(states.len(), expected_path_states.unwrap());
             }
             None => {
-                writeln!(stdout, "No solution").unwrap();
+                println!("No solution");
                 assert_eq!(None, expected_path_states);
             }
         }
-        writeln!(stdout, "{:?}", solution.stats).unwrap();
+        println!("{:?}", solution.stats);
         assert_eq!(solution.stats.total_created(), created);
         assert_eq!(solution.stats.total_unique_visited(), visited);
     }
