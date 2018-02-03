@@ -98,14 +98,14 @@ mod tests {
     #[test_case("custom", "moderate-7.txt", Custom)]
     #[test_case("custom", "no-solution-parking.txt", Xsb)]
     #[test_case("boxxle1", "1.txt", Xsb)]
-    //#[test_case("boxxle1", "2.txt", Xsb)]
+    #[test_case("boxxle1", "2.txt", Xsb)]
     #[test_case("boxxle1", "3.txt", Xsb)]
     #[test_case("boxxle1", "4.txt", Xsb)]
     #[test_case("boxxle1", "5.txt", Xsb)]
-    //#[test_case("boxxle1", "6.txt", Xsb)]
+    #[test_case("boxxle1", "6.txt", Xsb)]
     #[test_case("boxxle1", "7.txt", Xsb)]
     #[test_case("boxxle1", "8.txt", Xsb)]
-    //#[test_case("boxxle1", "9.txt", Xsb)]
+    #[test_case("boxxle1", "9.txt", Xsb)]
     #[test_case("boxxle1", "10.txt", Xsb)]
     fn test_levels(level_pack: &str, level_name: &str, format: Format) {
         test_level(level_pack, level_name, format);
