@@ -170,11 +170,11 @@ impl Display for MapCell {
 pub struct State {
     pub player_pos: Pos,
     pub boxes: Vec<Pos>,
-    // TODO keep this sorted to discover duplicates
 }
 
 impl State {
-    pub fn new(player_pos: Pos, boxes: Vec<Pos>) -> State {
+    pub fn new(player_pos: Pos, mut boxes: Vec<Pos>) -> State {
+        boxes.sort(); // sort to detect equal states when we reorder boxes
         State { player_pos, boxes }
     }
 }

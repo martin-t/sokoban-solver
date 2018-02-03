@@ -1,8 +1,8 @@
 Path len: 14
-States created total: 2,268
-Unique visited total: 821
-Reached duplicates total: 679
-Created but not reached total: 768
+States created total: 1,464
+Unique visited total: 518
+Reached duplicates total: 584
+Created but not reached total: 362
 
 Depth / created states:
 |                   Depth / unique visited:
@@ -12,14 +12,14 @@ Depth / created states:
 1:   2              1:   2              1:   0              1:   0
 2:   7              2:   7              2:   0              2:   0
 3:   15             3:   12             3:   3              3:   0
-4:   36             4:   27             4:   9              4:   0
-5:   71             5:   53             5:   18             5:   0
-6:   152            6:   96             6:   55             6:   1
-7:   315            7:   163            7:   122            7:   30
-8:   469            8:   202            8:   178            8:   89
-9:   593            9:   171            9:   183            9:   239
-10:  426            10:  74             10:  96             10:  256
-11:  141            11:  8              11:  14             11:  119
-12:  24             12:  4              12:  1              12:  19
-13:  16             13:  1              13:  0              13:  15
+4:   36             4:   26             4:   10             4:   0
+5:   69             5:   49             5:   20             5:   0
+6:   145            6:   87             6:   57             6:   1
+7:   294            7:   130            7:   132            7:   32
+8:   366            8:   121            8:   180            8:   65
+9:   343            9:   66             9:   135            9:   142
+10:  155            10:  10             10:  45             10:  100
+11:  19             11:  3              11:  2              11:  14
+12:  6              12:  3              12:  0              12:  3
+13:  6              13:  1              13:  0              13:  5
 

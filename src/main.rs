@@ -124,35 +124,81 @@ mod tests {
         let solution = solver::solve(&level, false).unwrap();
 
         let mut out = String::new();
+        // TODO impl Display for solution
         match solution.path_states {
             None => writeln!(out, "No solution").unwrap(),
             Some(states) => writeln!(out, "Path len: {}", states.len()).unwrap(),
         }
         writeln!(out, "{}", solution.stats).unwrap();
 
-        //utils::write_file(&result_file, &out).unwrap(); // uncomment to update results
-
         let expected = utils::read_file(&result_file).unwrap();
         if out != expected {
             println!("Expected:\n{}", expected);
             println!("Got:\n{}", out);
+
+            // other stats can go up with a better solution
+            let (out_len, out_created, out_visited) = parse_stats(&out);
+            let (expected_len, expected_created, expected_visited) = parse_stats(&expected);
+            if out_len <= expected_len
+                && out_created <= expected_created
+                && out_visited <= expected_visited {
+                println!("         >>> BETTER <<<\n\n");
+
+                // uncomment to update results - here to avoid accidentally accepting worse
+                //utils::write_file(&result_file, &out).unwrap();
+            } else {
+                println!("         >>> WORSE <<<\n\n");
+            }
+
             assert!(false);
         }
     }
 
+    fn parse_stats(stats: &str) -> (i32, i32, i32) {
+        let mut lines = stats.lines();
+        let length = lines.next().unwrap()
+            .split_whitespace().last().unwrap()
+            .split(',').collect::<Vec<_>>().join("")
+            .parse().unwrap();
+        let created = lines.next().unwrap()
+            .split_whitespace().last().unwrap()
+            .split(',').collect::<Vec<_>>().join("")
+            .parse().unwrap();
+        let visited = lines.next().unwrap()
+            .split_whitespace().last().unwrap()
+            .split(',').collect::<Vec<_>>().join("")
+            .parse().unwrap();
+        (length, created, visited)
+    }
+
     #[bench]
     fn bench_boxxle1_1(b: &mut Bencher) {
-        let level = utils::read_file("levels/boxxle1/1.txt").unwrap();
-        let level = parser::parse(&level, Format::Xsb).unwrap();
-
-        b.iter(|| {
-            solver::solve(&level, false)
-        });
+        // 3 goals in a row
+        bench_level("levels/boxxle1/1.txt", b);
     }
 
     #[bench]
     fn bench_boxxle1_5(b: &mut Bencher) {
-        let level = utils::read_file("levels/boxxle1/5.txt").unwrap();
+        // 4 boxes goal room
+        bench_level("levels/boxxle1/5.txt", b);
+    }
+
+    #[bench]
+    #[ignore]
+    fn bench_boxxle1_18(b: &mut Bencher) {
+        // 6 boxes - tiny goalroom
+        bench_level("levels/boxxle1/18.txt", b);
+    }
+
+    #[bench]
+    #[ignore]
+    fn bench_boxxle1_108(b: &mut Bencher) {
+        // 6 boxes in the middle
+        bench_level("levels/boxxle1/108.txt", b);
+    }
+
+    fn bench_level(level_path: &str, b: &mut Bencher) {
+        let level = utils::read_file(level_path).unwrap();
         let level = parser::parse(&level, Format::Xsb).unwrap();
 
         b.iter(|| {

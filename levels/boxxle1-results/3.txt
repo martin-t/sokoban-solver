@@ -1,7 +1,7 @@
 Path len: 15
 States created total: 144
-Unique visited total: 86
-Reached duplicates total: 23
+Unique visited total: 84
+Reached duplicates total: 25
 Created but not reached total: 35
 
 Depth / created states:
@@ -21,6 +21,6 @@ Depth / created states:
 10:  27             10:  13             10:  6              10:  8
 11:  21             11:  8              11:  6              11:  7
 12:  17             12:  8              12:  3              12:  6
-13:  16             13:  5              13:  4              13:  7
+13:  16             13:  3              13:  6              13:  7
 14:  1              14:  1              14:  0              14:  0
 
