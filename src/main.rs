@@ -85,46 +85,18 @@ mod tests {
     use super::*;
     use data::Format::*;
 
-    /// `expected_path_states` includes initial state
-    #[test_case("levels/custom/01-simplest-xsb.txt", Xsb, Some(2), 2, 2)]
-    #[test_case("levels/custom/01-simplest-custom.txt", Custom, Some(2), 2, 2)]
-    #[test_case("levels/custom/02-one-way.txt", Custom, Some(4), 4, 4)]
-    #[test_case("levels/custom/03-long-way.txt", Custom, Some(9), 10, 9)]
-    #[test_case("levels/custom/04-two-boxes.txt", Custom, Some(21), 313, 148)]
-    #[test_case("levels/custom/05-google-images-play.txt", Custom, Some(4), 11, 6)]
-    #[test_case("levels/custom/06-google-images-1.txt", Custom, Some(10), 578, 180)]
-    #[test_case("levels/custom/07-boxxle-1-1.txt", Custom, Some(32), 1552, 977)]
-    #[test_case("levels/custom/no-solution-parking.txt", Xsb, None, 102, 52)]
-    #[test_case("levels/custom/easy-2.txt", Custom, Some(11), 4583, 480)]
-    #[test_case("levels/custom/moderate-6.txt", Custom, Some(33), 211, 137)]
-    #[test_case("levels/custom/moderate-7.txt", Custom, Some(6), 24, 14)]
-    fn test_custom(level_path: &str, format: Format, expected_path_states: Option<usize>, created: i32, visited: i32) {
-        test_level(format, level_path, expected_path_states, created, visited);
-    }
-
-    // separate fn to get stack traces with correct line numbers
-    fn test_level(format: Format, level_path: &str, expected_path_states: Option<usize>, created: i32, visited: i32) {
-        let level = utils::read_file(level_path).unwrap();
-        let level = parser::parse(&level, format).unwrap();
-        let solution = solver::solve(&level, false).unwrap();
-
-        println!("{}", level_path);
-        match solution.path_states {
-            Some(states) => {
-                println!("Path len: {}", states.len());
-                assert_eq!(states.len(), expected_path_states.unwrap());
-            }
-            None => {
-                println!("No solution");
-                assert_eq!(None, expected_path_states);
-            }
-        }
-        println!("{:?}", solution.stats);
-        assert_eq!(solution.stats.total_created(), created);
-        assert_eq!(solution.stats.total_unique_visited(), visited);
-    }
-
-    // boxxle1: 2, 6 and 9 are a bit slow in debug mode
+    #[test_case("custom", "01-simplest-xsb.txt", Xsb)]
+    #[test_case("custom", "01-simplest-custom.txt", Custom)]
+    #[test_case("custom", "02-one-way.txt", Custom)]
+    #[test_case("custom", "03-long-way.txt", Custom)]
+    #[test_case("custom", "04-two-boxes.txt", Custom)]
+    #[test_case("custom", "05-google-images-play.txt", Custom)]
+    #[test_case("custom", "06-google-images-1.txt", Custom)]
+    #[test_case("custom", "07-boxxle-1-1.txt", Custom)]
+    #[test_case("custom", "easy-2.txt", Custom)]
+    #[test_case("custom", "moderate-6.txt", Custom)]
+    #[test_case("custom", "moderate-7.txt", Custom)]
+    #[test_case("custom", "no-solution-parking.txt", Xsb)]
     #[test_case("boxxle1", "1.txt", Xsb)]
     //#[test_case("boxxle1", "2.txt", Xsb)]
     #[test_case("boxxle1", "3.txt", Xsb)]
@@ -135,36 +107,37 @@ mod tests {
     #[test_case("boxxle1", "8.txt", Xsb)]
     //#[test_case("boxxle1", "9.txt", Xsb)]
     #[test_case("boxxle1", "10.txt", Xsb)]
-    fn test_boxxle1(level_pack: &str, level_name: &str, format: Format) {
-        test_level2(level_pack, level_name, format);
+    fn test_levels(level_pack: &str, level_name: &str, format: Format) {
+        test_level(level_pack, level_name, format);
     }
 
-    fn test_level2(level_pack: &str, level_name: &str, format: Format) {
-        // TODO readable stats, per step?
-        // TODO one test for debugging - readable output
+    // separate fn to get stack traces with correct line numbers
+    fn test_level(level_pack: &str, level_name: &str, format: Format) {
         use std::fmt::Write;
 
         let level_path = format!("levels/{}/{}", level_pack, level_name);
         let result_file = format!("levels/{}-results/{}", level_pack, level_name);
+        println!("{}", level_path);
 
         let level = utils::read_file(&level_path).unwrap();
         let level = parser::parse(&level, format).unwrap();
         let solution = solver::solve(&level, false).unwrap();
 
         let mut out = String::new();
-        writeln!(out, "{}", level_path).unwrap();
         match solution.path_states {
-            Some(states) => {
-                writeln!(out, "Path len: {}", states.len()).unwrap();
-            }
-            None => {
-                writeln!(out, "No solution").unwrap();
-            }
+            None => writeln!(out, "No solution").unwrap(),
+            Some(states) => writeln!(out, "Path len: {}", states.len()).unwrap(),
         }
-        writeln!(out, "{:?}", solution.stats).unwrap();
-        println!("{}", out);
+        writeln!(out, "{}", solution.stats).unwrap();
+
         //utils::write_file(&result_file, &out).unwrap(); // uncomment to update results
-        assert_eq!(out, utils::read_file(&result_file).unwrap());
+
+        let expected = utils::read_file(&result_file).unwrap();
+        if out != expected {
+            println!("Expected:\n{}", expected);
+            println!("Got:\n{}", out);
+            assert!(false);
+        }
     }
 
     #[bench]

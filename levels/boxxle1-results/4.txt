@@ -1,8 +1,23 @@
-levels/boxxle1/4.txt
 Path len: 12
-total created / unique visited / reached duplicates:
-244             101              51
-created by depth: [1, 1, 2, 4, 10, 26, 57, 56, 45, 32, 9, 1]
-unique visited by depth: [1, 1, 2, 4, 8, 19, 21, 19, 15, 7, 3, 1]
-reached duplicates by depth: [0, 0, 0, 0, 2, 5, 12, 16, 13, 3]
+States created total: 244
+Unique visited total: 101
+Reached duplicates total: 51
+Created but not reached total: 92
+
+Depth / created states:
+|                   Depth / unique visited:
+|                   |                   Depth / reached duplicate:
+|                   |                   |                   Depth / created but not reached:
+0:   1              0:   1              0:   0              0:   0
+1:   1              1:   1              1:   0              1:   0
+2:   2              2:   2              2:   0              2:   0
+3:   4              3:   4              3:   0              3:   0
+4:   10             4:   8              4:   2              4:   0
+5:   26             5:   19             5:   5              5:   2
+6:   57             6:   21             6:   12             6:   24
+7:   56             7:   19             7:   16             7:   21
+8:   45             8:   15             8:   13             8:   17
+9:   32             9:   7              9:   3              9:   22
+10:  9              10:  3              10:  0              10:  6
+11:  1              11:  1              11:  0              11:  0
 

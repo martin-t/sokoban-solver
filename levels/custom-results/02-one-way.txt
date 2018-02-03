@@ -1,0 +1,15 @@
+Path len: 4
+States created total: 4
+Unique visited total: 4
+Reached duplicates total: 0
+Created but not reached total: 0
+
+Depth / created states:
+|                   Depth / unique visited:
+|                   |                   Depth / reached duplicate:
+|                   |                   |                   Depth / created but not reached:
+0:   1              0:   1              0:   0              0:   0
+1:   1              1:   1              1:   0              1:   0
+2:   1              2:   1              2:   0              2:   0
+3:   1              3:   1              3:   0              3:   0
+
