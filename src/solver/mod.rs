@@ -5,7 +5,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::collections::{BinaryHeap, HashMap, HashSet};
 
-use data::{Pos, Dir};
+use data::{Pos, DIRECTIONS};
 use level::{Level, Map, Vec2d, MapCell, State};
 
 use self::a_star::{SearchState, Stats};
@@ -47,12 +47,6 @@ impl SolverOk {
         Self { path_states, stats }
     }
 }
-
-const UP: Dir = Dir { r: -1, c: 0 };
-const RIGHT: Dir = Dir { r: 0, c: 1 };
-const DOWN: Dir = Dir { r: 1, c: 0 };
-const LEFT: Dir = Dir { r: 0, c: -1 };
-const DIRECTIONS: [Dir; 4] = [UP, RIGHT, DOWN, LEFT];
 
 pub fn solve(level: &Level, print_status: bool) -> Result<SolverOk, SolverErr> {
     let solver_level = processed_map(level)?;
@@ -234,8 +228,7 @@ fn find_dead_ends(map: &Map) -> Vec2d<bool> {
                 continue;
             }
 
-            for dir in DIRECTIONS.iter() {
-                let player_pos = box_pos + *dir;
+            for &player_pos in box_pos.neighbors().iter() {
                 if map.grid[player_pos] == MapCell::Wall {
                     continue;
                 }
