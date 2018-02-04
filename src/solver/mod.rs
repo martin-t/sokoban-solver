@@ -441,8 +441,7 @@ mod tests {
 
     #[test]
     fn test_expand_push() {
-        // at some point expand could detect some moves multiple times
-        // TODO test unsolvable map and total numbers of generated states
+        // at some point expand detected some moves multiple times - should not happen again
 
         let level = r"
 <><><><><><>
