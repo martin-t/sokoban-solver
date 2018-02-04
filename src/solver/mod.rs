@@ -2,7 +2,7 @@ pub mod a_star;
 mod level;
 
 use std::fmt;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::collections::{BinaryHeap, HashMap, HashSet};
 
 use data::{Pos, DIRECTIONS};
@@ -47,6 +47,17 @@ impl SolverOk {
         Self { path_states, stats }
     }
 }
+
+impl Debug for SolverOk {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self.path_states {
+            None => writeln!(f, "No solution")?,
+            Some(ref states) => writeln!(f, "Moves: {}", states.len() - 1)?, // TODO moves vs pushes
+        }
+        write!(f, "{}", self.stats)
+    }
+}
+
 
 pub fn solve(level: &Level, print_status: bool) -> Result<SolverOk, SolverErr> {
     let solver_level = processed_map(level)?;

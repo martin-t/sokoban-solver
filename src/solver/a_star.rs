@@ -62,9 +62,10 @@ impl Debug for Stats {
                  self.total_unique_visited().separated_string(),
                  self.total_reached_duplicates().separated_string())?;
 
-        writeln!(f, "created by depth: {:?}", self.created_states)?;
-        writeln!(f, "unique visited by depth: {:?}", self.visited_states)?;
-        writeln!(f, "reached duplicates by depth: {:?}", self.duplicate_states)
+        //writeln!(f, "created by depth: {:?}", self.created_states)?;
+        //writeln!(f, "unique visited by depth: {:?}", self.visited_states)?;
+        //writeln!(f, "reached duplicates by depth: {:?}", self.duplicate_states)?;
+        Ok(())
     }
 }
 

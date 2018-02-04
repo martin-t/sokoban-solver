@@ -1,4 +1,4 @@
-Path len: 23
+Moves: 22
 States created total: 2,109,756
 Unique visited total: 337,024
 Reached duplicates total: 1,093,816
@@ -31,4 +31,3 @@ Depth / created states:
 20:  3,913          20:  231            20:  602            20:  3,080
 21:  853            21:  30             21:  110            21:  713
 22:  117            22:  1              22:  0              22:  116
-

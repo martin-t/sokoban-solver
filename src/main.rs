@@ -126,30 +126,31 @@ mod tests {
         let solution = solver::solve(&level, false).unwrap();
 
         let mut out = String::new();
-        // TODO impl Display for solution
-        match solution.path_states {
-            None => writeln!(out, "No solution").unwrap(),
-            Some(states) => writeln!(out, "Path len: {}", states.len()).unwrap(),
-        }
-        writeln!(out, "{}", solution.stats).unwrap();
+        write!(out, "{:?}", solution).unwrap();
 
         let expected = utils::read_file(&result_file).unwrap();
         if out != expected {
-            println!("Expected:\n{}", expected);
-            println!("Got:\n{}", out);
+            print!("Expected:\n{}", expected);
+            print!("Got:\n{}", out);
 
             // other stats can go up with a better solution
             let (out_len, out_created, out_visited) = parse_stats(&out);
             let (expected_len, expected_created, expected_visited) = parse_stats(&expected);
-            if out_len <= expected_len
-                && out_created <= expected_created
-                && out_visited <= expected_visited {
-                println!("         >>> BETTER <<<\n\n");
+            if out_len > expected_len
+                || out_created > expected_created
+                || out_visited > expected_visited {
+                println!("         >>> WORSE <<<\n\n");
+            } else {
+                if out_len == expected_len
+                    && out_created == expected_created
+                    && out_visited == expected_visited {
+                    println!("         >>> EQUAL <<<\n\n");
+                } else {
+                    println!("         >>> BETTER <<<\n\n");
+                }
 
                 // uncomment to update results - here to avoid accidentally accepting worse
                 //utils::write_file(&result_file, &out).unwrap();
-            } else {
-                println!("         >>> WORSE <<<\n\n");
             }
 
             assert!(false);
@@ -158,10 +159,14 @@ mod tests {
 
     fn parse_stats(stats: &str) -> (i32, i32, i32) {
         let mut lines = stats.lines();
+
+        // no solution or length
         let length = lines.next().unwrap()
             .split_whitespace().last().unwrap()
             .split(',').collect::<Vec<_>>().join("")
-            .parse().unwrap();
+            .parse().unwrap_or(0);
+
+        // created and visited
         let created = lines.next().unwrap()
             .split_whitespace().last().unwrap()
             .split(',').collect::<Vec<_>>().join("")
@@ -170,6 +175,7 @@ mod tests {
             .split_whitespace().last().unwrap()
             .split(',').collect::<Vec<_>>().join("")
             .parse().unwrap();
+
         (length, created, visited)
     }
 
