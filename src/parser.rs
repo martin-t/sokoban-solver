@@ -9,6 +9,7 @@ pub enum ParserErr {
     Pos(usize, usize),
     MultiplePlayers,
     MultipleRemovers,
+    BoxOnRemover,
     NoPlayer,
     RemoverAndGoals,
 }
@@ -19,6 +20,7 @@ impl Display for ParserErr {
             ParserErr::Pos(r, c) => write!(f, "Invalid cell at pos: [{}, {}]", r, c),
             ParserErr::MultiplePlayers => write!(f, "Too many players"),
             ParserErr::MultipleRemovers => write!(f, "Multiple removers - only one allowed"),
+            ParserErr::BoxOnRemover => write!(f, "Box on remover"),
             ParserErr::NoPlayer => write!(f, "No player"),
             ParserErr::RemoverAndGoals => write!(f, "Both remover and goals"),
         }
@@ -68,6 +70,7 @@ fn parse_custom(level: &str)
         while let (Some(c1), Some(c2)) = (chars.next(), chars.next()) {
             let c = map[r].len();
 
+            let mut has_box = false;
             match c1 {
                 '<' => {
                     if c2 != '>' { return Err(ParserErr::Pos(r, c)); }
@@ -75,7 +78,10 @@ fn parse_custom(level: &str)
                     continue; // skip parsing c2
                 }
                 ' ' => {}
-                'B' => boxes.push(Pos::new(r, c)),
+                'B' => {
+                    boxes.push(Pos::new(r, c));
+                    has_box = true;
+                }
                 'P' => {
                     if player_pos.is_some() { return Err(ParserErr::MultiplePlayers); }
                     player_pos = Some(Pos::new(r, c));
@@ -90,6 +96,7 @@ fn parse_custom(level: &str)
                 }
                 'R' => {
                     if remover.is_some() { return Err(ParserErr::MultipleRemovers); }
+                    if has_box { return Err(ParserErr::BoxOnRemover); }
                     remover = Some(Pos::new(r, c));
                     map[r].push(MapCell::Remover);
                 }
@@ -154,7 +161,6 @@ fn parse_xsb(level: &str)
                 }
                 'R' => {
                     // this is player on remover, box on remover makes no sense
-                    // TODO box on remover in custom
                     if player_pos.is_some() {
                         return Err(ParserErr::MultiplePlayers);
                     }
@@ -211,6 +217,16 @@ mod tests {
 <><><><>
 ";
         assert_failure_custom(level, ParserErr::RemoverAndGoals);
+    }
+
+    #[test]
+    fn custom_fail_box_on_remover() {
+        let level = r"
+<><><><>
+<>P BR<>
+<><><><>
+";
+        assert_failure_custom(level, ParserErr::BoxOnRemover);
     }
 
     #[test]
