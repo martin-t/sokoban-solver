@@ -24,8 +24,6 @@ use clap::{App, Arg, ArgGroup};
 
 use data::Format;
 
-// TODO check all printing code for trailing newlines
-
 fn main() {
     let matches = App::new("sokoban-solver")
         .author("martin-t")

@@ -24,7 +24,7 @@ impl Level {
 
 impl Display for Level {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        writeln!(f, "{}", self.to_string(Format::Xsb))
+        write!(f, "{}", self.to_string(Format::Xsb))
     }
 }
 
