@@ -1,3 +1,7 @@
+use std::fmt;
+use std::fmt::{Display, Formatter};
+
+use data::Format;
 use level::{Map, State, Vec2d};
 
 #[derive(Debug, Clone)]
@@ -10,5 +14,11 @@ pub struct SolverLevel {
 impl SolverLevel {
     pub fn new(map: Map, state: State, dead_ends: Vec2d<bool>) -> Self {
         Self { map, state, dead_ends }
+    }
+}
+
+impl Display for SolverLevel {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        writeln!(f, "{}", self.map.to_string(&self.state, Format::Xsb))
     }
 }

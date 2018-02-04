@@ -210,13 +210,6 @@ fn heuristic(map: &Map, state: &State) -> i32 {
 }
 
 fn find_dead_ends(map: &Map) -> Vec2d<bool> {
-    // TODO test case
-    // #####
-    // ##@##
-    // ##$##
-    // #  .#
-    // #####
-
     let mut dead_ends = map.grid.create_scratch_map(false);
 
     for r in 0..map.grid.0.len() {
@@ -413,6 +406,26 @@ mod tests {
 ";
         let level = parser::parse(level, Format::Xsb).unwrap();
         assert_eq!(processed_map(&level).unwrap_err(), SolverErr::UnreachableBoxes);
+    }
+
+    #[test]
+    fn test_dead_ends() {
+        let level = r"
+#####
+##@##
+##$##
+#  .#
+#####";
+        let level = parser::parse(level, Format::Xsb).unwrap();
+        let solver_level = processed_map(&level).unwrap();
+        let expected = vec![
+            vec![false, false, false, false, false],
+            vec![false, false, true, false, false],
+            vec![false, false, true, false, false],
+            vec![false, true, false, false, false],
+            vec![false, false, false, false, false],
+        ];
+        assert_eq!(solver_level.dead_ends.0, expected);
     }
 
     #[test]

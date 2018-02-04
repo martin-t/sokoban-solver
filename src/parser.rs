@@ -27,7 +27,7 @@ impl Display for ParserErr {
 
 pub fn parse(level: &str, format: Format) -> Result<Level, ParserErr> {
     // trim so we can specify levels using raw strings more easily
-    let level = level.trim_matches('\n');
+    let level = level.trim_matches('\n').trim_right();
 
     let (grid, goals, remover, boxes, player_pos) = match format {
         Format::Custom => parse_custom(level)?,
@@ -115,8 +115,8 @@ fn parse_xsb(level: &str)
 
     for (r, line) in level.lines().enumerate() {
         let mut line_tiles = Vec::new();
-        for (c, char) in line.chars().enumerate() {
-            let tile = match char {
+        for (c, cur_char) in line.chars().enumerate() {
+            let tile = match cur_char {
                 '#' => {
                     MapCell::Wall
                 }

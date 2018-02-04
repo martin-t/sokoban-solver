@@ -16,9 +16,15 @@ impl Level {
         Level { map, state }
     }
 
-    #[allow(dead_code)]
+    // TODO default to XSB everywhere for Display
     pub fn to_string(&self, format: Format) -> String {
         self.map.to_string(&self.state, format)
+    }
+}
+
+impl Display for Level {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        writeln!(f, "{}", self.to_string(Format::Xsb))
     }
 }
 
