@@ -7,24 +7,22 @@ pub enum Format {
     Xsb,
 }
 
-// TODO profile with i8,u8,usize
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Pos {
-    pub r: i32,
-    pub c: i32,
+    pub r: u8,
+    pub c: u8,
 }
 
 impl Pos {
     pub fn new(r: usize, c: usize) -> Pos {
         Pos {
-            r: r as i32,
-            c: c as i32,
+            r: r as u8,
+            c: c as u8,
         }
     }
 
     pub fn dist(self, other: Pos) -> i32 {
-        (self.r - other.r).abs() + (self.c - other.c).abs()
+        (self.r as i32 - other.r as i32).abs() + (self.c as i32 - other.c as i32).abs()
     }
 
     pub fn neighbors(self) -> [Pos; 4] {

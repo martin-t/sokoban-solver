@@ -61,7 +61,7 @@ pub fn processed_map(level: &Level) -> Result<SolverLevel, SolverErr> {
         return Err(SolverErr::TooLarge);
     }
 
-    let mut to_visit = vec![(level.state.player_pos.r, level.state.player_pos.c)];
+    let mut to_visit = vec![(level.state.player_pos.r as i32, level.state.player_pos.c as i32)];
     let mut visited = level.map.grid.create_scratch_map(false).0;
 
     while !to_visit.is_empty() {
@@ -70,7 +70,7 @@ pub fn processed_map(level: &Level) -> Result<SolverLevel, SolverErr> {
 
         let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
         for &(nr, nc) in neighbors.iter() {
-            // this is the only place we need to check bounds
+            // this is the only place we need to check bounds (using signed types)
             // everything after that will be surrounded by walls
             // TODO make sure we're not wasting time bounds checking anywhere else
             if nr < 0
