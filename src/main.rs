@@ -31,11 +31,11 @@ fn main() {
         .arg(Arg::with_name("custom")
             .short("-c")
             .long("--custom")
-            .help("parse as custom format"))
+            .help("print as custom format"))
         .arg(Arg::with_name("xsb")
             .short("-x")
             .long("--xsb")
-            .help("parse as XSB format (default)"))
+            .help("print as XSB format (default)"))
         .group(ArgGroup::with_name("format")
             .arg("custom")
             .arg("xsb"))
@@ -56,7 +56,7 @@ fn main() {
         process::exit(1);
     });
 
-    let level = parser::parse(&level, format).unwrap_or_else(|err| {
+    let level = parser::parse(&level).unwrap_or_else(|err| {
         println!("Failed to parse: {}", err);
         process::exit(1);
     });
@@ -83,36 +83,35 @@ mod tests {
     use test::Bencher;
 
     use super::*;
-    use data::Format::*;
 
-    #[test_case("custom", "01-simplest-xsb.txt", Xsb)]
-    #[test_case("custom", "01-simplest-custom.txt", Custom)]
-    #[test_case("custom", "02-one-way.txt", Custom)]
-    #[test_case("custom", "03-long-way.txt", Custom)]
-    #[test_case("custom", "04-two-boxes.txt", Custom)]
-    #[test_case("custom", "05-google-images-play.txt", Custom)]
-    #[test_case("custom", "06-google-images-1.txt", Custom)]
-    #[test_case("custom", "07-boxxle-1-1.txt", Custom)]
-    #[test_case("custom", "easy-2.txt", Custom)]
-    #[test_case("custom", "moderate-6.txt", Custom)]
-    #[test_case("custom", "moderate-7.txt", Custom)]
-    #[test_case("custom", "no-solution-parking.txt", Xsb)]
-    #[test_case("boxxle1", "1.txt", Xsb)]
-    #[test_case("boxxle1", "2.txt", Xsb)]
-    #[test_case("boxxle1", "3.txt", Xsb)]
-    #[test_case("boxxle1", "4.txt", Xsb)]
-    #[test_case("boxxle1", "5.txt", Xsb)]
-    #[test_case("boxxle1", "6.txt", Xsb)]
-    #[test_case("boxxle1", "7.txt", Xsb)]
-    #[test_case("boxxle1", "8.txt", Xsb)]
-    #[test_case("boxxle1", "9.txt", Xsb)]
-    #[test_case("boxxle1", "10.txt", Xsb)]
-    fn test_levels(level_pack: &str, level_name: &str, format: Format) {
-        test_level(level_pack, level_name, format);
+    #[test_case("custom", "01-simplest-xsb.txt")]
+    #[test_case("custom", "01-simplest-custom.txt")]
+    #[test_case("custom", "02-one-way.txt")]
+    #[test_case("custom", "03-long-way.txt")]
+    #[test_case("custom", "04-two-boxes.txt")]
+    #[test_case("custom", "05-google-images-play.txt")]
+    #[test_case("custom", "06-google-images-1.txt")]
+    #[test_case("custom", "07-boxxle-1-1.txt")]
+    #[test_case("custom", "easy-2.txt")]
+    #[test_case("custom", "moderate-6.txt")]
+    #[test_case("custom", "moderate-7.txt")]
+    #[test_case("custom", "no-solution-parking.txt")]
+    #[test_case("boxxle1", "1.txt")]
+    #[test_case("boxxle1", "2.txt")]
+    #[test_case("boxxle1", "3.txt")]
+    #[test_case("boxxle1", "4.txt")]
+    #[test_case("boxxle1", "5.txt")]
+    #[test_case("boxxle1", "6.txt")]
+    #[test_case("boxxle1", "7.txt")]
+    #[test_case("boxxle1", "8.txt")]
+    #[test_case("boxxle1", "9.txt")]
+    #[test_case("boxxle1", "10.txt")]
+    fn test_levels(level_pack: &str, level_name: &str) {
+        test_level(level_pack, level_name);
     }
 
     // separate fn to get stack traces with correct line numbers
-    fn test_level(level_pack: &str, level_name: &str, format: Format) {
+    fn test_level(level_pack: &str, level_name: &str) {
         use std::fmt::Write;
 
         let level_path = format!("levels/{}/{}", level_pack, level_name);
@@ -120,7 +119,7 @@ mod tests {
         println!("{}", level_path);
 
         let level = utils::read_file(&level_path).unwrap();
-        let level = parser::parse(&level, format).unwrap();
+        let level = parser::parse(&level).unwrap();
         let solution = solver::solve(&level, false).unwrap();
 
         let mut out = String::new();
@@ -205,7 +204,7 @@ mod tests {
 
     fn bench_level(level_path: &str, b: &mut Bencher) {
         let level = utils::read_file(level_path).unwrap();
-        let level = parser::parse(&level, Format::Xsb).unwrap();
+        let level = parser::parse(&level).unwrap();
 
         b.iter(|| {
             solver::solve(&level, false)

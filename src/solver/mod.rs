@@ -405,7 +405,6 @@ fn expand_move(map: &MapState, state: &State) -> Vec<State> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use data::Format;
     use parser;
 
     #[test]
@@ -415,7 +414,7 @@ mod tests {
 #@$.#$.#
 ########
 ";
-        let level = parser::parse(level, Format::Xsb).unwrap();
+        let level = parser::parse(level).unwrap();
         assert_eq!(processed_map(&level).unwrap_err(), SolverErr::UnreachableBoxes);
     }
 
@@ -427,7 +426,7 @@ mod tests {
 ##$##
 #  .#
 #####";
-        let level = parser::parse(level, Format::Xsb).unwrap();
+        let level = parser::parse(level).unwrap();
         let solver_level = processed_map(&level).unwrap();
         let expected = vec![
             vec![false, false, false, false, false],
@@ -453,7 +452,7 @@ mod tests {
 <><>    <>
 <><><><><>
 ";
-        let level = parser::parse(&level, Format::Custom).unwrap();
+        let level = parser::parse(&level).unwrap();
         let solver_level = processed_map(&level).unwrap();
         let neighbor_states = expand(&solver_level.map, &solver_level.state, &solver_level.dead_ends);
         assert_eq!(neighbor_states.len(), 2);

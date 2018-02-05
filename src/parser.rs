@@ -27,7 +27,14 @@ impl Display for ParserErr {
     }
 }
 
-pub fn parse(level: &str, format: Format) -> Result<Level, ParserErr> {
+pub fn parse(level: &str) -> Result<Level, ParserErr> {
+    match level.trim_left().chars().next() {
+        Some('<') => parse_format(level, Format::Custom),
+        _ => parse_format(level, Format::Xsb),
+    }
+}
+
+pub fn parse_format(level: &str, format: Format) -> Result<Level, ParserErr> {
     // trim so we can specify levels using raw strings more easily
     let level = level.trim_matches('\n').trim_right();
 
@@ -195,7 +202,7 @@ mod tests {
     #[test]
     fn custom_fail_empty() {
         let level = "";
-        assert_failure_custom(level, ParserErr::NoPlayer);
+        assert_failure(level, ParserErr::NoPlayer);
     }
 
     #[test]
@@ -205,7 +212,7 @@ mod tests {
 <>  <>
 <><><>
 ";
-        assert_failure_custom(level, ParserErr::NoPlayer);
+        assert_failure(level, ParserErr::NoPlayer);
     }
 
     #[test]
@@ -216,7 +223,7 @@ mod tests {
 <> _  <>
 <><><><>
 ";
-        assert_failure_custom(level, ParserErr::RemoverAndGoals);
+        assert_failure(level, ParserErr::RemoverAndGoals);
     }
 
     #[test]
@@ -226,7 +233,7 @@ mod tests {
 <>P BR<>
 <><><><>
 ";
-        assert_failure_custom(level, ParserErr::BoxOnRemover);
+        assert_failure(level, ParserErr::BoxOnRemover);
     }
 
     #[test]
@@ -271,7 +278,7 @@ mod tests {
 #@X.#
 #####
 ";
-        assert_failure_xsb(level, ParserErr::Pos(1, 2));
+        assert_failure(level, ParserErr::Pos(1, 2));
     }
 
     #[test]
@@ -313,21 +320,18 @@ mod tests {
         assert_success_xsb(level);
     }
 
-    fn assert_failure_custom(input_level: &str, expected_err: ParserErr) {
-        assert_eq!(parse(input_level, Format::Custom).unwrap_err(), expected_err);
+    fn assert_failure(input_level: &str, expected_err: ParserErr) {
+        // shared for XSB and custom because no need to print here
+        assert_eq!(parse(input_level).unwrap_err(), expected_err);
     }
 
     fn assert_success_custom(input_level: &str) {
-        let level = parse(input_level, Format::Custom).unwrap();
+        let level = parse_format(input_level, Format::Custom).unwrap();
         assert_eq!(level.to_string(Format::Custom), input_level.trim_left_matches('\n'));
     }
 
-    fn assert_failure_xsb(input_level: &str, expected_err: ParserErr) {
-        assert_eq!(parse(input_level, Format::Xsb).unwrap_err(), expected_err);
-    }
-
     fn assert_success_xsb(input_level: &str) {
-        let level = parse(input_level, Format::Xsb).unwrap();
+        let level = parse_format(input_level, Format::Xsb).unwrap();
         assert_eq!(level.to_string(Format::Xsb), input_level.trim_left_matches('\n'));
     }
 }
