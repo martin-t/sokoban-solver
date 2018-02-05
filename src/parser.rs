@@ -1,5 +1,6 @@
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 
 use data::{Format, Pos};
 use level::{Level, Map, MapCell, Vec2d, State};
@@ -24,6 +25,14 @@ impl Display for ParserErr {
             ParserErr::NoPlayer => write!(f, "No player"),
             ParserErr::RemoverAndGoals => write!(f, "Both remover and goals"),
         }
+    }
+}
+
+impl FromStr for Level {
+    type Err = ParserErr;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        parse(s)
     }
 }
 
@@ -322,7 +331,7 @@ mod tests {
 
     fn assert_failure(input_level: &str, expected_err: ParserErr) {
         // shared for XSB and custom because no need to print here
-        assert_eq!(parse(input_level).unwrap_err(), expected_err);
+        assert_eq!(input_level.parse::<Level>().unwrap_err(), expected_err);
     }
 
     fn assert_success_custom(input_level: &str) {

@@ -56,7 +56,7 @@ fn main() {
         process::exit(1);
     });
 
-    let level = parser::parse(&level).unwrap_or_else(|err| {
+    let level = level.parse().unwrap_or_else(|err| {
         println!("Failed to parse: {}", err);
         process::exit(1);
     });
@@ -119,7 +119,7 @@ mod tests {
         println!("{}", level_path);
 
         let level = utils::read_file(&level_path).unwrap();
-        let level = parser::parse(&level).unwrap();
+        let level = level.parse().unwrap();
         let solution = solver::solve(&level, false).unwrap();
 
         let mut out = String::new();
@@ -204,7 +204,7 @@ mod tests {
 
     fn bench_level(level_path: &str, b: &mut Bencher) {
         let level = utils::read_file(level_path).unwrap();
-        let level = parser::parse(&level).unwrap();
+        let level = level.parse().unwrap();
 
         b.iter(|| {
             solver::solve(&level, false)
