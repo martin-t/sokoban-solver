@@ -49,18 +49,6 @@ impl Add<Dir> for Pos {
 }
 
 
-/*const UP: Dir = Dir { r: -1, c: 0 };
-const RIGHT: Dir = Dir { r: 0, c: 1 };
-const DOWN: Dir = Dir { r: 1, c: 0 };
-const LEFT: Dir = Dir { r: 0, c: -1 };
-pub const DIRECTIONS: [Dir; 4] = [UP, RIGHT, DOWN, LEFT];
-
-#[derive(Debug, Clone, Copy)]
-pub struct Dir {
-    pub r: i32,
-    pub c: i32,
-}*/
-
 pub const DIRECTIONS: [Dir; 4] = [Dir::Up, Dir::Right, Dir::Down, Dir::Left];
 
 #[derive(Debug, Clone, Copy)]
