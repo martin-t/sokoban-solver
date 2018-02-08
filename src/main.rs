@@ -115,7 +115,7 @@ mod tests {
         use std::fmt::Write;
 
         let level_path = format!("levels/{}/{}", level_pack, level_name);
-        let result_file = format!("levels/{}-results/{}", level_pack, level_name);
+        let result_file = format!("levels/{}-pushes/{}", level_pack, level_name);
         println!("{}", level_path);
 
         let level = utils::read_file(&level_path).unwrap();
