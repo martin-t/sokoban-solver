@@ -1,4 +1,4 @@
-Moves: 3
+Pushes: 3
 States created total: 4
 Unique visited total: 4
 Reached duplicates total: 0

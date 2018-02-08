@@ -12,7 +12,22 @@ use level::{Level, Map, Vec2d, MapCell, State};
 use self::a_star::{SearchState, Stats};
 use self::level::SolverLevel;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Method {
+    Moves,
+    Pushes,
+}
+
+impl Display for Method {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match *self {
+            Method::Moves => write!(f, "Moves"),
+            Method::Pushes => write!(f, "Pushes"),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub enum SolverErr {
     TooLarge,
     IncompleteBorder,
@@ -41,11 +56,12 @@ pub struct SolverOk {
     // TODO probably wanna use Dirs or Moves eventually
     pub path_states: Option<Vec<State>>,
     pub stats: Stats,
+    pub method: Method,
 }
 
 impl SolverOk {
-    fn new(path_states: Option<Vec<State>>, stats: Stats) -> Self {
-        Self { path_states, stats }
+    fn new(path_states: Option<Vec<State>>, stats: Stats, method: Method) -> Self {
+        Self { path_states, stats, method }
     }
 }
 
@@ -53,24 +69,22 @@ impl Debug for SolverOk {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self.path_states {
             None => writeln!(f, "No solution")?,
-            Some(ref states) => writeln!(f, "Moves: {}", states.len() - 1)?, // TODO moves vs pushes
+            Some(ref states) => writeln!(f, "{}: {}", self.method, states.len() - 1)?,
         }
         write!(f, "{}", self.stats)
     }
 }
 
 
-pub fn solve_pushes(level: &Level, print_status: bool) -> Result<SolverOk, SolverErr> {
+pub fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
     let solver_level = process_map(level)?;
-    Ok(search(&solver_level, print_status, expand_push, heuristic_push))
+    match method {
+        Method::Moves => Ok(search(&solver_level, method, print_status, expand_move, heuristic_move)),
+        Method::Pushes => Ok(search(&solver_level, method, print_status, expand_push, heuristic_push)),
+    }
 }
 
-pub fn solve_moves(level: &Level, print_status: bool) -> Result<SolverOk, SolverErr> {
-    let solver_level = process_map(level)?;
-    Ok(search(&solver_level, print_status, expand_move, heuristic_move))
-}
-
-pub fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
+fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
     // Only guarantees we have here is the player exists and therefore map is at least 1x1.
     // Do some more low level checking so we can omit some checks later.
 
@@ -165,8 +179,8 @@ pub fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
     Ok(SolverLevel::new(processed_map, clean_state, dead_ends))
 }
 
-pub fn search<Expand, Heuristic>(level: &SolverLevel, print_status: bool,
-                                 expand: Expand, heuristic: Heuristic) -> SolverOk
+fn search<Expand, Heuristic>(level: &SolverLevel, method: Method, print_status: bool,
+                             expand: Expand, heuristic: Heuristic) -> SolverOk
     where Expand: Fn(&Map, &State, &Vec2d<bool>) -> Vec<State>,
           Heuristic: Fn(&Map, &State) -> i32
 {
@@ -204,7 +218,7 @@ pub fn search<Expand, Heuristic>(level: &SolverLevel, print_status: bool,
         if solved(&level.map, &current.state) {
             return SolverOk::new(
                 Some(backtrack_path(&prev, &current.state)),
-                stats);
+                stats, method);
         }
 
         for neighbor_state in expand(&level.map, &current.state, &level.dead_ends) {
@@ -226,7 +240,7 @@ pub fn search<Expand, Heuristic>(level: &SolverLevel, print_status: bool,
         closed.insert(current.state);
     }
 
-    SolverOk::new(None, stats)
+    SolverOk::new(None, stats, method)
 }
 
 fn find_dead_ends(map: &Map) -> Vec2d<bool> {
@@ -250,7 +264,8 @@ fn find_dead_ends(map: &Map) -> Vec2d<bool> {
                     boxes: vec![box_pos],
                 };
                 let fake_level = SolverLevel::new(map.clone(), fake_state, dead_ends.clone());
-                if let Some(_) = search(&fake_level, false, expand_push, heuristic_push).path_states {
+                if let Some(_) = search(&fake_level, Method::Pushes, false,
+                                        expand_push, heuristic_push).path_states {
                     //print!("cont");
                     continue 'cell; // need to find only one solution
                 }

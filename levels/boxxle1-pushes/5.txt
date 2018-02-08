@@ -1,4 +1,4 @@
-Moves: 27
+Pushes: 27
 States created total: 14,459
 Unique visited total: 4,245
 Reached duplicates total: 7,842

@@ -7,6 +7,7 @@ extern crate test_case_derive;
 #[cfg(test)]
 extern crate test;
 
+#[macro_use]
 extern crate clap;
 extern crate separator;
 
@@ -22,12 +23,13 @@ use std::process;
 
 use clap::{App, Arg, ArgGroup};
 
+use solver::Method;
 use data::Format;
 
 fn main() {
     let matches = App::new("sokoban-solver")
-        .author("martin-t")
-        .version("0.0")
+        .author(crate_authors!())
+        .version(crate_version!())
         .arg(Arg::with_name("custom")
             .short("-c")
             .long("--custom")
@@ -37,17 +39,25 @@ fn main() {
             .long("--xsb")
             .help("print as XSB format (default)"))
         .group(ArgGroup::with_name("format")
-            .arg("custom")
-            .arg("xsb"))
-        .arg(Arg::with_name("file")
+            .args(&["custom", "xsb"]))
+        .arg(Arg::with_name("moves")
+            .short("-m")
+            .long("--moves")
+            .help("search for move-optimal solution"))
+        .arg(Arg::with_name("pushes")
+            .short("-p")
+            .long("--pushes")
+            .help("search for push-optimal solution (default)"))
+        .group(ArgGroup::with_name("method")
+            .args(&["moves", "pushes"]))
+        .arg(Arg::with_name("level-file")
             .required(true))
         .get_matches();
 
-    let format = if matches.is_present("custom") {
-        Format::Custom
-    } else {
-        Format::Xsb
-    };
+    let format =
+        if matches.is_present("custom") { Format::Custom } else { Format::Xsb };
+    let method =
+        if matches.is_present("moves") { Method::Moves } else { Method::Pushes };
     let path = matches.value_of("file").unwrap();
 
     let level = utils::read_file(path).unwrap_or_else(|err| {
@@ -63,7 +73,7 @@ fn main() {
 
     println!("Solving...");
     // TODO use steps instead?
-    let solver_ok = solver::solve_pushes(&level, true).unwrap();
+    let solver_ok = solver::solve(&level, method, true).unwrap();
     println!("{}", solver_ok.stats);
     match solver_ok.path_states {
         Some(path) => {
@@ -107,7 +117,7 @@ mod tests {
     #[test_case("boxxle1", "9.txt")]
     #[test_case("boxxle1", "10.txt")]
     fn test_push_optimal(level_pack: &str, level_name: &str) {
-        test_level(level_pack, level_name, true);
+        test_level(level_pack, level_name, Method::Pushes);
     }
 
     #[test_case("custom", "01-simplest-xsb.txt")]
@@ -133,32 +143,25 @@ mod tests {
     //#[test_case("boxxle1", "9.txt")]
     #[test_case("boxxle1", "10.txt")]
     fn test_move_optimal(level_pack: &str, level_name: &str) {
-        test_level(level_pack, level_name, false);
+        test_level(level_pack, level_name, Method::Moves);
     }
 
     #[test]
     #[ignore]
-    fn for_debugging() {
-        test_level("boxxle1", "1.txt", false);
-    }
+    fn for_debugging() {}
 
     // separate fn to get stack traces with correct line numbers
-    fn test_level(level_pack: &str, level_name: &str, pushes: bool) {
-        let res_folder = if pushes { "pushes" } else { "moves" };
-
+    fn test_level(level_pack: &str, level_name: &str, method: Method) {
         use std::fmt::Write;
 
+        let res_folder = method.to_string().to_lowercase();
         let level_path = format!("levels/{}/{}", level_pack, level_name);
         let result_file = format!("levels/{}-{}/{}", level_pack, res_folder, level_name);
         println!("{}", level_path);
 
         let level = utils::read_file(&level_path).unwrap();
         let level = level.parse().unwrap();
-        let solution = if pushes {
-            solver::solve_pushes(&level, false).unwrap()
-        } else {
-            solver::solve_moves(&level, false).unwrap()
-        };
+        let solution = solver::solve(&level, method, false).unwrap();
 
         let mut out = String::new();
         write!(out, "{:?}", solution).unwrap();
@@ -220,35 +223,35 @@ mod tests {
     #[bench]
     fn bench_boxxle1_1(b: &mut Bencher) {
         // 3 goals in a row
-        bench_level("levels/boxxle1/1.txt", b);
+        bench_level("levels/boxxle1/1.txt", Method::Pushes, b);
     }
 
     #[bench]
     fn bench_boxxle1_5(b: &mut Bencher) {
         // 4 boxes goal room
-        bench_level("levels/boxxle1/5.txt", b);
+        bench_level("levels/boxxle1/5.txt", Method::Pushes, b);
     }
 
     #[bench]
     #[ignore]
     fn bench_boxxle1_18(b: &mut Bencher) {
         // 6 boxes - tiny goalroom
-        bench_level("levels/boxxle1/18.txt", b);
+        bench_level("levels/boxxle1/18.txt", Method::Pushes, b);
     }
 
     #[bench]
     #[ignore]
     fn bench_boxxle1_108(b: &mut Bencher) {
         // 6 boxes in the middle
-        bench_level("levels/boxxle1/108.txt", b);
+        bench_level("levels/boxxle1/108.txt", Method::Pushes, b);
     }
 
-    fn bench_level(level_path: &str, b: &mut Bencher) {
+    fn bench_level(level_path: &str, method: Method, b: &mut Bencher) {
         let level = utils::read_file(level_path).unwrap();
         let level = level.parse().unwrap();
 
         b.iter(|| {
-            solver::solve_pushes(&level, false)
+            solver::solve(&level, method, false)
         });
     }
 }
