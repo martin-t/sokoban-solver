@@ -60,24 +60,33 @@ impl Debug for SolverOk {
 
 
 pub fn solve(level: &Level, print_status: bool) -> Result<SolverOk, SolverErr> {
-    let solver_level = processed_map(level)?;
+    let solver_level = process_map(level)?;
     Ok(search(&solver_level, print_status))
 }
 
-pub fn processed_map(level: &Level) -> Result<SolverLevel, SolverErr> {
+pub fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
     // Only guarantees we have here is the player exists and therefore map is at least 1x1.
     // Do some more low level checking so we can omit some checks later.
 
-    if level.map.grid.0.len() > 255 || level.map.grid.0[0].len() > 255 {
+    // make sure all rows have the same length
+    /*let mut grid = level.map.grid;
+    let cols = grid.iter().map(|row| row.len()).max().unwrap();
+    for row in grid.iter_mut() {
+        while row.len() < cols {
+            row.push(MapCell::Wall);
+        }
+    }*/
+
+    if level.map.grid.rows() > 255 || level.map.grid.cols(0) > 255 {
         return Err(SolverErr::TooLarge);
     }
 
     let mut to_visit = vec![(level.state.player_pos.r as i32, level.state.player_pos.c as i32)];
-    let mut visited = level.map.grid.create_scratch_map(false).0;
+    let mut visited = level.map.grid.create_scratch_map(false);
 
     while !to_visit.is_empty() {
         let (r, c) = to_visit.pop().unwrap();
-        visited[r as usize][c as usize] = true;
+        visited[(r, c)] = true;
 
         let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
         for &(nr, nc) in neighbors.iter() {
@@ -86,13 +95,13 @@ pub fn processed_map(level: &Level) -> Result<SolverLevel, SolverErr> {
             // TODO make sure we're not wasting time bounds checking anywhere else
             if nr < 0
                 || nc < 0
-                || nr as usize >= level.map.grid.0.len()
-                || nc as usize >= level.map.grid.0[nr as usize].len() {
+                || nr as usize >= level.map.grid.rows()
+                || nc as usize >= level.map.grid.cols(nr as usize) {
                 // we got out of bounds without hitting a wall
                 return Err(SolverErr::IncompleteBorder);
             }
 
-            if !visited[nr as usize][nc as usize] && level.map.grid.0[nr as usize][nc as usize] != MapCell::Wall {
+            if !visited[(nr, nc)] && level.map.grid[(nr, nc)] != MapCell::Wall {
                 to_visit.push((nr, nc));
             }
         }
@@ -109,7 +118,7 @@ pub fn processed_map(level: &Level) -> Result<SolverLevel, SolverErr> {
     let mut reachable_boxes = Vec::new();
     for &pos in level.state.boxes.iter() {
         let (r, c) = (pos.r as usize, pos.c as usize);
-        if visited[r][c] {
+        if visited[(r, c)] {
             reachable_boxes.push(pos);
         } else if !level.map.goals.contains(&pos) {
             return Err(SolverErr::UnreachableBoxes);
@@ -117,20 +126,20 @@ pub fn processed_map(level: &Level) -> Result<SolverLevel, SolverErr> {
     }
     for &pos in level.map.goals.iter() {
         let (r, c) = (pos.r as usize, pos.c as usize);
-        if visited[r][c] {
+        if visited[(r, c)] {
             reachable_goals.push(pos);
         } else if !level.state.boxes.contains(&pos) {
             return Err(SolverErr::UnreachableGoals);
         }
     }
 
-    // FIXME maybe do this first and use it instead of visited when detecting reachability in specialized fns?
+    // TODO maybe do this first and use it instead of visited when detecting reachability in specialized fns?
     // to avoid errors with some code that iterates through all non-walls
     let mut processed_grid = level.map.grid.clone();
-    for r in 0..processed_grid.0.len() {
-        for c in 0..processed_grid.0[r].len() {
-            if !visited[r][c] {
-                processed_grid.0[r][c] = MapCell::Wall;
+    for r in 0..processed_grid.rows() {
+        for c in 0..processed_grid.cols(r) {
+            if !visited[(r, c)] {
+                processed_grid[(r, c)] = MapCell::Wall;
             }
         }
     }
@@ -223,9 +232,8 @@ fn heuristic(map: &Map, state: &State) -> i32 {
 fn find_dead_ends(map: &Map) -> Vec2d<bool> {
     let mut dead_ends = map.grid.create_scratch_map(false);
 
-    for r in 0..map.grid.0.len() {
-        // TODO make .0 private
-        'cell: for c in 0..map.grid.0[r].len() {
+    for r in 0..map.grid.rows() {
+        'cell: for c in 0..map.grid.cols(r) {
             let box_pos = Pos::new(r, c);
             if map.grid[box_pos] == MapCell::Wall {
                 //print!("w");
@@ -247,7 +255,7 @@ fn find_dead_ends(map: &Map) -> Vec2d<bool> {
                     continue 'cell; // need to find only one solution
                 }
             }
-            dead_ends.0[r][c] = true; // no solution from any direction
+            dead_ends[(r, c)] = true; // no solution from any direction
         }
     }
 
@@ -414,7 +422,7 @@ mod tests {
 ########
 ";
         let level = level.parse().unwrap();
-        assert_eq!(processed_map(&level).unwrap_err(), SolverErr::UnreachableBoxes);
+        assert_eq!(process_map(&level).unwrap_err(), SolverErr::UnreachableBoxes);
     }
 
     #[test]
@@ -426,15 +434,15 @@ mod tests {
 #  .#
 #####";
         let level = level.parse().unwrap();
-        let solver_level = processed_map(&level).unwrap();
-        let expected = vec![
+        let solver_level = process_map(&level).unwrap();
+        let expected = Vec2d::new(vec![
             vec![false, false, false, false, false],
             vec![false, false, true, false, false],
             vec![false, false, true, false, false],
             vec![false, true, false, false, false],
             vec![false, false, false, false, false],
-        ];
-        assert_eq!(solver_level.dead_ends.0, expected);
+        ]);
+        assert_eq!(solver_level.dead_ends, expected);
     }
 
     #[test]
@@ -452,7 +460,7 @@ mod tests {
 <><><><><>
 ";
         let level = level.parse().unwrap();
-        let solver_level = processed_map(&level).unwrap();
+        let solver_level = process_map(&level).unwrap();
         let neighbor_states = expand(&solver_level.map, &solver_level.state, &solver_level.dead_ends);
         assert_eq!(neighbor_states.len(), 2);
     }

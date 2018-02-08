@@ -120,11 +120,24 @@ impl Map {
 
 // TODO bench a single vector as map representation
 // TODO rename / unify with Vec2d trait :)
-// TODO don't allow creating empty (if possible without a perf hit)
-#[derive(Debug, Clone)]
-pub struct Vec2d<T>(pub Vec<Vec<T>>);
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Vec2d<T>(Vec<Vec<T>>);
 
 impl<T> Vec2d<T> {
+    pub fn new(grid: Vec<Vec<T>>) -> Self {
+        // TODO don't allow creating empty
+        // TODO make sure it's not jagged
+        Vec2d(grid)
+    }
+
+    pub fn rows(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn cols(&self, r: usize) -> usize {
+        self.0[r].len()
+    }
+
     pub fn create_scratch_map<U>(&self, default: U) -> Vec2d<U>
         where U: Copy
     {
@@ -147,6 +160,34 @@ impl<T> Index<Pos> for Vec2d<T> {
 impl<T> IndexMut<Pos> for Vec2d<T> {
     fn index_mut(&mut self, index: Pos) -> &mut Self::Output {
         &mut self.0[index.r as usize][index.c as usize]
+    }
+}
+
+impl<T> Index<(i32, i32)> for Vec2d<T> {
+    type Output = T;
+
+    fn index(&self, index: (i32, i32)) -> &Self::Output {
+        &self.0[index.0 as usize][index.1 as usize]
+    }
+}
+
+impl<T> IndexMut<(i32, i32)> for Vec2d<T> {
+    fn index_mut(&mut self, index: (i32, i32)) -> &mut Self::Output {
+        &mut self.0[index.0 as usize][index.1 as usize]
+    }
+}
+
+impl<T> Index<(usize, usize)> for Vec2d<T> {
+    type Output = T;
+
+    fn index(&self, index: (usize, usize)) -> &Self::Output {
+        &self.0[index.0][index.1]
+    }
+}
+
+impl<T> IndexMut<(usize, usize)> for Vec2d<T> {
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
+        &mut self.0[index.0][index.1]
     }
 }
 

@@ -52,8 +52,7 @@ pub fn parse_format(level: &str, format: Format) -> Result<Level, ParserErr> {
         Format::Xsb => parse_xsb(level)?,
     };
     let player_pos = player_pos.ok_or(ParserErr::NoPlayer)?;
-    // if player exists, it means size is at least 1x1
-    let grid = Vec2d(grid);
+    let grid = Vec2d::new(grid);
 
     if let Some(_remover) = remover {
         if goals.len() > 0 {
