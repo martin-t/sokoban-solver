@@ -63,7 +63,7 @@ fn main() {
 
     println!("Solving...");
     // TODO use steps instead?
-    let solver_ok = solver::solve(&level, true).unwrap();
+    let solver_ok = solver::solve_pushes(&level, true).unwrap();
     println!("{}", solver_ok.stats);
     match solver_ok.path_states {
         Some(path) => {
@@ -120,7 +120,7 @@ mod tests {
 
         let level = utils::read_file(&level_path).unwrap();
         let level = level.parse().unwrap();
-        let solution = solver::solve(&level, false).unwrap();
+        let solution = solver::solve_pushes(&level, false).unwrap();
 
         let mut out = String::new();
         write!(out, "{:?}", solution).unwrap();
@@ -207,7 +207,7 @@ mod tests {
         let level = level.parse().unwrap();
 
         b.iter(|| {
-            solver::solve(&level, false)
+            solver::solve_pushes(&level, false)
         });
     }
 }

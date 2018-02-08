@@ -60,9 +60,14 @@ impl Debug for SolverOk {
 }
 
 
-pub fn solve(level: &Level, print_status: bool) -> Result<SolverOk, SolverErr> {
+pub fn solve_pushes(level: &Level, print_status: bool) -> Result<SolverOk, SolverErr> {
     let solver_level = process_map(level)?;
-    Ok(search(&solver_level, print_status))
+    Ok(search(&solver_level, print_status, expand_push, heuristic_push))
+}
+
+pub fn solve_moves(level: &Level, print_status: bool) -> Result<SolverOk, SolverErr> {
+    let solver_level = process_map(level)?;
+    Ok(search(&solver_level, print_status, expand_move, heuristic_move))
 }
 
 pub fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
@@ -160,7 +165,10 @@ pub fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
     Ok(SolverLevel::new(processed_map, clean_state, dead_ends))
 }
 
-pub fn search(level: &SolverLevel, print_status: bool) -> SolverOk
+pub fn search<Expand, Heuristic>(level: &SolverLevel, print_status: bool,
+                                 expand: Expand, heuristic: Heuristic) -> SolverOk
+    where Expand: Fn(&Map, &State, &Vec2d<bool>) -> Vec<State>,
+          Heuristic: Fn(&Map, &State) -> i32
 {
     let mut stats = Stats::new();
 
@@ -221,16 +229,6 @@ pub fn search(level: &SolverLevel, print_status: bool) -> SolverOk
     SolverOk::new(None, stats)
 }
 
-fn expand(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
-    //expand_move(map, state)
-    expand_push(map, state, dead_ends)
-}
-
-fn heuristic(map: &Map, state: &State) -> i32 {
-    //heuristic_move(map, state)
-    heuristic_push(map, state)
-}
-
 fn find_dead_ends(map: &Map) -> Vec2d<bool> {
     let mut dead_ends = map.grid.create_scratchpad(false);
 
@@ -252,7 +250,7 @@ fn find_dead_ends(map: &Map) -> Vec2d<bool> {
                     boxes: vec![box_pos],
                 };
                 let fake_level = SolverLevel::new(map.clone(), fake_state, dead_ends.clone());
-                if let Some(_) = search(&fake_level, false).path_states {
+                if let Some(_) = search(&fake_level, false, expand_push, heuristic_push).path_states {
                     //print!("cont");
                     continue 'cell; // need to find only one solution
                 }
@@ -281,7 +279,6 @@ fn heuristic_push(map: &Map, state: &State) -> i32 {
     goal_dist_sum
 }
 
-#[allow(unused)]
 fn heuristic_move(map: &Map, state: &State) -> i32 {
     // less is better
 
@@ -378,7 +375,6 @@ fn expand_push(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> 
     new_states
 }
 
-#[allow(unused)]
 fn expand_move(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
     let mut new_states = Vec::new();
 
