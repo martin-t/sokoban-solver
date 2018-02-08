@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 use std::ops::{Index, IndexMut};
 
 use data::{Format, Pos};
+use extensions::Scratch;
 
 
 #[derive(Debug, Clone)]
@@ -50,7 +51,7 @@ impl Map {
     fn to_string_custom(&self, state: &State) -> String {
         let mut ret = String::new();
 
-        let mut state_grid = self.grid.create_scratch_map(Content::Empty);
+        let mut state_grid = self.grid.create_scratchpad(Content::Empty);
         for &b in state.boxes.iter() {
             state_grid[b] = Content::Box;
         }
@@ -85,7 +86,7 @@ impl Map {
     fn to_string_xsb(&self, state: &State) -> String {
         let mut ret = String::new();
 
-        let mut state_grid = self.grid.create_scratch_map(Content::Empty);
+        let mut state_grid = self.grid.create_scratchpad(Content::Empty);
         for &b in state.boxes.iter() {
             state_grid[b] = Content::Box;
         }
@@ -138,9 +139,21 @@ impl<T> Vec2d<T> {
         self.0[r].len()
     }
 
-    pub fn create_scratch_map<U>(&self, default: U) -> Vec2d<U>
+    /*pub fn create_scratchpad<U>(&self, default: U) -> Vec2d<U>
         where U: Copy
     {
+        let mut scratch = Vec::new();
+        for row in self.0.iter() {
+            scratch.push(vec![default; row.len()]);
+        }
+        Vec2d(scratch)
+    }*/
+}
+
+impl<T, Inner: Copy> Scratch<Inner> for Vec2d<T> {
+    type Result = Vec2d<Inner>;
+
+    fn create_scratchpad(&self, default: Inner) -> Self::Result {
         let mut scratch = Vec::new();
         for row in self.0.iter() {
             scratch.push(vec![default; row.len()]);

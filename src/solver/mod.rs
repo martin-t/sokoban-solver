@@ -1,11 +1,12 @@
 pub mod a_star;
 mod level;
 
+use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
-use std::collections::{BinaryHeap, HashMap, HashSet};
 
 use data::{Pos, DIRECTIONS};
+use extensions::Scratch;
 use level::{Level, Map, Vec2d, MapCell, State};
 
 use self::a_star::{SearchState, Stats};
@@ -82,7 +83,7 @@ pub fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
     }
 
     let mut to_visit = vec![(level.state.player_pos.r as i32, level.state.player_pos.c as i32)];
-    let mut visited = level.map.grid.create_scratch_map(false);
+    let mut visited = level.map.grid.create_scratchpad(false);
 
     while !to_visit.is_empty() {
         let (r, c) = to_visit.pop().unwrap();
@@ -230,7 +231,7 @@ fn heuristic(map: &Map, state: &State) -> i32 {
 }
 
 fn find_dead_ends(map: &Map) -> Vec2d<bool> {
-    let mut dead_ends = map.grid.create_scratch_map(false);
+    let mut dead_ends = map.grid.create_scratchpad(false);
 
     for r in 0..map.grid.rows() {
         'cell: for c in 0..map.grid.cols(r) {
@@ -331,13 +332,13 @@ fn solved(map: &Map, state: &State) -> bool {
 fn expand_push(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
     let mut new_states = Vec::new();
 
-    let mut box_grid = map.grid.create_scratch_map(255);
+    let mut box_grid = map.grid.create_scratchpad(255);
     for (i, b) in state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }
 
     // find each box and each direction from which it can be pushed
-    let mut reachable = map.grid.create_scratch_map(false);
+    let mut reachable = map.grid.create_scratchpad(false);
     reachable[state.player_pos] = true;
     let mut to_visit = vec![state.player_pos];
 
