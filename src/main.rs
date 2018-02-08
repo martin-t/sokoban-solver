@@ -246,6 +246,12 @@ mod tests {
         bench_level("levels/boxxle1/108.txt", Method::Pushes, b);
     }
 
+    #[bench]
+    #[ignore]
+    fn bench_boxxle1_1_moves(b: &mut Bencher) {
+        bench_level("levels/boxxle1/1.txt", Method::Moves, b);
+    }
+
     fn bench_level(level_path: &str, method: Method, b: &mut Bencher) {
         let level = utils::read_file(level_path).unwrap();
         let level = level.parse().unwrap();

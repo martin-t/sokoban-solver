@@ -399,7 +399,7 @@ fn expand_move(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> 
         let new_player_pos = state.player_pos + dir;
         if map.grid[new_player_pos] != MapCell::Wall {
             let box_index = box_grid[new_player_pos];
-            let push_dest = new_player_pos + dir; // TODO does this get optimized to after the first condition?
+            let push_dest = new_player_pos + dir;
 
             if box_index == 255 {
                 // step
