@@ -265,6 +265,8 @@ fn find_dead_ends(map: &Map) -> Vec2d<bool> {
 }
 
 fn heuristic_push(map: &Map, state: &State) -> i32 {
+    // less is better
+
     let mut goal_dist_sum = 0;
     for box_pos in &state.boxes {
         let mut min = i32::max_value();
@@ -279,6 +281,7 @@ fn heuristic_push(map: &Map, state: &State) -> i32 {
     goal_dist_sum
 }
 
+#[allow(unused)]
 fn heuristic_move(map: &Map, state: &State) -> i32 {
     // less is better
 
