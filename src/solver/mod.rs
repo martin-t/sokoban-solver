@@ -31,7 +31,7 @@ impl Display for SolverErr {
             SolverErr::UnreachableBoxes => write!(f, "Boxes that are not on goal but can't be reached"),
             SolverErr::UnreachableGoals => write!(f, "Goals that don't have a box but can't be reached"),
             //SolverErr::UnreachableRemover => write!(f, "Remover is not reachable"),
-            SolverErr::TooMany => write!(f, "More than 255 reachable boxes or goals"),
+            SolverErr::TooMany => write!(f, "More than 254 reachable boxes or goals"),
             SolverErr::BoxesGoals => write!(f, "Different number of reachable boxes and goals"),
         }
     }
@@ -78,7 +78,8 @@ pub fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
         }
     }*/
 
-    if level.map.grid.rows() > 255 || level.map.grid.cols(0) > 255 {
+    // only 254 because 255 is used to represent empty in expand_{move,push}
+    if level.map.grid.rows() > 254 || level.map.grid.cols(0) > 254 {
         return Err(SolverErr::TooLarge);
     }
 
@@ -278,7 +279,6 @@ fn heuristic_push(map: &Map, state: &State) -> i32 {
     goal_dist_sum
 }
 
-/*#[allow(unused)]
 fn heuristic_move(map: &Map, state: &State) -> i32 {
     // less is better
 
@@ -303,7 +303,7 @@ fn heuristic_move(map: &Map, state: &State) -> i32 {
     }
 
     closest_box + goal_dist_sum
-}*/
+}
 
 fn backtrack_path(prev: &HashMap<State, State>, final_state: &State) -> Vec<State> {
     let mut ret = Vec::new();
@@ -345,28 +345,29 @@ fn expand_push(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> 
     while !to_visit.is_empty() {
         let player_pos = to_visit.pop().unwrap();
         for &dir in DIRECTIONS.iter() {
-            let move_pos = player_pos + dir;
-            if map.grid[move_pos] == MapCell::Wall {
-                continue;
+            let new_player_pos = player_pos + dir;
+            if map.grid[new_player_pos] == MapCell::Wall {
+                continue; // FIXME necessary? - can't have both wall and box
             }
 
-            let box_index = box_grid[move_pos];
+            let box_index = box_grid[new_player_pos];
             if box_index < 255 {
                 // new_pos has a box
-                let push_dest = move_pos + dir;
+                let push_dest = new_player_pos + dir;
                 if box_grid[push_dest] == 255
-                    && map.grid[push_dest] != MapCell::Wall && !dead_ends[push_dest] {
+                    && map.grid[push_dest] != MapCell::Wall
+                    && !dead_ends[push_dest] { // TODO could we abuse dead_ends to avoid wall detection when pushing?
                     // new state to explore
 
                     let mut new_boxes = state.boxes.clone();
                     new_boxes[box_index as usize] = push_dest;
                     // TODO normalize player pos
-                    new_states.push(State::new(move_pos, new_boxes));
+                    new_states.push(State::new(new_player_pos, new_boxes));
                 }
-            } else if !reachable[move_pos] {
+            } else if !reachable[new_player_pos] {
                 // new_pos is empty and not yet visited
-                reachable[move_pos] = true;
-                to_visit.push(move_pos);
+                reachable[new_player_pos] = true;
+                to_visit.push(new_player_pos);
             }
         }
     }
@@ -374,42 +375,40 @@ fn expand_push(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> 
     new_states
 }
 
-/*#[allow(unused)]
-fn expand_move(map: &MapState, state: &State) -> Vec<State> {
+#[allow(unused)]
+fn expand_move(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
     let mut new_states = Vec::new();
 
-    let map_state = map.clone().with_boxes(&state);
-    for dir in DIRECTIONS.iter() {
-        let new_pos = state.player_pos + *dir;
-        if let Cell::Path(Content::Empty, _) = *map_state.at(new_pos) {
-            let new_state = State {
-                player_pos: new_pos,
-                boxes: state.boxes.clone(),
-            };
-            new_states.push(new_state);
-        } else if let Cell::Path(Content::Box, _) = *map_state.at(new_pos) {
-            let behind_box = new_pos + *dir;
-            if let Cell::Path(Content::Empty, _) = *map_state.at(behind_box) {
-                if !map.dead_ends[behind_box.r as usize][behind_box.c as usize] {
-                    // goal will never be a dead end - no need to check
+    let mut box_grid = map.grid.create_scratchpad(255);
+    for (i, b) in state.boxes.iter().enumerate() {
+        box_grid[*b] = i as u8;
+    }
+
+    for &dir in DIRECTIONS.iter() {
+        let new_player_pos = state.player_pos + dir;
+        if map.grid[new_player_pos] != MapCell::Wall {
+            if map.grid[new_player_pos] != MapCell::Wall {
+                let box_index = box_grid[new_player_pos];
+                let push_dest = new_player_pos + dir; // TODO does this get optimized to after the first condition?
+
+                if box_index == 255 {
+                    // step
+                    new_states.push(State::new(new_player_pos, state.boxes.clone()));
+                } else if box_grid[push_dest] == 255
+                    && map.grid[push_dest] != MapCell::Wall
+                    && dead_ends[push_dest] == false {
+                    // push
+
                     let mut new_boxes = state.boxes.clone();
-                    for box_pos in &mut new_boxes {
-                        if *box_pos == new_pos {
-                            *box_pos = behind_box;
-                        }
-                    }
-                    let new_state = State {
-                        player_pos: new_pos,
-                        boxes: new_boxes,
-                    };
-                    new_states.push(new_state);
+                    new_boxes[box_index as usize] = push_dest;
+                    new_states.push(State::new(new_player_pos, new_boxes));
                 }
             }
         }
     }
 
     new_states
-}*/
+}
 
 #[cfg(test)]
 mod tests {
@@ -462,7 +461,39 @@ mod tests {
 ";
         let level = level.parse().unwrap();
         let solver_level = process_map(&level).unwrap();
-        let neighbor_states = expand(&solver_level.map, &solver_level.state, &solver_level.dead_ends);
+        let neighbor_states = expand_push(&solver_level.map, &solver_level.state, &solver_level.dead_ends);
         assert_eq!(neighbor_states.len(), 2);
+    }
+
+    #[test]
+    fn test_expand_move1() {
+        let level = r"
+ ####
+# $  #
+# @$*#
+# $  #
+# ...#
+ ####
+";
+        let level = level.parse().unwrap();
+        let solver_level = process_map(&level).unwrap();
+        let neighbor_states = expand_move(&solver_level.map, &solver_level.state, &solver_level.dead_ends);
+        assert_eq!(neighbor_states.len(), 2);
+    }
+
+    #[test]
+    fn test_expand_move2() {
+        let level = r"
+ ####
+#    #
+# @ *#
+# $  #
+#   .#
+ ####
+";
+        let level = level.parse().unwrap();
+        let solver_level = process_map(&level).unwrap();
+        let neighbor_states = expand_move(&solver_level.map, &solver_level.state, &solver_level.dead_ends);
+        assert_eq!(neighbor_states.len(), 4);
     }
 }

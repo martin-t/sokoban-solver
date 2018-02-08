@@ -19,7 +19,7 @@ impl Display for ParserErr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
             ParserErr::Pos(r, c) => write!(f, "Invalid cell at pos: [{}, {}]", r, c),
-            ParserErr::MultiplePlayers => write!(f, "Too many players"),
+            ParserErr::MultiplePlayers => write!(f, "More than one player"),
             ParserErr::MultipleRemovers => write!(f, "Multiple removers - only one allowed"),
             ParserErr::BoxOnRemover => write!(f, "Box on remover"),
             ParserErr::NoPlayer => write!(f, "No player"),
