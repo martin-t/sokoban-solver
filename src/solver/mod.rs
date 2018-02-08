@@ -361,10 +361,6 @@ fn expand_push(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> 
         let player_pos = to_visit.pop().unwrap();
         for &dir in DIRECTIONS.iter() {
             let new_player_pos = player_pos + dir;
-            if map.grid[new_player_pos] == MapCell::Wall {
-                continue; // FIXME necessary? - can't have both wall and box
-            }
-
             let box_index = box_grid[new_player_pos];
             if box_index < 255 {
                 // new_pos has a box
@@ -379,7 +375,8 @@ fn expand_push(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> 
                     // TODO normalize player pos
                     new_states.push(State::new(new_player_pos, new_boxes));
                 }
-            } else if !reachable[new_player_pos] {
+            } else if map.grid[new_player_pos] != MapCell::Wall
+                && !reachable[new_player_pos] {
                 // new_pos is empty and not yet visited
                 reachable[new_player_pos] = true;
                 to_visit.push(new_player_pos);
@@ -401,22 +398,20 @@ fn expand_move(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> 
     for &dir in DIRECTIONS.iter() {
         let new_player_pos = state.player_pos + dir;
         if map.grid[new_player_pos] != MapCell::Wall {
-            if map.grid[new_player_pos] != MapCell::Wall {
-                let box_index = box_grid[new_player_pos];
-                let push_dest = new_player_pos + dir; // TODO does this get optimized to after the first condition?
+            let box_index = box_grid[new_player_pos];
+            let push_dest = new_player_pos + dir; // TODO does this get optimized to after the first condition?
 
-                if box_index == 255 {
-                    // step
-                    new_states.push(State::new(new_player_pos, state.boxes.clone()));
-                } else if box_grid[push_dest] == 255
-                    && map.grid[push_dest] != MapCell::Wall
-                    && dead_ends[push_dest] == false {
-                    // push
+            if box_index == 255 {
+                // step
+                new_states.push(State::new(new_player_pos, state.boxes.clone()));
+            } else if box_grid[push_dest] == 255
+                && map.grid[push_dest] != MapCell::Wall
+                && dead_ends[push_dest] == false {
+                // push
 
-                    let mut new_boxes = state.boxes.clone();
-                    new_boxes[box_index as usize] = push_dest;
-                    new_states.push(State::new(new_player_pos, new_boxes));
-                }
+                let mut new_boxes = state.boxes.clone();
+                new_boxes[box_index as usize] = push_dest;
+                new_states.push(State::new(new_player_pos, new_boxes));
             }
         }
     }
