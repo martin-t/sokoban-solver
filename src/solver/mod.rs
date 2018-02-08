@@ -26,7 +26,7 @@ pub enum SolverErr {
 impl Display for SolverErr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
-            SolverErr::TooLarge => write!(f, "Map oo large"),
+            SolverErr::TooLarge => write!(f, "Map larger than 255 rows/columns"),
             SolverErr::IncompleteBorder => write!(f, "Player can exit the level because of missing border"),
             SolverErr::UnreachableBoxes => write!(f, "Boxes that are not on goal but can't be reached"),
             SolverErr::UnreachableGoals => write!(f, "Goals that don't have a box but can't be reached"),
@@ -83,8 +83,7 @@ pub fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
         }
     }*/
 
-    // only 254 because 255 is used to represent empty in expand_{move,push}
-    if level.map.grid.rows() > 254 || level.map.grid.cols(0) > 254 {
+    if level.map.grid.rows() > 255 || level.map.grid.cols(0) > 255 {
         return Err(SolverErr::TooLarge);
     }
 
@@ -155,7 +154,8 @@ pub fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
         return Err(SolverErr::BoxesGoals);
     }
 
-    if reachable_boxes.len() > 255 {
+    // only 254 because 255 is used to represent empty in expand_{move,push}
+    if reachable_boxes.len() > 254 {
         return Err(SolverErr::TooMany);
     }
 
