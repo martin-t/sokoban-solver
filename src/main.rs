@@ -106,24 +106,65 @@ mod tests {
     #[test_case("boxxle1", "8.txt")]
     #[test_case("boxxle1", "9.txt")]
     #[test_case("boxxle1", "10.txt")]
-    fn test_levels(level_pack: &str, level_name: &str) {
-        test_level(level_pack, level_name);
+    fn test_push_optimal(level_pack: &str, level_name: &str) {
+        test_level(level_pack, level_name, true);
+    }
+
+    #[test_case("custom", "01-simplest-xsb.txt")]
+    #[test_case("custom", "01-simplest-custom.txt")]
+    #[test_case("custom", "02-one-way.txt")]
+    #[test_case("custom", "03-long-way.txt")]
+    #[test_case("custom", "04-two-boxes.txt")]
+    #[test_case("custom", "05-google-images-play.txt")]
+    #[test_case("custom", "06-google-images-1.txt")]
+    #[test_case("custom", "07-boxxle-1-1.txt")]
+    #[test_case("custom", "easy-2.txt")]
+    #[test_case("custom", "moderate-6.txt")]
+    #[test_case("custom", "moderate-7.txt")]
+    #[test_case("custom", "no-solution-parking.txt")]
+    #[test_case("boxxle1", "1.txt")]
+    //#[test_case("boxxle1", "2.txt")]
+    #[test_case("boxxle1", "3.txt")]
+    #[test_case("boxxle1", "4.txt")]
+    #[test_case("boxxle1", "5.txt")]
+    //#[test_case("boxxle1", "6.txt")]
+    #[test_case("boxxle1", "7.txt")]
+    #[test_case("boxxle1", "8.txt")]
+    //#[test_case("boxxle1", "9.txt")]
+    #[test_case("boxxle1", "10.txt")]
+    fn test_move_optimal(level_pack: &str, level_name: &str) {
+        test_level(level_pack, level_name, false);
+    }
+
+    #[test]
+    #[ignore]
+    fn for_debugging() {
+        test_level("boxxle1", "1.txt", false);
     }
 
     // separate fn to get stack traces with correct line numbers
-    fn test_level(level_pack: &str, level_name: &str) {
+    fn test_level(level_pack: &str, level_name: &str, pushes: bool) {
+        let res_folder = if pushes { "pushes" } else { "moves" };
+
         use std::fmt::Write;
 
         let level_path = format!("levels/{}/{}", level_pack, level_name);
-        let result_file = format!("levels/{}-pushes/{}", level_pack, level_name);
+        let result_file = format!("levels/{}-{}/{}", level_pack, res_folder, level_name);
         println!("{}", level_path);
 
         let level = utils::read_file(&level_path).unwrap();
         let level = level.parse().unwrap();
-        let solution = solver::solve_pushes(&level, false).unwrap();
+        let solution = if pushes {
+            solver::solve_pushes(&level, false).unwrap()
+        } else {
+            solver::solve_moves(&level, false).unwrap()
+        };
 
         let mut out = String::new();
         write!(out, "{:?}", solution).unwrap();
+
+        // uncomment to add new files, directory needs to exist, don't update this way - see below
+        //utils::write_file(&result_file, &out).unwrap();
 
         let expected = utils::read_file(&result_file).unwrap();
         if out != expected {
