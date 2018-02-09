@@ -138,16 +138,6 @@ impl<T> Vec2d<T> {
     pub fn cols(&self, r: usize) -> usize {
         self.0[r].len()
     }
-
-    /*pub fn create_scratchpad<U>(&self, default: U) -> Vec2d<U>
-        where U: Copy
-    {
-        let mut scratch = Vec::new();
-        for row in self.0.iter() {
-            scratch.push(vec![default; row.len()]);
-        }
-        Vec2d(scratch)
-    }*/
 }
 
 impl<T, Inner: Copy> Scratch<Inner> for Vec2d<T> {
