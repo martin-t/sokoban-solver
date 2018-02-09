@@ -246,11 +246,22 @@ fn search<Expand, Heuristic>(level: &SolverLevel, method: Method, print_status: 
 fn find_dead_ends(map: &Map) -> Vec2d<bool> {
     let mut dead_ends = map.grid.create_scratchpad(false);
 
+    // mark walls as dead ends first because expand_push needs it
+    for r in 0..map.grid.rows() {
+        for c in 0..map.grid.cols(r) {
+            let pos = Pos::new(r, c);
+            if map.grid[pos] == MapCell::Wall {
+                dead_ends[pos] = true;
+            }
+        }
+    }
+
     for r in 0..map.grid.rows() {
         'cell: for c in 0..map.grid.cols(r) {
+            // put box on every position and try to get it to a goal
+
             let box_pos = Pos::new(r, c);
-            if map.grid[box_pos] == MapCell::Wall {
-                //print!("w");
+            if dead_ends[box_pos] {
                 continue;
             }
 
@@ -266,11 +277,10 @@ fn find_dead_ends(map: &Map) -> Vec2d<bool> {
                 let fake_level = SolverLevel::new(map.clone(), fake_state, dead_ends.clone());
                 if let Some(_) = search(&fake_level, Method::Pushes, false,
                                         expand_push, heuristic_push).path_states {
-                    //print!("cont");
                     continue 'cell; // need to find only one solution
                 }
             }
-            dead_ends[(r, c)] = true; // no solution from any direction
+            dead_ends[box_pos] = true; // no solution from any direction
         }
     }
 
@@ -366,8 +376,9 @@ fn expand_push(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> 
                 // new_pos has a box
                 let push_dest = new_player_pos + dir;
                 if box_grid[push_dest] == 255
-                    && map.grid[push_dest] != MapCell::Wall
-                    && !dead_ends[push_dest] { // TODO could we abuse dead_ends to avoid wall detection when pushing?
+                    // dead_end == true means either wall or dead end
+                    // might not actually be faster (no diff in benches) but probably can't hurt
+                    && !dead_ends[push_dest] {
                     // new state to explore
 
                     let mut new_boxes = state.boxes.clone();
@@ -405,7 +416,7 @@ fn expand_move(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> 
                 // step
                 new_states.push(State::new(new_player_pos, state.boxes.clone()));
             } else if box_grid[push_dest] == 255
-                && map.grid[push_dest] != MapCell::Wall
+                && map.grid[push_dest] != MapCell::Wall // FIXME bench, kill
                 && dead_ends[push_dest] == false {
                 // push
 
@@ -445,11 +456,11 @@ mod tests {
         let level = level.parse().unwrap();
         let solver_level = process_map(&level).unwrap();
         let expected = r"
-00000
-00100
-00100
-01000
-00000
+11111
+11111
+11111
+11001
+11111
 ".trim_left();
         assert_eq!(solver_level.dead_ends.to_string(), expected);
     }
