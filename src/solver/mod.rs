@@ -383,7 +383,8 @@ fn expand_push(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> 
 
                     let mut new_boxes = state.boxes.clone();
                     new_boxes[box_index as usize] = push_dest;
-                    // TODO normalize player pos
+                    // TODO normalize player pos - detect duplicates during expansion?
+                    // otherwise we'd have to generate reachable twice or save them as part of state
                     new_states.push(State::new(new_player_pos, new_boxes));
                 }
             } else if map.grid[new_player_pos] != MapCell::Wall
