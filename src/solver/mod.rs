@@ -416,7 +416,7 @@ fn expand_move(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> 
                 // step
                 new_states.push(State::new(new_player_pos, state.boxes.clone()));
             } else if box_grid[push_dest] == 255
-                && map.grid[push_dest] != MapCell::Wall // FIXME bench, kill
+                && map.grid[push_dest] != MapCell::Wall
                 && dead_ends[push_dest] == false {
                 // push
 
