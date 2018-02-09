@@ -120,7 +120,6 @@ impl Map {
 
 
 // TODO bench a single vector as map representation
-// TODO rename / unify with Vec2d trait :)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Vec2d<T>(Vec<Vec<T>>);
 
@@ -191,6 +190,18 @@ impl<T> Index<(usize, usize)> for Vec2d<T> {
 impl<T> IndexMut<(usize, usize)> for Vec2d<T> {
     fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
         &mut self.0[index.0][index.1]
+    }
+}
+
+impl Display for Vec2d<bool> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        for row in self.0.iter() {
+            for &cell in row.iter() {
+                write!(f, "{}", if cell { '1' } else { '0' })?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
     }
 }
 

@@ -444,14 +444,14 @@ mod tests {
 #####";
         let level = level.parse().unwrap();
         let solver_level = process_map(&level).unwrap();
-        let expected = Vec2d::new(vec![
-            vec![false, false, false, false, false],
-            vec![false, false, true, false, false],
-            vec![false, false, true, false, false],
-            vec![false, true, false, false, false],
-            vec![false, false, false, false, false],
-        ]);
-        assert_eq!(solver_level.dead_ends, expected);
+        let expected = r"
+00000
+00100
+00100
+01000
+00000
+".trim_left();
+        assert_eq!(solver_level.dead_ends.to_string(), expected);
     }
 
     #[test]
