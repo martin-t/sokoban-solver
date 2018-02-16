@@ -18,18 +18,6 @@ pub enum MapCell {
     Remover,
 }
 
-// TODO unify with print_empty
-impl Display for MapCell {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", match *self {
-            MapCell::Wall => '#',
-            MapCell::Empty => ' ',
-            MapCell::Goal => '.',
-            MapCell::Remover => 'r',
-        })
-    }
-}
-
 
 #[derive(Debug, Clone, Copy)]
 pub enum Content {
