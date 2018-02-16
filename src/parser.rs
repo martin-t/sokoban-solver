@@ -2,8 +2,8 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-use data::{Format, Pos};
-use level::{Level, Map, MapCell, Vec2d, State};
+use data::{Format, MapCell, State, Pos};
+use level::{Level, Map, VecVec};
 
 #[derive(Debug, PartialEq)]
 pub enum ParserErr {
@@ -52,7 +52,7 @@ pub fn parse_format(level: &str, format: Format) -> Result<Level, ParserErr> {
         Format::Xsb => parse_xsb(level)?,
     };
     let player_pos = player_pos.ok_or(ParserErr::NoPlayer)?;
-    let grid = Vec2d::new(grid);
+    let grid = VecVec::new(grid);
 
     if let Some(_remover) = remover {
         if goals.len() > 0 {

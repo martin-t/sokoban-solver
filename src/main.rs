@@ -2,6 +2,9 @@
 #![cfg_attr(test, feature(test))]
 #![cfg_attr(test, feature(inclusive_range_syntax))]
 
+// https://github.com/rust-lang/rust/issues/31844
+#![feature(specialization)]
+
 #[cfg(test)]
 extern crate test_case_derive;
 #[cfg(test)]

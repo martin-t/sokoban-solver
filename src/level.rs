@@ -2,7 +2,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::ops::{Index, IndexMut};
 
-use data::{Format, Pos};
+use data::{Format, MapCell, Content, State, Pos};
 use extensions::Scratch;
 
 
@@ -32,12 +32,12 @@ impl Display for Level {
 
 #[derive(Debug, Clone)]
 pub struct Map {
-    pub grid: Vec2d<MapCell>,
+    pub grid: VecVec<MapCell>,
     pub goals: Vec<Pos>,
 }
 
 impl Map {
-    pub fn new(grid: Vec2d<MapCell>, goals: Vec<Pos>) -> Self {
+    pub fn new(grid: VecVec<MapCell>, goals: Vec<Pos>) -> Self {
         Map { grid, goals }
     }
 
@@ -119,39 +119,37 @@ impl Map {
 }
 
 
-// TODO bench a single vector as map representation
+// TODO would be nice to make the internal vector private
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Vec2d<T>(Vec<Vec<T>>);
+pub struct VecVec<T>(pub Vec<Vec<T>>);
 
-impl<T> Vec2d<T> {
+impl<T> VecVec<T> {
     pub fn new(grid: Vec<Vec<T>>) -> Self {
-        // TODO don't allow creating empty
-        // TODO make sure it's not jagged
-        Vec2d(grid)
+        VecVec(grid)
     }
 
-    pub fn rows(&self) -> usize {
+    /*pub fn len(&self) -> usize {
         self.0.len()
-    }
+    }*/
 
-    pub fn cols(&self, r: usize) -> usize {
-        self.0[r].len()
-    }
+    /*pub fn iter(&self) -> Iter<Vec<T>> {
+        self.0.iter()
+    }*/
 }
 
-impl<T, Inner: Copy> Scratch<Inner> for Vec2d<T> {
-    type Result = Vec2d<Inner>;
+impl<TIn, TOut: Copy> Scratch<TOut> for VecVec<TIn> {
+    type Result = VecVec<TOut>;
 
-    fn create_scratchpad(&self, default: Inner) -> Self::Result {
+    fn create_scratchpad(&self, default: TOut) -> Self::Result {
         let mut scratch = Vec::new();
         for row in self.0.iter() {
             scratch.push(vec![default; row.len()]);
         }
-        Vec2d(scratch)
+        VecVec(scratch)
     }
 }
 
-impl<T> Index<Pos> for Vec2d<T> {
+impl<T> Index<Pos> for VecVec<T> {
     type Output = T;
 
     fn index(&self, index: Pos) -> &Self::Output {
@@ -159,27 +157,13 @@ impl<T> Index<Pos> for Vec2d<T> {
     }
 }
 
-impl<T> IndexMut<Pos> for Vec2d<T> {
+impl<T> IndexMut<Pos> for VecVec<T> {
     fn index_mut(&mut self, index: Pos) -> &mut Self::Output {
         &mut self.0[index.r as usize][index.c as usize]
     }
 }
 
-impl<T> Index<(i32, i32)> for Vec2d<T> {
-    type Output = T;
-
-    fn index(&self, index: (i32, i32)) -> &Self::Output {
-        &self.0[index.0 as usize][index.1 as usize]
-    }
-}
-
-impl<T> IndexMut<(i32, i32)> for Vec2d<T> {
-    fn index_mut(&mut self, index: (i32, i32)) -> &mut Self::Output {
-        &mut self.0[index.0 as usize][index.1 as usize]
-    }
-}
-
-impl<T> Index<(usize, usize)> for Vec2d<T> {
+impl<T> Index<(usize, usize)> for VecVec<T> {
     type Output = T;
 
     fn index(&self, index: (usize, usize)) -> &Self::Output {
@@ -187,63 +171,8 @@ impl<T> Index<(usize, usize)> for Vec2d<T> {
     }
 }
 
-impl<T> IndexMut<(usize, usize)> for Vec2d<T> {
+impl<T> IndexMut<(usize, usize)> for VecVec<T> {
     fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
         &mut self.0[index.0][index.1]
     }
-}
-
-impl Display for Vec2d<bool> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        for row in self.0.iter() {
-            for &cell in row.iter() {
-                write!(f, "{}", if cell { '1' } else { '0' })?;
-            }
-            writeln!(f)?;
-        }
-        Ok(())
-    }
-}
-
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum MapCell {
-    Wall,
-    Empty,
-    Goal,
-    Remover,
-}
-
-// TODO unify with print_empty
-impl Display for MapCell {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", match *self {
-            MapCell::Wall => '#',
-            MapCell::Empty => ' ',
-            MapCell::Goal => '.',
-            MapCell::Remover => 'r',
-        })
-    }
-}
-
-
-#[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash)]
-pub struct State {
-    pub player_pos: Pos,
-    pub boxes: Vec<Pos>,
-}
-
-impl State {
-    pub fn new(player_pos: Pos, mut boxes: Vec<Pos>) -> State {
-        boxes.sort(); // sort to detect equal states when we reorder boxes
-        State { player_pos, boxes }
-    }
-}
-
-
-#[derive(Debug, Clone, Copy)]
-enum Content {
-    Empty,
-    Box,
-    Player,
 }

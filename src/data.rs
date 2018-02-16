@@ -1,3 +1,5 @@
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::ops::Add;
 
 
@@ -6,6 +8,50 @@ pub enum Format {
     Custom,
     Xsb,
 }
+
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MapCell {
+    Wall,
+    Empty,
+    Goal,
+    Remover,
+}
+
+// TODO unify with print_empty
+impl Display for MapCell {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", match *self {
+            MapCell::Wall => '#',
+            MapCell::Empty => ' ',
+            MapCell::Goal => '.',
+            MapCell::Remover => 'r',
+        })
+    }
+}
+
+
+#[derive(Debug, Clone, Copy)]
+pub enum Content {
+    Empty,
+    Box,
+    Player,
+}
+
+
+#[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash)]
+pub struct State {
+    pub player_pos: Pos,
+    pub boxes: Vec<Pos>,
+}
+
+impl State {
+    pub fn new(player_pos: Pos, mut boxes: Vec<Pos>) -> State {
+        boxes.sort(); // sort to detect equal states when we reorder boxes
+        State { player_pos, boxes }
+    }
+}
+
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Pos {
