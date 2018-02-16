@@ -75,7 +75,7 @@ fn main() {
     });
 
     println!("Solving...");
-    // TODO use steps instead?
+    // TODO use steps/moves/pushes/actions instead
     let solver_ok = solver::solve(&level, method, true).unwrap();
     println!("{}", solver_ok.stats);
     match solver_ok.path_states {

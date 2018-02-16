@@ -60,6 +60,7 @@ pub struct Pos {
 }
 
 impl Pos {
+    // TODO wrong, either use u8 or usize
     pub fn new(r: usize, c: usize) -> Pos {
         Pos {
             r: r as u8,

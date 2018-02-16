@@ -197,35 +197,3 @@ impl<T> IndexMut<Pos> for Vec2d<T> {
         &mut self.0[index.r as usize][index.c as usize]
     }
 }
-
-// TODO should not be needed - remove
-impl<T> Index<(i32, i32)> for Vec2d<T> {
-    type Output = T;
-
-    fn index(&self, index: (i32, i32)) -> &Self::Output {
-        &self.0[index.0 as usize][index.1 as usize]
-    }
-}
-
-// TODO should not be needed - remove
-impl<T> IndexMut<(i32, i32)> for Vec2d<T> {
-    fn index_mut(&mut self, index: (i32, i32)) -> &mut Self::Output {
-        &mut self.0[index.0 as usize][index.1 as usize]
-    }
-}
-
-// TODO should not be needed - remove
-impl<T> Index<(usize, usize)> for Vec2d<T> {
-    type Output = T;
-
-    fn index(&self, index: (usize, usize)) -> &Self::Output {
-        &self.0[index.0][index.1]
-    }
-}
-
-// TODO should not be needed - remove
-impl<T> IndexMut<(usize, usize)> for Vec2d<T> {
-    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
-        &mut self.0[index.0][index.1]
-    }
-}

@@ -94,13 +94,14 @@ fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
         return Err(SolverErr::TooLarge);
     }
 
-    let mut to_visit = vec![(level.state.player_pos.r as i32, level.state.player_pos.c as i32)];
+    let mut to_visit = vec![level.state.player_pos];
     let mut visited = grid.create_scratchpad(false);
 
     while !to_visit.is_empty() {
-        let (r, c) = to_visit.pop().unwrap();
-        visited[(r, c)] = true;
+        let cur = to_visit.pop().unwrap();
+        visited[cur] = true;
 
+        let (r, c) = (cur.r as i32, cur.c as i32);
         let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
         for &(nr, nc) in neighbors.iter() {
             // this is the only place we need to check bounds (using signed types)
@@ -114,8 +115,9 @@ fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
                 return Err(SolverErr::IncompleteBorder);
             }
 
-            if !visited[(nr, nc)] && grid[(nr, nc)] != MapCell::Wall {
-                to_visit.push((nr, nc));
+            let new_pos = Pos::new(nr as usize, nc as usize);
+            if !visited[new_pos] && grid[new_pos] != MapCell::Wall {
+                to_visit.push(new_pos);
             }
         }
     }
@@ -130,16 +132,14 @@ fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
     let mut reachable_goals = Vec::new();
     let mut reachable_boxes = Vec::new();
     for &pos in level.state.boxes.iter() {
-        let (r, c) = (pos.r as usize, pos.c as usize);
-        if visited[(r, c)] {
+        if visited[pos] {
             reachable_boxes.push(pos);
         } else if !level.map.goals.contains(&pos) {
             return Err(SolverErr::UnreachableBoxes);
         }
     }
     for &pos in level.map.goals.iter() {
-        let (r, c) = (pos.r as usize, pos.c as usize);
-        if visited[(r, c)] {
+        if visited[pos] {
             reachable_goals.push(pos);
         } else if !level.state.boxes.contains(&pos) {
             return Err(SolverErr::UnreachableGoals);
@@ -151,8 +151,9 @@ fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
     let mut processed_grid = grid.clone();
     for r in 0..processed_grid.rows() {
         for c in 0..processed_grid.cols() {
-            if !visited[(r, c)] {
-                processed_grid[(r, c)] = MapCell::Wall;
+            let pos = Pos::new(r, c);
+            if !visited[pos] {
+                processed_grid[pos] = MapCell::Wall;
             }
         }
     }
