@@ -162,17 +162,3 @@ impl<T> IndexMut<Pos> for VecVec<T> {
         &mut self.0[index.r as usize][index.c as usize]
     }
 }
-
-impl<T> Index<(usize, usize)> for VecVec<T> {
-    type Output = T;
-
-    fn index(&self, index: (usize, usize)) -> &Self::Output {
-        &self.0[index.0][index.1]
-    }
-}
-
-impl<T> IndexMut<(usize, usize)> for VecVec<T> {
-    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
-        &mut self.0[index.0][index.1]
-    }
-}
