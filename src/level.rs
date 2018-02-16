@@ -59,7 +59,7 @@ impl Map {
 
         for r in 0..self.grid.0.len() {
             for c in 0..self.grid.0[r].len() {
-                let pos = Pos::new(r, c);
+                let pos = Pos::new(r as u8, c as u8);
                 let cell = self.grid[pos];
                 if cell == MapCell::Wall {
                     ret.push_str("<>");
@@ -94,7 +94,7 @@ impl Map {
 
         for r in 0..self.grid.0.len() {
             for c in 0..self.grid.0[r].len() {
-                let pos = Pos::new(r, c);
+                let pos = Pos::new(r as u8, c as u8);
                 let cell = self.grid[pos];
 
                 ret.push(match (cell, state_grid[pos]) {

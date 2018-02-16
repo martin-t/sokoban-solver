@@ -29,7 +29,6 @@ impl Display for Method {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SolverErr {
-    TooLarge,
     IncompleteBorder,
     UnreachableBoxes,
     UnreachableGoals,
@@ -41,7 +40,6 @@ pub enum SolverErr {
 impl Display for SolverErr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
-            SolverErr::TooLarge => write!(f, "Map larger than 255 rows/columns"),
             SolverErr::IncompleteBorder => write!(f, "Player can exit the level because of missing border"),
             SolverErr::UnreachableBoxes => write!(f, "Boxes that are not on goal but can't be reached"),
             SolverErr::UnreachableGoals => write!(f, "Goals that don't have a box but can't be reached"),
@@ -90,9 +88,9 @@ fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
 
     let grid = Vec2d::new(&level.map.grid.0);
 
-    if grid.rows() > 255 || grid.cols() > 255 {
+    /*if grid.rows() > 255 || grid.cols() > 255 {
         return Err(SolverErr::TooLarge);
-    }
+    }*/
 
     let mut to_visit = vec![level.state.player_pos];
     let mut visited = grid.create_scratchpad(false);
@@ -109,13 +107,13 @@ fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
             // TODO make sure we're not wasting time bounds checking anywhere else
             if nr < 0
                 || nc < 0
-                || nr as usize >= grid.rows()
-                || nc as usize >= grid.cols() {
+                || nr >= grid.rows() as i32
+                || nc >= grid.cols() as i32 {
                 // we got out of bounds without hitting a wall
                 return Err(SolverErr::IncompleteBorder);
             }
 
-            let new_pos = Pos::new(nr as usize, nc as usize);
+            let new_pos = Pos::new(nr as u8, nc as u8);
             if !visited[new_pos] && grid[new_pos] != MapCell::Wall {
                 to_visit.push(new_pos);
             }

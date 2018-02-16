@@ -60,12 +60,8 @@ pub struct Pos {
 }
 
 impl Pos {
-    // TODO wrong, either use u8 or usize
-    pub fn new(r: usize, c: usize) -> Pos {
-        Pos {
-            r: r as u8,
-            c: c as u8,
-        }
+    pub fn new(r: u8, c: u8) -> Pos {
+        Pos { r, c }
     }
 
     pub fn dist(self, other: Pos) -> i32 {

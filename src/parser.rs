@@ -8,6 +8,7 @@ use level::{Level, Map, VecVec};
 #[derive(Debug, PartialEq)]
 pub enum ParserErr {
     Pos(usize, usize),
+    TooLarge,
     MultiplePlayers,
     MultipleRemovers,
     BoxOnRemover,
@@ -19,6 +20,7 @@ impl Display for ParserErr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
             ParserErr::Pos(r, c) => write!(f, "Invalid cell at pos: [{}, {}]", r, c),
+            ParserErr::TooLarge => write!(f, "Map larger than 255 rows/columns"),
             ParserErr::MultiplePlayers => write!(f, "More than one player"),
             ParserErr::MultipleRemovers => write!(f, "Multiple removers - only one allowed"),
             ParserErr::BoxOnRemover => write!(f, "Box on remover"),
@@ -73,54 +75,57 @@ fn parse_custom(level: &str)
                     (Vec<Vec<MapCell>>, Vec<Pos>, Option<Pos>, Vec<Pos>, Option<Pos>),
                     ParserErr>
 {
-    let mut map = Vec::new();
+    let mut grid = Vec::new();
     let mut goals = Vec::new();
     let mut remover = None;
     let mut boxes = Vec::new();
     let mut player_pos = None;
 
     for (r, line) in level.lines().enumerate() {
-        map.push(Vec::new());
+        if r > 255 { return Err(ParserErr::TooLarge); }
+        grid.push(Vec::new());
         let mut chars = line.chars();
         while let (Some(c1), Some(c2)) = (chars.next(), chars.next()) {
-            let c = map[r].len();
+            let c = grid[r].len();
+            if c > 255 { return Err(ParserErr::TooLarge); }
+            let pos = Pos::new(r as u8, c as u8);
 
             let mut has_box = false;
             match c1 {
                 '<' => {
                     if c2 != '>' { return Err(ParserErr::Pos(r, c)); }
-                    map[r].push(MapCell::Wall);
+                    grid[r].push(MapCell::Wall);
                     continue; // skip parsing c2
                 }
                 ' ' => {}
                 'B' => {
-                    boxes.push(Pos::new(r, c));
+                    boxes.push(pos);
                     has_box = true;
                 }
                 'P' => {
                     if player_pos.is_some() { return Err(ParserErr::MultiplePlayers); }
-                    player_pos = Some(Pos::new(r, c));
+                    player_pos = Some(pos);
                 }
                 _ => return Err(ParserErr::Pos(r, c)),
             }
             match c2 {
-                ' ' => map[r].push(MapCell::Empty),
+                ' ' => grid[r].push(MapCell::Empty),
                 '_' => {
-                    goals.push(Pos::new(r, c));
-                    map[r].push(MapCell::Goal);
+                    goals.push(pos);
+                    grid[r].push(MapCell::Goal);
                 }
                 'R' => {
                     if remover.is_some() { return Err(ParserErr::MultipleRemovers); }
                     if has_box { return Err(ParserErr::BoxOnRemover); }
-                    remover = Some(Pos::new(r, c));
-                    map[r].push(MapCell::Remover);
+                    remover = Some(pos);
+                    grid[r].push(MapCell::Remover);
                 }
                 _ => return Err(ParserErr::Pos(r, c)),
             }
         }
     }
 
-    Ok((map, goals, remover, boxes, player_pos))
+    Ok((grid, goals, remover, boxes, player_pos))
 }
 
 /// Parses (a subset of) the format described [here](http://www.sokobano.de/wiki/index.php?title=Level_format)
@@ -129,15 +134,19 @@ fn parse_xsb(level: &str)
                  (Vec<Vec<MapCell>>, Vec<Pos>, Option<Pos>, Vec<Pos>, Option<Pos>),
                  ParserErr>
 {
-    let mut map = Vec::new();
+    let mut grid = Vec::new();
     let mut goals = Vec::new();
     let mut remover = None;
     let mut boxes = Vec::new();
     let mut player_pos = None;
 
     for (r, line) in level.lines().enumerate() {
+        if r > 255 { return Err(ParserErr::TooLarge); }
         let mut line_tiles = Vec::new();
         for (c, cur_char) in line.chars().enumerate() {
+            if c > 255 { return Err(ParserErr::TooLarge); }
+            let pos = Pos::new(r as u8, c as u8);
+
             let tile = match cur_char {
                 '#' => {
                     MapCell::Wall
@@ -146,32 +155,32 @@ fn parse_xsb(level: &str)
                     if player_pos.is_some() {
                         return Err(ParserErr::MultiplePlayers);
                     }
-                    player_pos = Some(Pos::new(r, c));
+                    player_pos = Some(pos);
                     MapCell::Empty
                 }
                 'P' | '+' => {
                     if player_pos.is_some() {
                         return Err(ParserErr::MultiplePlayers);
                     }
-                    player_pos = Some(Pos::new(r, c));
-                    goals.push(Pos::new(r, c));
+                    player_pos = Some(pos);
+                    goals.push(pos);
                     MapCell::Goal
                 }
                 'b' | '$' => {
-                    boxes.push(Pos::new(r, c));
+                    boxes.push(pos);
                     //Cell::Path(Content::Box, Tile::Empty)
                     MapCell::Empty
                 }
                 'B' | '*' => {
-                    boxes.push(Pos::new(r, c));
-                    goals.push(Pos::new(r, c));
+                    boxes.push(pos);
+                    goals.push(pos);
                     MapCell::Goal
                 }
                 'r' => {
                     if remover.is_some() {
                         return Err(ParserErr::MultipleRemovers);
                     }
-                    remover = Some(Pos::new(r, c));
+                    remover = Some(pos);
                     MapCell::Remover
                 }
                 'R' => {
@@ -179,15 +188,15 @@ fn parse_xsb(level: &str)
                     if player_pos.is_some() {
                         return Err(ParserErr::MultiplePlayers);
                     }
-                    player_pos = Some(Pos::new(r, c));
+                    player_pos = Some(pos);
                     if remover.is_some() {
                         return Err(ParserErr::MultipleRemovers);
                     }
-                    remover = Some(Pos::new(r, c));
+                    remover = Some(pos);
                     MapCell::Remover
                 }
                 '.' => {
-                    goals.push(Pos::new(r, c));
+                    goals.push(pos);
                     MapCell::Goal
                 }
                 ' ' | '-' | '_' => {
@@ -197,10 +206,10 @@ fn parse_xsb(level: &str)
             };
             line_tiles.push(tile);
         }
-        map.push(line_tiles)
+        grid.push(line_tiles)
     }
 
-    Ok((map, goals, remover, boxes, player_pos))
+    Ok((grid, goals, remover, boxes, player_pos))
 }
 
 #[cfg(test)]

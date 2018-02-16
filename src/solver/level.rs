@@ -37,6 +37,7 @@ impl SolverMap {
         SolverMap { grid, goals }
     }
 
+    // TODO deduplicate (SolverMap vs Map)
     pub fn to_string(&self, state: &State, format: Format) -> String {
         match format {
             Format::Custom => self.to_string_custom(state),
@@ -44,7 +45,6 @@ impl SolverMap {
         }
     }
 
-    // TODO deduplicate (SolverMap vs Map)
     fn to_string_custom(&self, state: &State) -> String {
         let mut ret = String::new();
 
@@ -121,12 +121,12 @@ impl SolverMap {
 pub struct Vec2d<T>(Vec<Vec<T>>);
 
 impl<T> Vec2d<T> {
-    pub fn rows(&self) -> usize {
-        self.0.len()
+    pub fn rows(&self) -> u8 {
+        self.0.len() as u8
     }
 
-    pub fn cols(&self) -> usize {
-        self.0[0].len()
+    pub fn cols(&self) -> u8 {
+        self.0[0].len() as u8
     }
 }
 
