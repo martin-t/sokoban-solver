@@ -6,6 +6,7 @@ use data::{Format, MapCell, Content, State, Pos};
 use extensions::Scratch;
 
 
+// TODO readable Debug for Level, SolverLevel and Map
 #[derive(Debug, Clone)]
 pub struct Level {
     pub map: Map,
@@ -32,12 +33,12 @@ impl Display for Level {
 
 #[derive(Debug, Clone)]
 pub struct Map {
-    pub grid: VecVec<MapCell>,
+    pub grid: Vec2d<MapCell>,
     pub goals: Vec<Pos>,
 }
 
 impl Map {
-    pub fn new(grid: VecVec<MapCell>, goals: Vec<Pos>) -> Self {
+    pub fn new(grid: Vec2d<MapCell>, goals: Vec<Pos>) -> Self {
         Map { grid, goals }
     }
 
@@ -58,6 +59,7 @@ impl Map {
         state_grid[state.player_pos] = Content::Player;
 
         for r in 0..self.grid.0.len() {
+            // TODO print up to last non empty and test like in xsb
             for c in 0..self.grid.0[r].len() {
                 let pos = Pos::new(r as u8, c as u8);
                 let cell = self.grid[pos];
@@ -93,7 +95,17 @@ impl Map {
         state_grid[state.player_pos] = Content::Player;
 
         for r in 0..self.grid.0.len() {
+
+            // don't print trailing empty cells to match the input level strings
+            let mut last_non_empty = 0;
             for c in 0..self.grid.0[r].len() {
+                let pos = Pos::new(r as u8, c as u8);
+                if self.grid[pos] != MapCell::Empty || state_grid[pos] != Content::Empty {
+                    last_non_empty = pos.c;
+                }
+            }
+
+            for c in 0..last_non_empty + 1 {
                 let pos = Pos::new(r as u8, c as u8);
                 let cell = self.grid[pos];
 
@@ -119,37 +131,75 @@ impl Map {
 }
 
 
-// TODO would be nice to make the internal vector private
+// TODO bench a single vector as map representation
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct VecVec<T>(pub Vec<Vec<T>>);
+pub struct Vec2d<T>(Vec<Vec<T>>);
 
-impl<T> VecVec<T> {
-    pub fn new(grid: Vec<Vec<T>>) -> Self {
-        VecVec(grid)
+impl<T> Vec2d<T> {
+    pub fn rows(&self) -> u8 {
+        self.0.len() as u8
     }
 
-    /*pub fn len(&self) -> usize {
-        self.0.len()
-    }*/
-
-    /*pub fn iter(&self) -> Iter<Vec<T>> {
-        self.0.iter()
-    }*/
+    pub fn cols(&self) -> u8 {
+        self.0[0].len() as u8
+    }
 }
 
-impl<TIn, TOut: Copy> Scratch<TOut> for VecVec<TIn> {
-    type Result = VecVec<TOut>;
+impl Vec2d<MapCell> {
+    pub fn new(grid: &Vec<Vec<MapCell>>) -> Self {
+        assert!(grid.len() > 0 && grid[0].len() > 0);
+
+        // pad all rows to have the same length
+        let max_cols = grid.iter().map(|row| row.len()).max().unwrap();
+        let mut new_grid = Vec::new();
+        for row in grid.iter() {
+            let mut new_row = row.clone();
+            while new_row.len() < max_cols {
+                new_row.push(MapCell::Empty);
+            }
+            new_grid.push(new_row);
+        }
+        Vec2d(new_grid)
+    }
+}
+
+impl<TIn, TOut: Copy> Scratch<TOut> for Vec2d<TIn> {
+    type Result = Vec2d<TOut>;
 
     fn create_scratchpad(&self, default: TOut) -> Self::Result {
         let mut scratch = Vec::new();
         for row in self.0.iter() {
             scratch.push(vec![default; row.len()]);
         }
-        VecVec(scratch)
+        Vec2d(scratch)
     }
 }
 
-impl<T> Index<Pos> for VecVec<T> {
+impl<T: Display> Display for Vec2d<T> {
+    default fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        for row in self.0.iter() {
+            for cell in row.iter() {
+                write!(f, "{}", cell)?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
+    }
+}
+
+impl Display for Vec2d<bool> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        for row in self.0.iter() {
+            for &cell in row.iter() {
+                write!(f, "{}", if cell { 1 } else { 0 })?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
+    }
+}
+
+impl<T> Index<Pos> for Vec2d<T> {
     type Output = T;
 
     fn index(&self, index: Pos) -> &Self::Output {
@@ -157,7 +207,7 @@ impl<T> Index<Pos> for VecVec<T> {
     }
 }
 
-impl<T> IndexMut<Pos> for VecVec<T> {
+impl<T> IndexMut<Pos> for Vec2d<T> {
     fn index_mut(&mut self, index: Pos) -> &mut Self::Output {
         &mut self.0[index.r as usize][index.c as usize]
     }

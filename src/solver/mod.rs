@@ -7,10 +7,10 @@ use std::fmt::{Debug, Display, Formatter};
 
 use data::{MapCell, State, Pos, DIRECTIONS};
 use extensions::Scratch;
-use level::Level;
+use level::{Level, Map, Vec2d};
 
 use self::a_star::{SearchState, Stats};
-use self::level::{SolverLevel, SolverMap, Vec2d};
+use self::level::SolverLevel;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Method {
@@ -86,14 +86,14 @@ fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
     // Only guarantees we have here is the player exists and therefore map is at least 1x1.
     // Do some more low level checking so we can omit some checks later.
 
-    let grid = Vec2d::new(&level.map.grid.0);
+    //let grid = Vec2d::new(&level.map.grid.0);
 
     /*if grid.rows() > 255 || grid.cols() > 255 {
         return Err(SolverErr::TooLarge);
     }*/
 
     let mut to_visit = vec![level.state.player_pos];
-    let mut visited = grid.create_scratchpad(false);
+    let mut visited = level.map.grid.create_scratchpad(false);
 
     while !to_visit.is_empty() {
         let cur = to_visit.pop().unwrap();
@@ -107,14 +107,14 @@ fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
             // TODO make sure we're not wasting time bounds checking anywhere else
             if nr < 0
                 || nc < 0
-                || nr >= grid.rows() as i32
-                || nc >= grid.cols() as i32 {
+                || nr >= level.map.grid.rows() as i32
+                || nc >= level.map.grid.cols() as i32 {
                 // we got out of bounds without hitting a wall
                 return Err(SolverErr::IncompleteBorder);
             }
 
             let new_pos = Pos::new(nr as u8, nc as u8);
-            if !visited[new_pos] && grid[new_pos] != MapCell::Wall {
+            if !visited[new_pos] && level.map.grid[new_pos] != MapCell::Wall {
                 to_visit.push(new_pos);
             }
         }
@@ -146,7 +146,7 @@ fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
 
     // TODO maybe do this first and use it instead of visited when detecting reachability in specialized fns?
     // to avoid errors with some code that iterates through all non-walls
-    let mut processed_grid = grid.clone();
+    let mut processed_grid = level.map.grid.clone();
     for r in 0..processed_grid.rows() {
         for c in 0..processed_grid.cols() {
             let pos = Pos::new(r, c);
@@ -165,7 +165,7 @@ fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
         return Err(SolverErr::TooMany);
     }
 
-    let processed_map = SolverMap::new(processed_grid, reachable_goals);
+    let processed_map = Map::new(processed_grid, reachable_goals);
     let clean_state = State::new(level.state.player_pos, reachable_boxes);
     let dead_ends = find_dead_ends(&processed_map);
     Ok(SolverLevel::new(processed_map, clean_state, dead_ends))
@@ -173,8 +173,8 @@ fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
 
 fn search<Expand, Heuristic>(level: &SolverLevel, method: Method, print_status: bool,
                              expand: Expand, heuristic: Heuristic) -> SolverOk
-    where Expand: Fn(&SolverMap, &State, &Vec2d<bool>) -> Vec<State>,
-          Heuristic: Fn(&SolverMap, &State) -> i32
+    where Expand: Fn(&Map, &State, &Vec2d<bool>) -> Vec<State>,
+          Heuristic: Fn(&Map, &State) -> i32
 {
     let mut stats = Stats::new();
 
@@ -235,7 +235,7 @@ fn search<Expand, Heuristic>(level: &SolverLevel, method: Method, print_status: 
     SolverOk::new(None, stats, method)
 }
 
-fn find_dead_ends(map: &SolverMap) -> Vec2d<bool> {
+fn find_dead_ends(map: &Map) -> Vec2d<bool> {
     let mut dead_ends = map.grid.create_scratchpad(false);
 
     // mark walls as dead ends first because expand_push needs it
@@ -279,7 +279,7 @@ fn find_dead_ends(map: &SolverMap) -> Vec2d<bool> {
     dead_ends
 }
 
-fn heuristic_push(map: &SolverMap, state: &State) -> i32 {
+fn heuristic_push(map: &Map, state: &State) -> i32 {
     // less is better
 
     let mut goal_dist_sum = 0;
@@ -296,7 +296,7 @@ fn heuristic_push(map: &SolverMap, state: &State) -> i32 {
     goal_dist_sum
 }
 
-fn heuristic_move(map: &SolverMap, state: &State) -> i32 {
+fn heuristic_move(map: &Map, state: &State) -> i32 {
     // less is better
 
     let mut closest_box = i32::max_value();
@@ -336,7 +336,7 @@ fn backtrack_path(prev: &HashMap<State, State>, final_state: &State) -> Vec<Stat
     }
 }
 
-fn solved(map: &SolverMap, state: &State) -> bool {
+fn solved(map: &Map, state: &State) -> bool {
     // to detect dead ends, this has to test all boxes are on a goal, not that all goals have a box
     for pos in &state.boxes {
         if map.grid[*pos] != MapCell::Goal {
@@ -346,7 +346,7 @@ fn solved(map: &SolverMap, state: &State) -> bool {
     true
 }
 
-fn expand_push(map: &SolverMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
+fn expand_push(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
     let mut new_states = Vec::new();
 
     let mut box_grid = map.grid.create_scratchpad(255);
@@ -391,7 +391,7 @@ fn expand_push(map: &SolverMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<S
     new_states
 }
 
-fn expand_move(map: &SolverMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
+fn expand_move(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
     let mut new_states = Vec::new();
 
     let mut box_grid = map.grid.create_scratchpad(255);

@@ -1,5 +1,3 @@
-use std::fmt;
-use std::fmt::{Display, Formatter};
 use std::ops::Add;
 
 
@@ -19,7 +17,7 @@ pub enum MapCell {
 }
 
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Content {
     Empty,
     Box,
