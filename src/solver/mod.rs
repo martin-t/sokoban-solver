@@ -426,7 +426,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_unreachable_boxes() {
+    fn unreachable_boxes() {
         let level = r"
 ########
 #@$.#$.#
@@ -437,7 +437,7 @@ mod tests {
     }
 
     #[test]
-    fn test_dead_ends() {
+    fn dead_ends() {
         let level = r"
 #####
 ##@##
@@ -457,7 +457,7 @@ mod tests {
     }
 
     #[test]
-    fn test_expand_push() {
+    fn expand_push1() {
         // at some point expand detected some moves multiple times - should not happen again
 
         let level = r"
@@ -477,7 +477,7 @@ mod tests {
     }
 
     #[test]
-    fn test_expand_move1() {
+    fn expand_move1() {
         let level = r"
  ####
 # $  #
@@ -493,7 +493,7 @@ mod tests {
     }
 
     #[test]
-    fn test_expand_move2() {
+    fn expand_move2() {
         let level = r"
  ####
 #    #

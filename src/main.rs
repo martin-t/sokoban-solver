@@ -118,7 +118,7 @@ mod tests {
     #[test_case("boxxle1", "8.txt")]
     #[test_case("boxxle1", "9.txt")]
     #[test_case("boxxle1", "10.txt")]
-    fn test_push_optimal(level_pack: &str, level_name: &str) {
+    fn push_optimal(level_pack: &str, level_name: &str) {
         test_level(level_pack, level_name, Method::Pushes);
     }
 
@@ -144,7 +144,7 @@ mod tests {
     #[test_case("boxxle1", "8.txt")]
     //#[test_case("boxxle1", "9.txt")]
     #[test_case("boxxle1", "10.txt")]
-    fn test_move_optimal(level_pack: &str, level_name: &str) {
+    fn move_optimal(level_pack: &str, level_name: &str) {
         test_level(level_pack, level_name, Method::Moves);
     }
 
@@ -223,20 +223,20 @@ mod tests {
     }
 
     #[bench]
-    fn bench_boxxle1_1(b: &mut Bencher) {
+    fn bench_boxxle1_001(b: &mut Bencher) {
         // 3 goals in a row
         bench_level("levels/boxxle1/1.txt", Method::Pushes, b);
     }
 
     #[bench]
-    fn bench_boxxle1_5(b: &mut Bencher) {
+    fn bench_boxxle1_005(b: &mut Bencher) {
         // 4 boxes goal room
         bench_level("levels/boxxle1/5.txt", Method::Pushes, b);
     }
 
     #[bench]
     #[ignore]
-    fn bench_boxxle1_18(b: &mut Bencher) {
+    fn bench_boxxle1_018(b: &mut Bencher) {
         // 6 boxes - tiny goalroom
         bench_level("levels/boxxle1/18.txt", Method::Pushes, b);
     }
@@ -250,7 +250,7 @@ mod tests {
 
     #[bench]
     #[ignore]
-    fn bench_boxxle1_1_moves(b: &mut Bencher) {
+    fn bench_boxxle1_001_moves(b: &mut Bencher) {
         bench_level("levels/boxxle1/1.txt", Method::Moves, b);
     }
 
