@@ -3,7 +3,6 @@ use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Index, IndexMut};
 
 use data::{Format, MapCell, Contents, State, Pos};
-use extensions::Scratch;
 
 
 pub struct MapFormatter<'a> {
@@ -92,11 +91,11 @@ impl Map {
     }
 
     fn write(&self, state_grid: Vec2d<Contents>, format: Format, f: &mut Formatter) -> fmt::Result {
-        for r in 0..self.grid.0.len() {
+        for r in 0..self.grid.rows() {
 
             // don't print trailing empty cells to match the input level strings
             let mut last_non_empty = 0;
-            for c in 0..self.grid.0[r].len() {
+            for c in 0..self.grid.cols() {
                 let pos = Pos::new(r as u8, c as u8);
                 if self.grid[pos] != MapCell::Empty || state_grid[pos] != Contents::Empty {
                     last_non_empty = pos.c;
@@ -169,15 +168,19 @@ impl Debug for Map {
 
 // TODO bench a single vector as map representation
 #[derive(Clone, PartialEq, Eq)]
-pub struct Vec2d<T>(Vec<Vec<T>>);
+pub struct Vec2d<T> {
+    data: Vec<T>,
+    rows: u8,
+    cols: u8,
+}
 
 impl<T> Vec2d<T> {
     pub fn rows(&self) -> u8 {
-        self.0.len() as u8
+        self.rows
     }
 
     pub fn cols(&self) -> u8 {
-        self.0[0].len() as u8
+        self.cols
     }
 }
 
@@ -185,36 +188,36 @@ impl Vec2d<MapCell> {
     pub fn new(grid: &Vec<Vec<MapCell>>) -> Self {
         assert!(grid.len() > 0 && grid[0].len() > 0);
 
-        // pad all rows to have the same length
         let max_cols = grid.iter().map(|row| row.len()).max().unwrap();
-        let mut new_grid = Vec::new();
+        let mut data = Vec::new(); // TODO bench reserving
         for row in grid.iter() {
-            let mut new_row = row.clone();
-            while new_row.len() < max_cols {
-                new_row.push(MapCell::Empty);
+            for i in 0..row.len() {
+                data.push(row[i]);
             }
-            new_grid.push(new_row);
+            for _ in row.len()..max_cols {
+                data.push(MapCell::Empty);
+            }
         }
-        Vec2d(new_grid)
+        Vec2d {
+            data,
+            rows: grid.len() as u8,
+            cols: max_cols as u8,
+        }
     }
-}
 
-impl<TIn, TOut: Copy> Scratch<TOut> for Vec2d<TIn> {
-    type Result = Vec2d<TOut>;
-
-    fn create_scratchpad(&self, default: TOut) -> Self::Result {
-        let mut scratch = Vec::new();
-        for row in self.0.iter() {
-            scratch.push(vec![default; row.len()]);
+    pub fn create_scratchpad<T: Copy>(&self, default: T) -> Vec2d<T> {
+        Vec2d {
+            data: vec![default; self.data.len()],
+            rows: self.rows,
+            cols: self.cols,
         }
-        Vec2d(scratch)
     }
 }
 
 impl<T: Display> Display for Vec2d<T> {
     default fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        for row in self.0.iter() {
-            for cell in row.iter() {
+        for row in self.data.chunks(self.cols.into()) {
+            for cell in row {
                 write!(f, "{}", cell)?;
             }
             writeln!(f)?;
@@ -225,8 +228,8 @@ impl<T: Display> Display for Vec2d<T> {
 
 impl Display for Vec2d<bool> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        for row in self.0.iter() {
-            for &cell in row.iter() {
+        for row in self.data.chunks(self.cols.into()) {
+            for &cell in row {
                 write!(f, "{}", if cell { 1 } else { 0 })?;
             }
             writeln!(f)?;
@@ -245,13 +248,15 @@ impl<T> Index<Pos> for Vec2d<T> {
     type Output = T;
 
     fn index(&self, index: Pos) -> &Self::Output {
-        &self.0[index.r as usize][index.c as usize]
+        let index = usize::from(index.r) * usize::from(self.cols) + usize::from(index.c);
+        &self.data[index]
     }
 }
 
 impl<T> IndexMut<Pos> for Vec2d<T> {
     fn index_mut(&mut self, index: Pos) -> &mut Self::Output {
-        &mut self.0[index.r as usize][index.c as usize]
+        let index = usize::from(index.r) * usize::from(self.cols) + usize::from(index.c);
+        &mut self.data[index]
     }
 }
 

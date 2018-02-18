@@ -6,7 +6,6 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
 use data::{MapCell, State, Pos, DIRECTIONS};
-use extensions::Scratch;
 use level::{Level, Map, Vec2d};
 
 use self::a_star::{SearchState, Stats};

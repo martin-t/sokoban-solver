@@ -18,7 +18,6 @@ mod parser;
 mod solver;
 mod level;
 mod data;
-mod extensions;
 mod utils;
 
 use std::env;
