@@ -103,7 +103,6 @@ fn process_level(level: &Level) -> Result<SolverLevel, SolverErr> {
         for &(nr, nc) in neighbors.iter() {
             // this is the only place we need to check bounds (using signed types)
             // everything after that will be surrounded by walls
-            // TODO make sure we're not wasting time bounds checking anywhere else
             if nr < 0
                 || nc < 0
                 || nr >= level.map.grid.rows() as i32

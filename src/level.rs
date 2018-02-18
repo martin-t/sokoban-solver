@@ -248,6 +248,8 @@ impl<T> Index<Pos> for Vec2d<T> {
 
     fn index(&self, index: Pos) -> &Self::Output {
         let index = usize::from(index.r) * usize::from(self.cols) + usize::from(index.c);
+        // unchecked indexing is only marginally faster (if at all) to justify unsafe
+        //unsafe { self.data.get_unchecked(index) }
         &self.data[index]
     }
 }
@@ -255,6 +257,7 @@ impl<T> Index<Pos> for Vec2d<T> {
 impl<T> IndexMut<Pos> for Vec2d<T> {
     fn index_mut(&mut self, index: Pos) -> &mut Self::Output {
         let index = usize::from(index.r) * usize::from(self.cols) + usize::from(index.c);
+        //unsafe { self.data.get_unchecked_mut(index) }
         &mut self.data[index]
     }
 }
