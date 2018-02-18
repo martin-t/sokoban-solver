@@ -6,6 +6,24 @@ use data::{Format, MapCell, Content, State, Pos};
 use extensions::Scratch;
 
 
+pub struct MapFormatter<'a> {
+    map: &'a Map,
+    state: &'a State,
+    format: Format,
+}
+
+impl<'a> MapFormatter<'a> {
+    pub fn new(map: &'a Map, state: &'a State, format: Format) -> Self {
+        Self { map, state, format }
+    }
+}
+
+impl<'a> Display for MapFormatter<'a> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        self.map.write(self.state, self.format, f)
+    }
+}
+
 // TODO readable Debug for Level, SolverLevel and Map
 #[derive(Debug, Clone)]
 pub struct Level {
@@ -18,15 +36,22 @@ impl Level {
         Level { map, state }
     }
 
-    // TODO default to XSB everywhere for Display
-    pub fn to_string(&self, format: Format) -> String {
-        self.map.to_string(&self.state, format)
+    pub fn xsb(&self) -> MapFormatter {
+        MapFormatter::new(&self.map, &self.state, Format::Xsb)
+    }
+
+    pub fn custom(&self) -> MapFormatter {
+        MapFormatter::new(&self.map, &self.state, Format::Custom)
+    }
+
+    pub fn format(&self, format: Format) -> MapFormatter {
+        MapFormatter::new(&self.map, &self.state, format)
     }
 }
 
 impl Display for Level {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string(Format::Xsb))
+        self.xsb().fmt(f)
     }
 }
 
@@ -42,52 +67,11 @@ impl Map {
         Map { grid, goals }
     }
 
-    pub fn to_string(&self, state: &State, format: Format) -> String {
-        match format {
-            Format::Custom => self.to_string_custom(state),
-            Format::Xsb => self.to_string_xsb(state),
-        }
+    pub fn format_with_state<'a>(&'a self, format: Format, state: &'a State) -> MapFormatter<'a> {
+        MapFormatter::new(self, state, format)
     }
 
-    fn to_string_custom(&self, state: &State) -> String {
-        let mut ret = String::new();
-
-        let mut state_grid = self.grid.create_scratchpad(Content::Empty);
-        for &b in state.boxes.iter() {
-            state_grid[b] = Content::Box;
-        }
-        state_grid[state.player_pos] = Content::Player;
-
-        for r in 0..self.grid.0.len() {
-            // TODO print up to last non empty and test like in xsb
-            for c in 0..self.grid.0[r].len() {
-                let pos = Pos::new(r as u8, c as u8);
-                let cell = self.grid[pos];
-                if cell == MapCell::Wall {
-                    ret.push_str("<>");
-                    continue;
-                }
-                ret.push(match state_grid[pos] {
-                    Content::Empty => ' ',
-                    Content::Box => 'B',
-                    Content::Player => 'P',
-                });
-                ret.push(match cell {
-                    MapCell::Empty => ' ',
-                    MapCell::Goal => '_',
-                    MapCell::Remover => 'R',
-                    _ => unreachable!(),
-                });
-            }
-            ret.push('\n');
-        }
-
-        ret
-    }
-
-    fn to_string_xsb(&self, state: &State) -> String {
-        let mut ret = String::new();
-
+    fn write(&self, state: &State, format: Format, f: &mut Formatter) -> fmt::Result {
         let mut state_grid = self.grid.create_scratchpad(Content::Empty);
         for &b in state.boxes.iter() {
             state_grid[b] = Content::Box;
@@ -109,24 +93,49 @@ impl Map {
                 let pos = Pos::new(r as u8, c as u8);
                 let cell = self.grid[pos];
 
-                ret.push(match (cell, state_grid[pos]) {
-                    (MapCell::Wall, Content::Empty) => '#',
-                    (MapCell::Wall, _) => unreachable!(),
-                    (MapCell::Empty, Content::Empty) => ' ',
-                    (MapCell::Empty, Content::Box) => '$',
-                    (MapCell::Empty, Content::Player) => '@',
-                    (MapCell::Goal, Content::Empty) => '.',
-                    (MapCell::Goal, Content::Box) => '*',
-                    (MapCell::Goal, Content::Player) => '+',
-                    (MapCell::Remover, Content::Empty) => 'r',
-                    (MapCell::Remover, Content::Box) => unreachable!(),
-                    (MapCell::Remover, Content::Player) => 'R',
-                });
+                match format {
+                    Format::Custom => Self::write_custom(cell, state_grid[pos], f)?,
+                    Format::Xsb => Self::write_xsb(cell, state_grid[pos], f)?,
+                }
             }
-            ret.push('\n');
+            write!(f, "\n")?;
         }
+        Ok(())
+    }
 
-        ret
+    fn write_custom(cell: MapCell, contents: Content, f: &mut Formatter) -> fmt::Result {
+        if cell == MapCell::Wall {
+            write!(f, "<>")?;
+        } else {
+            match contents {
+                Content::Empty => write!(f, " ")?,
+                Content::Box => write!(f, "B")?,
+                Content::Player => write!(f, "P")?,
+            };
+            match cell {
+                MapCell::Empty => write!(f, " ")?,
+                MapCell::Goal => write!(f, "_")?,
+                MapCell::Remover => write!(f, "R")?,
+                _ => unreachable!(),
+            };
+        }
+        Ok(())
+    }
+
+    fn write_xsb(cell: MapCell, contents: Content, f: &mut Formatter) -> fmt::Result {
+        match (cell, contents) {
+            (MapCell::Wall, Content::Empty) => write!(f, "#"),
+            (MapCell::Wall, _) => unreachable!(),
+            (MapCell::Empty, Content::Empty) => write!(f, " "),
+            (MapCell::Empty, Content::Box) => write!(f, "$"),
+            (MapCell::Empty, Content::Player) => write!(f, "@"),
+            (MapCell::Goal, Content::Empty) => write!(f, "."),
+            (MapCell::Goal, Content::Box) => write!(f, "*"),
+            (MapCell::Goal, Content::Player) => write!(f, "+"),
+            (MapCell::Remover, Content::Empty) => write!(f, "r"),
+            (MapCell::Remover, Content::Box) => unreachable!(),
+            (MapCell::Remover, Content::Player) => write!(f, "R"),
+        }
     }
 }
 
@@ -210,5 +219,39 @@ impl<T> Index<Pos> for Vec2d<T> {
 impl<T> IndexMut<Pos> for Vec2d<T> {
     fn index_mut(&mut self, index: Pos) -> &mut Self::Output {
         &mut self.0[index.r as usize][index.c as usize]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn formatting() {
+        let xsb: &str = r"
+*###*
+#@$.#
+*###*#
+".trim_left_matches('\n');
+        let custom: &str = r"
+B_<><><>B_
+<>P B  _<>
+B_<><><>B_<>
+".trim_left_matches('\n');
+
+        for level in [xsb, custom].iter() {
+            let level: Level = level.parse().unwrap();
+            assert_eq!(level.to_string(), xsb);
+            assert_eq!(level.xsb().to_string(), xsb);
+            assert_eq!(level.format(Format::Xsb).to_string(), xsb);
+            assert_eq!(format!("{}", level), xsb);
+
+            assert_eq!(level.custom().to_string(), custom);
+            assert_eq!(level.format(Format::Custom).to_string(), custom);
+            assert_eq!(format!("{}", level.custom()), custom);
+
+            assert_eq!(level.map.format_with_state(Format::Xsb, &level.state).to_string(), xsb);
+            assert_eq!(level.map.format_with_state(Format::Custom, &level.state).to_string(), custom);
+        }
     }
 }

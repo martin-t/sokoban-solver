@@ -82,7 +82,7 @@ fn main() {
         Some(path) => {
             println!("Found solution:");
             for state in &path {
-                println!("{}", level.map.to_string(&state, format));
+                println!("{}", level.map.format_with_state(format, &state));
             }
             println!("{} steps", &path.len() - 1);
         }

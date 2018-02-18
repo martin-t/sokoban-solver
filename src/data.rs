@@ -17,6 +17,7 @@ pub enum MapCell {
 }
 
 
+// FIXME Contents + variables too
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Content {
     Empty,

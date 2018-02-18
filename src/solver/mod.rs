@@ -75,14 +75,14 @@ impl Debug for SolverOk {
 
 
 pub fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
-    let solver_level = process_map(level)?;
+    let solver_level = process_level(level)?;
     match method {
         Method::Moves => Ok(search(&solver_level, method, print_status, expand_move, heuristic_move)),
         Method::Pushes => Ok(search(&solver_level, method, print_status, expand_push, heuristic_push)),
     }
 }
 
-fn process_map(level: &Level) -> Result<SolverLevel, SolverErr> {
+fn process_level(level: &Level) -> Result<SolverLevel, SolverErr> {
     // Only guarantees we have here is the player exists and therefore map is at least 1x1.
     // Do some more low level checking so we can omit some checks later.
 
@@ -435,7 +435,7 @@ mod tests {
 ########
 ";
         let level = level.parse().unwrap();
-        assert_eq!(process_map(&level).unwrap_err(), SolverErr::UnreachableBoxes);
+        assert_eq!(process_level(&level).unwrap_err(), SolverErr::UnreachableBoxes);
     }
 
     #[test]
@@ -447,7 +447,7 @@ mod tests {
 #  .#
 #####";
         let level = level.parse().unwrap();
-        let solver_level = process_map(&level).unwrap();
+        let solver_level = process_level(&level).unwrap();
         let expected = r"
 11111
 11111
@@ -473,7 +473,7 @@ mod tests {
 <><><><><>
 ";
         let level = level.parse().unwrap();
-        let solver_level = process_map(&level).unwrap();
+        let solver_level = process_level(&level).unwrap();
         let neighbor_states = expand_push(&solver_level.map, &solver_level.state, &solver_level.dead_ends);
         assert_eq!(neighbor_states.len(), 2);
     }
@@ -489,7 +489,7 @@ mod tests {
  ####
 ";
         let level = level.parse().unwrap();
-        let solver_level = process_map(&level).unwrap();
+        let solver_level = process_level(&level).unwrap();
         let neighbor_states = expand_move(&solver_level.map, &solver_level.state, &solver_level.dead_ends);
         assert_eq!(neighbor_states.len(), 2);
     }
@@ -505,7 +505,7 @@ mod tests {
  ####
 ";
         let level = level.parse().unwrap();
-        let solver_level = process_map(&level).unwrap();
+        let solver_level = process_level(&level).unwrap();
         let neighbor_states = expand_move(&solver_level.map, &solver_level.state, &solver_level.dead_ends);
         assert_eq!(neighbor_states.len(), 4);
     }

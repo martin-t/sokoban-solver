@@ -39,9 +39,10 @@ impl FromStr for Level {
 }
 
 pub fn parse(level: &str) -> Result<Level, ParserErr> {
-    match level.trim_left().chars().next() {
-        Some('<') => parse_format(level, Format::Custom),
-        _ => parse_format(level, Format::Xsb),
+    if level.trim_left().contains('<') {
+        parse_format(level, Format::Custom)
+    } else {
+        parse_format(level, Format::Xsb)
     }
 }
 
@@ -344,12 +345,12 @@ mod tests {
 
     fn assert_success_custom(input_level: &str) {
         let level = parse_format(input_level, Format::Custom).unwrap();
-        assert_eq!(level.to_string(Format::Custom), input_level.trim_left_matches('\n'));
+        assert_eq!(level.custom().to_string(), input_level.trim_left_matches('\n'));
     }
 
     fn assert_success_xsb(input_level: &str) {
         let level = parse_format(input_level, Format::Xsb).unwrap();
-        assert_eq!(level.to_string(Format::Xsb), input_level.trim_left_matches('\n'));
+        assert_eq!(level.to_string(), input_level.trim_left_matches('\n'));
     }
 }
 
