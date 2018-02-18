@@ -166,7 +166,6 @@ impl Debug for Map {
 }
 
 
-// TODO bench a single vector as map representation
 #[derive(Clone, PartialEq, Eq)]
 pub struct Vec2d<T> {
     data: Vec<T>,
@@ -189,7 +188,7 @@ impl Vec2d<MapCell> {
         assert!(grid.len() > 0 && grid[0].len() > 0);
 
         let max_cols = grid.iter().map(|row| row.len()).max().unwrap();
-        let mut data = Vec::new(); // TODO bench reserving
+        let mut data = Vec::with_capacity(grid.len() * max_cols);
         for row in grid.iter() {
             for i in 0..row.len() {
                 data.push(row[i]);
