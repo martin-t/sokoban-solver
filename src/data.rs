@@ -3,6 +3,10 @@ use std::fmt::{Display, Formatter};
 use std::ops::Add;
 
 
+pub const MAX_SIZE: usize = 255;
+pub const MAX_BOXES: usize = 254;
+
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Format {
     Custom,

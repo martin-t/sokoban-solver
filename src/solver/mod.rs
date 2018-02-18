@@ -5,7 +5,7 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
-use data::{MapCell, State, Pos, DIRECTIONS};
+use data::{MAX_BOXES, MapCell, State, Pos, DIRECTIONS};
 use level::{Level, Map, Vec2d};
 
 use self::a_star::{SearchState, Stats};
@@ -82,15 +82,12 @@ pub fn solve(level: &Level, method: Method, print_status: bool) -> Result<Solver
 }
 
 fn process_level(level: &Level) -> Result<SolverLevel, SolverErr> {
-    // Only guarantees we have here is the player exists and therefore map is at least 1x1.
+    // Guarantees we have here:
+    // - the player exists and therefore map is at least 1x1.
+    // - rows and cols is <= 255
     // Do some more low level checking so we can omit some checks later.
 
-    //let grid = Vec2d::new(&level.map.grid.0);
-
-    /*if grid.rows() > 255 || grid.cols() > 255 {
-        return Err(SolverErr::TooLarge);
-    }*/
-
+    // make sure the level is surrounded by wall
     let mut to_visit = vec![level.state.player_pos];
     let mut visited = level.map.grid.create_scratchpad(false);
 
@@ -125,6 +122,7 @@ fn process_level(level: &Level) -> Result<SolverLevel, SolverErr> {
         }
     }*/
 
+    // make sure all relevant game elements are reachable
     let mut reachable_goals = Vec::new();
     let mut reachable_boxes = Vec::new();
     for &pos in level.state.boxes.iter() {
@@ -143,6 +141,7 @@ fn process_level(level: &Level) -> Result<SolverLevel, SolverErr> {
     }
 
     // TODO maybe do this first and use it instead of visited when detecting reachability in specialized fns?
+    // make sure all non-reachable cells are walls
     // to avoid errors with some code that iterates through all non-walls
     let mut processed_grid = level.map.grid.clone();
     for r in 0..processed_grid.rows() {
@@ -159,7 +158,7 @@ fn process_level(level: &Level) -> Result<SolverLevel, SolverErr> {
     }
 
     // only 254 because 255 is used to represent empty in expand_{move,push}
-    if reachable_boxes.len() > 254 {
+    if reachable_boxes.len() > MAX_BOXES {
         return Err(SolverErr::TooMany);
     }
 

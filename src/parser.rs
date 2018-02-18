@@ -2,7 +2,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-use data::{Format, MapCell, State, Pos};
+use data::{MAX_SIZE, Format, MapCell, State, Pos};
 use level::{Level, Map, Vec2d};
 
 #[derive(Debug, PartialEq)]
@@ -83,12 +83,12 @@ fn parse_custom(level: &str)
     let mut player_pos = None;
 
     for (r, line) in level.lines().enumerate() {
-        if r > 255 { return Err(ParserErr::TooLarge); }
+        if r > MAX_SIZE { return Err(ParserErr::TooLarge); }
         grid.push(Vec::new());
         let mut chars = line.chars();
         while let (Some(c1), Some(c2)) = (chars.next(), chars.next()) {
             let c = grid[r].len();
-            if c > 255 { return Err(ParserErr::TooLarge); }
+            if c > MAX_SIZE { return Err(ParserErr::TooLarge); }
             let pos = Pos::new(r as u8, c as u8);
 
             let mut has_box = false;
@@ -142,10 +142,10 @@ fn parse_xsb(level: &str)
     let mut player_pos = None;
 
     for (r, line) in level.lines().enumerate() {
-        if r > 255 { return Err(ParserErr::TooLarge); }
+        if r > MAX_SIZE { return Err(ParserErr::TooLarge); }
         let mut line_tiles = Vec::new();
         for (c, cur_char) in line.chars().enumerate() {
-            if c > 255 { return Err(ParserErr::TooLarge); }
+            if c > MAX_SIZE { return Err(ParserErr::TooLarge); }
             let pos = Pos::new(r as u8, c as u8);
 
             let tile = match cur_char {
