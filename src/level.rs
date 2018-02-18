@@ -2,7 +2,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::ops::{Index, IndexMut};
 
-use data::{Format, MapCell, Content, State, Pos};
+use data::{Format, MapCell, Contents, State, Pos};
 use extensions::Scratch;
 
 
@@ -72,11 +72,11 @@ impl Map {
     }
 
     fn write(&self, state: &State, format: Format, f: &mut Formatter) -> fmt::Result {
-        let mut state_grid = self.grid.create_scratchpad(Content::Empty);
+        let mut state_grid = self.grid.create_scratchpad(Contents::Empty);
         for &b in state.boxes.iter() {
-            state_grid[b] = Content::Box;
+            state_grid[b] = Contents::Box;
         }
-        state_grid[state.player_pos] = Content::Player;
+        state_grid[state.player_pos] = Contents::Player;
 
         for r in 0..self.grid.0.len() {
 
@@ -84,7 +84,7 @@ impl Map {
             let mut last_non_empty = 0;
             for c in 0..self.grid.0[r].len() {
                 let pos = Pos::new(r as u8, c as u8);
-                if self.grid[pos] != MapCell::Empty || state_grid[pos] != Content::Empty {
+                if self.grid[pos] != MapCell::Empty || state_grid[pos] != Contents::Empty {
                     last_non_empty = pos.c;
                 }
             }
@@ -103,14 +103,14 @@ impl Map {
         Ok(())
     }
 
-    fn write_custom(cell: MapCell, contents: Content, f: &mut Formatter) -> fmt::Result {
+    fn write_custom(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::Result {
         if cell == MapCell::Wall {
             write!(f, "<>")?;
         } else {
             match contents {
-                Content::Empty => write!(f, " ")?,
-                Content::Box => write!(f, "B")?,
-                Content::Player => write!(f, "P")?,
+                Contents::Empty => write!(f, " ")?,
+                Contents::Box => write!(f, "B")?,
+                Contents::Player => write!(f, "P")?,
             };
             match cell {
                 MapCell::Empty => write!(f, " ")?,
@@ -122,19 +122,19 @@ impl Map {
         Ok(())
     }
 
-    fn write_xsb(cell: MapCell, contents: Content, f: &mut Formatter) -> fmt::Result {
+    fn write_xsb(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::Result {
         match (cell, contents) {
-            (MapCell::Wall, Content::Empty) => write!(f, "#"),
+            (MapCell::Wall, Contents::Empty) => write!(f, "#"),
             (MapCell::Wall, _) => unreachable!(),
-            (MapCell::Empty, Content::Empty) => write!(f, " "),
-            (MapCell::Empty, Content::Box) => write!(f, "$"),
-            (MapCell::Empty, Content::Player) => write!(f, "@"),
-            (MapCell::Goal, Content::Empty) => write!(f, "."),
-            (MapCell::Goal, Content::Box) => write!(f, "*"),
-            (MapCell::Goal, Content::Player) => write!(f, "+"),
-            (MapCell::Remover, Content::Empty) => write!(f, "r"),
-            (MapCell::Remover, Content::Box) => unreachable!(),
-            (MapCell::Remover, Content::Player) => write!(f, "R"),
+            (MapCell::Empty, Contents::Empty) => write!(f, " "),
+            (MapCell::Empty, Contents::Box) => write!(f, "$"),
+            (MapCell::Empty, Contents::Player) => write!(f, "@"),
+            (MapCell::Goal, Contents::Empty) => write!(f, "."),
+            (MapCell::Goal, Contents::Box) => write!(f, "*"),
+            (MapCell::Goal, Contents::Player) => write!(f, "+"),
+            (MapCell::Remover, Contents::Empty) => write!(f, "r"),
+            (MapCell::Remover, Contents::Box) => unreachable!(),
+            (MapCell::Remover, Contents::Player) => write!(f, "R"),
         }
     }
 }
