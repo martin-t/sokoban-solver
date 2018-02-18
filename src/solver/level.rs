@@ -1,11 +1,11 @@
 use std::fmt;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
 use data::{Format, State};
 use level::{Map, MapFormatter, Vec2d};
 
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct SolverLevel {
     pub map: Map,
     pub state: State,
@@ -32,7 +32,13 @@ impl SolverLevel {
 
 impl Display for SolverLevel {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        self.xsb().fmt(f)
+        write!(f, "{}", self.xsb())
+    }
+}
+
+impl Debug for SolverLevel {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.xsb())
     }
 }
 
@@ -70,10 +76,12 @@ B_<><><>B_<>
             assert_eq!(level.xsb().to_string(), processed_xsb);
             assert_eq!(level.format(Format::Xsb).to_string(), processed_xsb);
             assert_eq!(format!("{}", level), processed_xsb);
+            assert_eq!(format!("{:?}", level), processed_xsb);
 
             assert_eq!(level.custom().to_string(), processed_custom);
             assert_eq!(level.format(Format::Custom).to_string(), processed_custom);
             assert_eq!(format!("{}", level.custom()), processed_custom);
+            assert_eq!(format!("{:?}", level.custom()), processed_custom);
 
             assert_eq!(level.map.format_with_state(Format::Xsb, &level.state).to_string(), processed_xsb);
             assert_eq!(level.map.format_with_state(Format::Custom, &level.state).to_string(), processed_custom);

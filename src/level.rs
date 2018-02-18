@@ -1,5 +1,5 @@
 use std::fmt;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Index, IndexMut};
 
 use data::{Format, MapCell, Contents, State, Pos};
@@ -20,12 +20,17 @@ impl<'a> MapFormatter<'a> {
 
 impl<'a> Display for MapFormatter<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        self.map.write(self.state, self.format, f)
+        self.map.write_with_state(self.state, self.format, f)
     }
 }
 
-// TODO readable Debug for Level, SolverLevel and Map
-#[derive(Debug, Clone)]
+impl<'a> Debug for MapFormatter<'a> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
+#[derive(Clone)]
 pub struct Level {
     pub map: Map,
     pub state: State,
@@ -51,12 +56,18 @@ impl Level {
 
 impl Display for Level {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        self.xsb().fmt(f)
+        write!(f, "{}", self.xsb())
+    }
+}
+
+impl Debug for Level {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.xsb())
     }
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Map {
     pub grid: Vec2d<MapCell>,
     pub goals: Vec<Pos>,
@@ -71,13 +82,16 @@ impl Map {
         MapFormatter::new(self, state, format)
     }
 
-    fn write(&self, state: &State, format: Format, f: &mut Formatter) -> fmt::Result {
+    fn write_with_state(&self, state: &State, format: Format, f: &mut Formatter) -> fmt::Result {
         let mut state_grid = self.grid.create_scratchpad(Contents::Empty);
         for &b in state.boxes.iter() {
             state_grid[b] = Contents::Box;
         }
         state_grid[state.player_pos] = Contents::Player;
+        self.write(state_grid, format, f)
+    }
 
+    fn write(&self, state_grid: Vec2d<Contents>, format: Format, f: &mut Formatter) -> fmt::Result {
         for r in 0..self.grid.0.len() {
 
             // don't print trailing empty cells to match the input level strings
@@ -139,9 +153,22 @@ impl Map {
     }
 }
 
+impl Display for Map {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let state_grid = self.grid.create_scratchpad(Contents::Empty);
+        self.write(state_grid, Format::Xsb, f)
+    }
+}
+
+impl Debug for Map {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
 
 // TODO bench a single vector as map representation
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Vec2d<T>(Vec<Vec<T>>);
 
 impl<T> Vec2d<T> {
@@ -208,6 +235,12 @@ impl Display for Vec2d<bool> {
     }
 }
 
+impl<T: Display> Debug for Vec2d<T> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
 impl<T> Index<Pos> for Vec2d<T> {
     type Output = T;
 
@@ -227,7 +260,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn formatting() {
+    fn formatting_level() {
         let xsb: &str = r"
 *###*
 #@$.#
@@ -245,13 +278,41 @@ B_<><><>B_<>
             assert_eq!(level.xsb().to_string(), xsb);
             assert_eq!(level.format(Format::Xsb).to_string(), xsb);
             assert_eq!(format!("{}", level), xsb);
+            assert_eq!(format!("{:?}", level), xsb);
 
             assert_eq!(level.custom().to_string(), custom);
             assert_eq!(level.format(Format::Custom).to_string(), custom);
             assert_eq!(format!("{}", level.custom()), custom);
+            assert_eq!(format!("{:?}", level.custom()), custom);
 
             assert_eq!(level.map.format_with_state(Format::Xsb, &level.state).to_string(), xsb);
             assert_eq!(level.map.format_with_state(Format::Custom, &level.state).to_string(), custom);
         }
+    }
+
+    #[test]
+    fn formatting_map() {
+        let xsb_level: &str = r"
+*###*
+#@$.#
+*###*#
+".trim_left_matches('\n');
+        let xsb_map: &str = "
+.###.
+#  .#
+.###.#
+".trim_left_matches('\n');
+        // the `\n\` is necessary because intellij removes trailing whitespace
+        let xsb_grid: &str = "
+.###. \n\
+#  .# \n\
+.###.#
+".trim_left_matches('\n');
+
+        let level: Level = xsb_level.parse().unwrap();
+        assert_eq!(format!("{}", level.map), xsb_map);
+        assert_eq!(format!("{:?}", level.map), xsb_map);
+        assert_eq!(format!("{}", level.map.grid), xsb_grid);
+        assert_eq!(format!("{:?}", level.map.grid), xsb_grid);
     }
 }

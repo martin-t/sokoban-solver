@@ -1,3 +1,5 @@
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::ops::Add;
 
 
@@ -16,6 +18,16 @@ pub enum MapCell {
     Remover,
 }
 
+impl Display for MapCell {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", match *self {
+            MapCell::Wall => '#',
+            MapCell::Empty => ' ',
+            MapCell::Goal => '.',
+            MapCell::Remover => 'r',
+        })
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Contents {
