@@ -17,14 +17,17 @@ impl SolverLevel {
         Self { map, state, dead_ends }
     }
 
+    #[allow(unused)]
     pub fn xsb(&self) -> MapFormatter {
         MapFormatter::new(&self.map, &self.state, Format::Xsb)
     }
 
+    #[allow(unused)]
     pub fn custom(&self) -> MapFormatter {
         MapFormatter::new(&self.map, &self.state, Format::Custom)
     }
 
+    #[allow(unused)]
     pub fn format(&self, format: Format) -> MapFormatter {
         MapFormatter::new(&self.map, &self.state, format)
     }
