@@ -255,13 +255,14 @@ mod tests {
     }
 
     fn bench_level(level_path: &str, method: Method, b: &mut Bencher) {
-        // FIXME blackbox
-        // FIXME loading vs solving
         let level = utils::read_file(level_path).unwrap();
         let level = level.parse().unwrap();
 
         b.iter(|| {
-            solver::solve(&level, method, false)
+            test::black_box(solver::solve(
+                test::black_box(&level),
+                test::black_box(method),
+                test::black_box(false)))
         });
     }
 }
