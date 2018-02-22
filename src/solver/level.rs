@@ -2,18 +2,19 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
 use data::{Format, State};
-use level::{Map, MapFormatter, Vec2d};
+use map::{GoalMap, MapFormatter};
+use vec2d::Vec2d;
 
 
 #[derive(Clone)]
 pub struct SolverLevel {
-    pub map: Map,
+    pub map: GoalMap,
     pub state: State,
     pub dead_ends: Vec2d<bool>,
 }
 
 impl SolverLevel {
-    pub fn new(map: Map, state: State, dead_ends: Vec2d<bool>) -> Self {
+    pub fn new(map: GoalMap, state: State, dead_ends: Vec2d<bool>) -> Self {
         Self { map, state, dead_ends }
     }
 

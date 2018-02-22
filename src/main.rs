@@ -17,6 +17,8 @@ extern crate separator;
 mod parser;
 mod solver;
 mod level;
+mod map;
+mod vec2d;
 mod data;
 mod utils;
 

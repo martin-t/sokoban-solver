@@ -6,7 +6,9 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
 use data::{MAX_BOXES, MapCell, State, Pos, DIRECTIONS};
-use level::{Level, Map, Vec2d};
+use level::Level;
+use map::{GoalMap};
+use vec2d::Vec2d;
 
 use self::a_star::{SearchState, Stats};
 use self::level::SolverLevel;
@@ -162,7 +164,7 @@ fn process_level(level: &Level) -> Result<SolverLevel, SolverErr> {
         return Err(SolverErr::TooMany);
     }
 
-    let processed_map = Map::new(processed_grid, reachable_goals);
+    let processed_map = GoalMap::new(processed_grid, reachable_goals);
     let clean_state = State::new(level.state.player_pos, reachable_boxes);
     let dead_ends = find_dead_ends(&processed_map);
     Ok(SolverLevel::new(processed_map, clean_state, dead_ends))
@@ -170,8 +172,8 @@ fn process_level(level: &Level) -> Result<SolverLevel, SolverErr> {
 
 fn search<Expand, Heuristic>(level: &SolverLevel, method: Method, print_status: bool,
                              expand: Expand, heuristic: Heuristic) -> SolverOk
-    where Expand: Fn(&Map, &State, &Vec2d<bool>) -> Vec<State>,
-          Heuristic: Fn(&Map, &State) -> i32
+    where Expand: Fn(&GoalMap, &State, &Vec2d<bool>) -> Vec<State>,
+          Heuristic: Fn(&GoalMap, &State) -> i32
 {
     let mut stats = Stats::new();
 
@@ -232,7 +234,7 @@ fn search<Expand, Heuristic>(level: &SolverLevel, method: Method, print_status: 
     SolverOk::new(None, stats, method)
 }
 
-fn find_dead_ends(map: &Map) -> Vec2d<bool> {
+fn find_dead_ends(map: &GoalMap) -> Vec2d<bool> {
     let mut dead_ends = map.grid.create_scratchpad(false);
 
     // mark walls as dead ends first because expand_push needs it
@@ -276,7 +278,7 @@ fn find_dead_ends(map: &Map) -> Vec2d<bool> {
     dead_ends
 }
 
-fn heuristic_push(map: &Map, state: &State) -> i32 {
+fn heuristic_push(map: &GoalMap, state: &State) -> i32 {
     // less is better
 
     let mut goal_dist_sum = 0;
@@ -293,7 +295,7 @@ fn heuristic_push(map: &Map, state: &State) -> i32 {
     goal_dist_sum
 }
 
-fn heuristic_move(map: &Map, state: &State) -> i32 {
+fn heuristic_move(map: &GoalMap, state: &State) -> i32 {
     // less is better
 
     let mut closest_box = i32::max_value();
@@ -333,7 +335,7 @@ fn backtrack_path(prev: &HashMap<State, State>, final_state: &State) -> Vec<Stat
     }
 }
 
-fn solved(map: &Map, state: &State) -> bool {
+fn solved(map: &GoalMap, state: &State) -> bool {
     // to detect dead ends, this has to test all boxes are on a goal, not that all goals have a box
     for pos in &state.boxes {
         if map.grid[*pos] != MapCell::Goal {
@@ -343,7 +345,7 @@ fn solved(map: &Map, state: &State) -> bool {
     true
 }
 
-fn expand_push(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
+fn expand_push(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
     let mut new_states = Vec::new();
 
     let mut box_grid = map.grid.create_scratchpad(255);
@@ -388,7 +390,7 @@ fn expand_push(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> 
     new_states
 }
 
-fn expand_move(map: &Map, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
+fn expand_move(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
     let mut new_states = Vec::new();
 
     let mut box_grid = map.grid.create_scratchpad(255);

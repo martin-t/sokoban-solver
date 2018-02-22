@@ -3,7 +3,9 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
 use data::{MAX_SIZE, Format, MapCell, State, Pos};
-use level::{Level, Map, Vec2d};
+use level::Level;
+use map::GoalMap;
+use vec2d::Vec2d;
 
 #[derive(Debug, PartialEq)]
 pub enum ParserErr {
@@ -61,11 +63,14 @@ pub fn parse_format(level: &str, format: Format) -> Result<Level, ParserErr> {
         if goals.len() > 0 {
             Err(ParserErr::RemoverAndGoals)
         } else {
-            unimplemented!();
+            unimplemented!()
+            /*Ok(Level::new(
+                RemoverMap::new(grid, remover),
+                State::new(player_pos, boxes)))*/
         }
     } else {
         Ok(Level::new(
-            Map::new(grid, goals),
+            GoalMap::new(grid, goals),
             State::new(player_pos, boxes)))
     }
 }
