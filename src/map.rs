@@ -61,8 +61,8 @@ fn write(grid: &Vec2d<MapCell>, state_grid: Vec2d<Contents>, format: Format, f: 
             let cell = grid[pos];
 
             match format {
-                Format::Custom => write_custom(cell, state_grid[pos], f)?,
-                Format::Xsb => write_xsb(cell, state_grid[pos], f)?,
+                Format::Custom => write_cell_custom(cell, state_grid[pos], f)?,
+                Format::Xsb => write_cell_xsb(cell, state_grid[pos], f)?,
             }
         }
         write!(f, "\n")?;
@@ -70,7 +70,7 @@ fn write(grid: &Vec2d<MapCell>, state_grid: Vec2d<Contents>, format: Format, f: 
     Ok(())
 }
 
-fn write_custom(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::Result {
+fn write_cell_custom(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::Result {
     if cell == MapCell::Wall {
         write!(f, "<>")?;
     } else {
@@ -89,7 +89,7 @@ fn write_custom(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::Re
     Ok(())
 }
 
-fn write_xsb(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::Result {
+fn write_cell_xsb(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::Result {
     match (cell, contents) {
         (MapCell::Wall, Contents::Empty) => write!(f, "#"),
         (MapCell::Wall, _) => unreachable!(),
