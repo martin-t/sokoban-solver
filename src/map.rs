@@ -6,20 +6,20 @@ use vec2d::Vec2d;
 
 
 pub struct MapFormatter<'a> {
-    map: &'a GoalMap,
+    grid: &'a Vec2d<MapCell>,
     state: &'a State,
     format: Format,
 }
 
 impl<'a> MapFormatter<'a> {
-    pub fn new(map: &'a GoalMap, state: &'a State, format: Format) -> Self {
-        Self { map, state, format }
+    pub fn new(grid: &'a Vec2d<MapCell>, state: &'a State, format: Format) -> Self {
+        Self { grid, state, format }
     }
 }
 
 impl<'a> Display for MapFormatter<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        self.map.write_with_state(self.state, self.format, f)
+        write_with_state(&self.grid, self.state, self.format, f)
     }
 }
 
@@ -30,7 +30,80 @@ impl<'a> Debug for MapFormatter<'a> {
 }
 
 
-pub trait Map {}
+pub trait Map {
+    fn format_with_state<'a>(&'a self, format: Format, state: &'a State) -> MapFormatter<'a>;
+}
+
+
+fn write_with_state(grid: &Vec2d<MapCell>, state: &State, format: Format, f: &mut Formatter) -> fmt::Result {
+    let mut state_grid = grid.create_scratchpad(Contents::Empty);
+    for &b in state.boxes.iter() {
+        state_grid[b] = Contents::Box;
+    }
+    state_grid[state.player_pos] = Contents::Player;
+    write(grid, state_grid, format, f)
+}
+
+fn write(grid: &Vec2d<MapCell>, state_grid: Vec2d<Contents>, format: Format, f: &mut Formatter) -> fmt::Result {
+    for r in 0..grid.rows() {
+
+        // don't print trailing empty cells to match the input level strings
+        let mut last_non_empty = 0;
+        for c in 0..grid.cols() {
+            let pos = Pos::new(r as u8, c as u8);
+            if grid[pos] != MapCell::Empty || state_grid[pos] != Contents::Empty {
+                last_non_empty = pos.c;
+            }
+        }
+
+        for c in 0..last_non_empty + 1 {
+            let pos = Pos::new(r as u8, c as u8);
+            let cell = grid[pos];
+
+            match format {
+                Format::Custom => write_custom(cell, state_grid[pos], f)?,
+                Format::Xsb => write_xsb(cell, state_grid[pos], f)?,
+            }
+        }
+        write!(f, "\n")?;
+    }
+    Ok(())
+}
+
+fn write_custom(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::Result {
+    if cell == MapCell::Wall {
+        write!(f, "<>")?;
+    } else {
+        match contents {
+            Contents::Empty => write!(f, " ")?,
+            Contents::Box => write!(f, "B")?,
+            Contents::Player => write!(f, "P")?,
+        };
+        match cell {
+            MapCell::Empty => write!(f, " ")?,
+            MapCell::Goal => write!(f, "_")?,
+            MapCell::Remover => write!(f, "R")?,
+            _ => unreachable!(),
+        };
+    }
+    Ok(())
+}
+
+fn write_xsb(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::Result {
+    match (cell, contents) {
+        (MapCell::Wall, Contents::Empty) => write!(f, "#"),
+        (MapCell::Wall, _) => unreachable!(),
+        (MapCell::Empty, Contents::Empty) => write!(f, " "),
+        (MapCell::Empty, Contents::Box) => write!(f, "$"),
+        (MapCell::Empty, Contents::Player) => write!(f, "@"),
+        (MapCell::Goal, Contents::Empty) => write!(f, "."),
+        (MapCell::Goal, Contents::Box) => write!(f, "*"),
+        (MapCell::Goal, Contents::Player) => write!(f, "+"),
+        (MapCell::Remover, Contents::Empty) => write!(f, "r"),
+        (MapCell::Remover, Contents::Box) => unreachable!(),
+        (MapCell::Remover, Contents::Player) => write!(f, "R"),
+    }
+}
 
 
 #[derive(Clone)]
@@ -43,86 +116,18 @@ impl GoalMap {
     pub fn new(grid: Vec2d<MapCell>, goals: Vec<Pos>) -> Self {
         GoalMap { grid, goals }
     }
+}
 
-    pub fn format_with_state<'a>(&'a self, format: Format, state: &'a State) -> MapFormatter<'a> {
-        MapFormatter::new(self, state, format)
-    }
-
-    fn write_with_state(&self, state: &State, format: Format, f: &mut Formatter) -> fmt::Result {
-        let mut state_grid = self.grid.create_scratchpad(Contents::Empty);
-        for &b in state.boxes.iter() {
-            state_grid[b] = Contents::Box;
-        }
-        state_grid[state.player_pos] = Contents::Player;
-        self.write(state_grid, format, f)
-    }
-
-    fn write(&self, state_grid: Vec2d<Contents>, format: Format, f: &mut Formatter) -> fmt::Result {
-        for r in 0..self.grid.rows() {
-
-            // don't print trailing empty cells to match the input level strings
-            let mut last_non_empty = 0;
-            for c in 0..self.grid.cols() {
-                let pos = Pos::new(r as u8, c as u8);
-                if self.grid[pos] != MapCell::Empty || state_grid[pos] != Contents::Empty {
-                    last_non_empty = pos.c;
-                }
-            }
-
-            for c in 0..last_non_empty + 1 {
-                let pos = Pos::new(r as u8, c as u8);
-                let cell = self.grid[pos];
-
-                match format {
-                    Format::Custom => Self::write_custom(cell, state_grid[pos], f)?,
-                    Format::Xsb => Self::write_xsb(cell, state_grid[pos], f)?,
-                }
-            }
-            write!(f, "\n")?;
-        }
-        Ok(())
-    }
-
-    fn write_custom(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::Result {
-        if cell == MapCell::Wall {
-            write!(f, "<>")?;
-        } else {
-            match contents {
-                Contents::Empty => write!(f, " ")?,
-                Contents::Box => write!(f, "B")?,
-                Contents::Player => write!(f, "P")?,
-            };
-            match cell {
-                MapCell::Empty => write!(f, " ")?,
-                MapCell::Goal => write!(f, "_")?,
-                MapCell::Remover => write!(f, "R")?,
-                _ => unreachable!(),
-            };
-        }
-        Ok(())
-    }
-
-    fn write_xsb(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::Result {
-        match (cell, contents) {
-            (MapCell::Wall, Contents::Empty) => write!(f, "#"),
-            (MapCell::Wall, _) => unreachable!(),
-            (MapCell::Empty, Contents::Empty) => write!(f, " "),
-            (MapCell::Empty, Contents::Box) => write!(f, "$"),
-            (MapCell::Empty, Contents::Player) => write!(f, "@"),
-            (MapCell::Goal, Contents::Empty) => write!(f, "."),
-            (MapCell::Goal, Contents::Box) => write!(f, "*"),
-            (MapCell::Goal, Contents::Player) => write!(f, "+"),
-            (MapCell::Remover, Contents::Empty) => write!(f, "r"),
-            (MapCell::Remover, Contents::Box) => unreachable!(),
-            (MapCell::Remover, Contents::Player) => write!(f, "R"),
-        }
+impl Map for GoalMap {
+    fn format_with_state<'a>(&'a self, format: Format, state: &'a State) -> MapFormatter<'a> {
+        MapFormatter::new(&self.grid, state, format)
     }
 }
 
 impl Display for GoalMap {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let state_grid = self.grid.create_scratchpad(Contents::Empty);
-        self.write(state_grid, Format::Xsb, f)
+        write(&self.grid, state_grid, Format::Xsb, f)
     }
 }
 

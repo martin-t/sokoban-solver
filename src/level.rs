@@ -17,17 +17,17 @@ impl Level {
 
     #[allow(unused)]
     pub fn xsb(&self) -> MapFormatter {
-        MapFormatter::new(&self.map, &self.state, Format::Xsb)
+        MapFormatter::new(&self.map.grid, &self.state, Format::Xsb)
     }
 
     #[allow(unused)]
     pub fn custom(&self) -> MapFormatter {
-        MapFormatter::new(&self.map, &self.state, Format::Custom)
+        MapFormatter::new(&self.map.grid, &self.state, Format::Custom)
     }
 
     #[allow(unused)]
     pub fn format(&self, format: Format) -> MapFormatter {
-        MapFormatter::new(&self.map, &self.state, format)
+        MapFormatter::new(&self.map.grid, &self.state, format)
     }
 }
 
@@ -46,6 +46,7 @@ impl Debug for Level {
 #[cfg(test)]
 mod tests{
     use super::*;
+    use map::Map;
 
     #[test]
     fn formatting_level() {

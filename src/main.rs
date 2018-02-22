@@ -28,6 +28,7 @@ use std::process;
 use clap::{App, Arg, ArgGroup};
 
 use solver::Method;
+use map::Map;
 use data::Format;
 
 fn main() {
