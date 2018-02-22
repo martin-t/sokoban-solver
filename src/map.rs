@@ -150,38 +150,6 @@ impl RemoverMap {
 #[cfg(test)]
 mod tests {
     use level::Level;
-    use super::*;
-
-    #[test]
-    fn formatting_level() {
-        let xsb: &str = r"
-*###*
-#@$.#
-*###*#
-".trim_left_matches('\n');
-        let custom: &str = r"
-B_<><><>B_
-<>P B  _<>
-B_<><><>B_<>
-".trim_left_matches('\n');
-
-        for level in [xsb, custom].iter() {
-            let level: Level = level.parse().unwrap();
-            assert_eq!(level.to_string(), xsb);
-            assert_eq!(level.xsb().to_string(), xsb);
-            assert_eq!(level.format(Format::Xsb).to_string(), xsb);
-            assert_eq!(format!("{}", level), xsb);
-            assert_eq!(format!("{:?}", level), xsb);
-
-            assert_eq!(level.custom().to_string(), custom);
-            assert_eq!(level.format(Format::Custom).to_string(), custom);
-            assert_eq!(format!("{}", level.custom()), custom);
-            assert_eq!(format!("{:?}", level.custom()), custom);
-
-            assert_eq!(level.map.format_with_state(Format::Xsb, &level.state).to_string(), xsb);
-            assert_eq!(level.map.format_with_state(Format::Custom, &level.state).to_string(), custom);
-        }
-    }
 
     #[test]
     fn formatting_map() {
