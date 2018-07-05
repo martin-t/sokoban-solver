@@ -5,24 +5,24 @@ use std::ops::{Index, IndexMut};
 use data::{MapCell, Pos};
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct Vec2d<T> {
+crate struct Vec2d<T> {
     data: Vec<T>,
     rows: u8,
     cols: u8,
 }
 
 impl<T> Vec2d<T> {
-    pub fn rows(&self) -> u8 {
+    crate fn rows(&self) -> u8 {
         self.rows
     }
 
-    pub fn cols(&self) -> u8 {
+    crate fn cols(&self) -> u8 {
         self.cols
     }
 }
 
 impl Vec2d<MapCell> {
-    pub fn new(grid: &Vec<Vec<MapCell>>) -> Self {
+    crate fn new(grid: &Vec<Vec<MapCell>>) -> Self {
         assert!(grid.len() > 0 && grid[0].len() > 0);
 
         let max_cols = grid.iter().map(|row| row.len()).max().unwrap();
@@ -42,7 +42,7 @@ impl Vec2d<MapCell> {
         }
     }
 
-    pub fn create_scratchpad<T: Copy>(&self, default: T) -> Vec2d<T> {
+    crate fn create_scratchpad<T: Copy>(&self, default: T) -> Vec2d<T> {
         Vec2d {
             data: vec![default; self.data.len()],
             rows: self.rows,

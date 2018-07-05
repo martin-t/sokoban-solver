@@ -1,9 +1,15 @@
-#![cfg_attr(test, feature(proc_macro))]
-#![cfg_attr(test, feature(proc_macro_gen))]
-#![cfg_attr(test, feature(test))]
+// Opt in to unstable features expected for Rust 2018
+#![feature(rust_2018_preview)]
+
+// Opt in to warnings about new 2018 idioms
+#![warn(rust_2018_idioms)]
 
 // https://github.com/rust-lang/rust/issues/31844
 #![feature(specialization)]
+
+#![cfg_attr(test, feature(proc_macro))]
+#![cfg_attr(test, feature(proc_macro_gen))]
+#![cfg_attr(test, feature(test))]
 
 #[cfg(test)]
 extern crate test_case_derive;

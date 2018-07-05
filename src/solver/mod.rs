@@ -1,4 +1,4 @@
-pub mod a_star;
+crate mod a_star;
 mod level;
 
 use std::collections::{BinaryHeap, HashMap, HashSet};
@@ -14,7 +14,7 @@ use self::a_star::{SearchState, Stats};
 use self::level::SolverLevel;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Method {
+crate enum Method {
     Moves,
     Pushes,
 }
@@ -29,7 +29,7 @@ impl Display for Method {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum SolverErr {
+crate enum SolverErr {
     IncompleteBorder,
     UnreachableBoxes,
     UnreachableGoals,
@@ -51,11 +51,11 @@ impl Display for SolverErr {
     }
 }
 
-pub struct SolverOk {
+crate struct SolverOk {
     // TODO probably wanna use Dirs or Moves eventually
-    pub path_states: Option<Vec<State>>,
-    pub stats: Stats,
-    pub method: Method,
+    crate path_states: Option<Vec<State>>,
+    crate stats: Stats,
+    crate method: Method,
 }
 
 impl SolverOk {
@@ -75,7 +75,7 @@ impl Debug for SolverOk {
 }
 
 
-pub fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
+crate fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
     let solver_level = process_level(level)?;
     match method {
         Method::Moves => Ok(search(&solver_level, method, print_status, expand_move, heuristic_move)),

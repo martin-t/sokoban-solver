@@ -8,7 +8,7 @@ use map::GoalMap;
 use vec2d::Vec2d;
 
 #[derive(Debug, PartialEq)]
-pub enum ParserErr {
+crate enum ParserErr {
     Pos(usize, usize),
     TooLarge,
     MultiplePlayers,
@@ -40,7 +40,7 @@ impl FromStr for Level {
     }
 }
 
-pub fn parse(level: &str) -> Result<Level, ParserErr> {
+crate fn parse(level: &str) -> Result<Level, ParserErr> {
     if level.trim_left().contains('<') {
         parse_format(level, Format::Custom)
     } else {
@@ -48,7 +48,7 @@ pub fn parse(level: &str) -> Result<Level, ParserErr> {
     }
 }
 
-pub fn parse_format(level: &str, format: Format) -> Result<Level, ParserErr> {
+crate fn parse_format(level: &str, format: Format) -> Result<Level, ParserErr> {
     // trim so we can specify levels using raw strings more easily
     let level = level.trim_matches('\n').trim_right();
 

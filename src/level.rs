@@ -5,28 +5,28 @@ use map::{GoalMap, MapFormatter};
 use data::{Format, State};
 
 #[derive(Clone)]
-pub struct Level {
-    pub map: GoalMap,
-    pub state: State,
+crate struct Level {
+    crate map: GoalMap,
+    crate state: State,
 }
 
 impl Level {
-    pub fn new(map: GoalMap, state: State) -> Self {
+    crate fn new(map: GoalMap, state: State) -> Self {
         Level { map, state }
     }
 
     #[allow(unused)]
-    pub fn xsb(&self) -> MapFormatter {
+    crate fn xsb(&self) -> MapFormatter {
         MapFormatter::new(&self.map.grid, &self.state, Format::Xsb)
     }
 
     #[allow(unused)]
-    pub fn custom(&self) -> MapFormatter {
+    crate fn custom(&self) -> MapFormatter {
         MapFormatter::new(&self.map.grid, &self.state, Format::Custom)
     }
 
     #[allow(unused)]
-    pub fn format(&self, format: Format) -> MapFormatter {
+    crate fn format(&self, format: Format) -> MapFormatter {
         MapFormatter::new(&self.map.grid, &self.state, format)
     }
 }

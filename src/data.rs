@@ -3,19 +3,19 @@ use std::fmt::{Display, Formatter};
 use std::ops::Add;
 
 
-pub const MAX_SIZE: usize = 255;
-pub const MAX_BOXES: usize = 254;
+crate const MAX_SIZE: usize = 255;
+crate const MAX_BOXES: usize = 254;
 
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Format {
+crate enum Format {
     Custom,
     Xsb,
 }
 
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum MapCell {
+crate enum MapCell {
     Wall,
     Empty,
     Goal,
@@ -34,7 +34,7 @@ impl Display for MapCell {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Contents {
+crate enum Contents {
     Empty,
     Box,
     Player,
@@ -42,13 +42,13 @@ pub enum Contents {
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash)]
-pub struct State {
-    pub player_pos: Pos,
-    pub boxes: Vec<Pos>,
+crate struct State {
+    crate player_pos: Pos,
+    crate boxes: Vec<Pos>,
 }
 
 impl State {
-    pub fn new(player_pos: Pos, mut boxes: Vec<Pos>) -> State {
+    crate fn new(player_pos: Pos, mut boxes: Vec<Pos>) -> State {
         boxes.sort(); // sort to detect equal states when we reorder boxes
         State { player_pos, boxes }
     }
@@ -56,21 +56,21 @@ impl State {
 
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Pos {
-    pub r: u8,
-    pub c: u8,
+crate struct Pos {
+    crate r: u8,
+    crate c: u8,
 }
 
 impl Pos {
-    pub fn new(r: u8, c: u8) -> Pos {
+    crate fn new(r: u8, c: u8) -> Pos {
         Pos { r, c }
     }
 
-    pub fn dist(self, other: Pos) -> i32 {
+    crate fn dist(self, other: Pos) -> i32 {
         (self.r as i32 - other.r as i32).abs() + (self.c as i32 - other.c as i32).abs()
     }
 
-    pub fn neighbors(self) -> [Pos; 4] {
+    crate fn neighbors(self) -> [Pos; 4] {
         [
             Pos { r: self.r - 1, c: self.c },
             Pos { r: self.r, c: self.c + 1 },
@@ -94,10 +94,10 @@ impl Add<Dir> for Pos {
 }
 
 
-pub const DIRECTIONS: [Dir; 4] = [Dir::Up, Dir::Right, Dir::Down, Dir::Left];
+crate const DIRECTIONS: [Dir; 4] = [Dir::Up, Dir::Right, Dir::Down, Dir::Left];
 
 #[derive(Debug, Clone, Copy)]
-pub enum Dir {
+crate enum Dir {
     Up,
     Right,
     Down,

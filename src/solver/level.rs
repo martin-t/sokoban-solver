@@ -7,29 +7,29 @@ use vec2d::Vec2d;
 
 
 #[derive(Clone)]
-pub struct SolverLevel {
-    pub map: GoalMap,
-    pub state: State,
-    pub dead_ends: Vec2d<bool>,
+crate struct SolverLevel {
+    crate map: GoalMap,
+    crate state: State,
+    crate dead_ends: Vec2d<bool>,
 }
 
 impl SolverLevel {
-    pub fn new(map: GoalMap, state: State, dead_ends: Vec2d<bool>) -> Self {
+    crate fn new(map: GoalMap, state: State, dead_ends: Vec2d<bool>) -> Self {
         Self { map, state, dead_ends }
     }
 
     #[allow(unused)]
-    pub fn xsb(&self) -> MapFormatter {
+    crate fn xsb(&self) -> MapFormatter {
         MapFormatter::new(&self.map.grid, &self.state, Format::Xsb)
     }
 
     #[allow(unused)]
-    pub fn custom(&self) -> MapFormatter {
+    crate fn custom(&self) -> MapFormatter {
         MapFormatter::new(&self.map.grid, &self.state, Format::Custom)
     }
 
     #[allow(unused)]
-    pub fn format(&self, format: Format) -> MapFormatter {
+    crate fn format(&self, format: Format) -> MapFormatter {
         MapFormatter::new(&self.map.grid, &self.state, format)
     }
 }

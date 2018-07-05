@@ -6,26 +6,26 @@ use separator::Separatable;
 use data::State;
 
 #[derive(PartialEq, Eq)]
-pub struct Stats {
+crate struct Stats {
     created_states: Vec<i32>,
     visited_states: Vec<i32>,
     duplicate_states: Vec<i32>,
 }
 
 impl Stats {
-    pub fn new() -> Self {
+    crate fn new() -> Self {
         Stats { created_states: vec![], duplicate_states: vec![], visited_states: vec![] }
     }
 
-    pub fn total_created(&self) -> i32 {
+    crate fn total_created(&self) -> i32 {
         self.created_states.iter().sum::<i32>()
     }
 
-    pub fn total_unique_visited(&self) -> i32 {
+    crate fn total_unique_visited(&self) -> i32 {
         self.visited_states.iter().sum::<i32>()
     }
 
-    pub fn total_reached_duplicates(&self) -> i32 {
+    crate fn total_reached_duplicates(&self) -> i32 {
         self.duplicate_states.iter().sum::<i32>()
     }
 
@@ -103,11 +103,11 @@ impl Display for Stats {
 }
 
 #[derive(Debug)]
-pub struct SearchState {
-    pub state: State,
-    pub prev: Option<State>,
-    pub dist: i32,
-    pub h: i32,
+crate struct SearchState {
+    crate state: State,
+    crate prev: Option<State>,
+    crate dist: i32,
+    crate h: i32,
 }
 
 impl PartialOrd for SearchState {

@@ -5,14 +5,14 @@ use data::{Format, MapCell, Contents, State, Pos};
 use vec2d::Vec2d;
 
 
-pub struct MapFormatter<'a> {
+crate struct MapFormatter<'a> {
     grid: &'a Vec2d<MapCell>,
     state: &'a State,
     format: Format,
 }
 
 impl<'a> MapFormatter<'a> {
-    pub fn new(grid: &'a Vec2d<MapCell>, state: &'a State, format: Format) -> Self {
+    crate fn new(grid: &'a Vec2d<MapCell>, state: &'a State, format: Format) -> Self {
         Self { grid, state, format }
     }
 }
@@ -30,7 +30,7 @@ impl<'a> Debug for MapFormatter<'a> {
 }
 
 
-pub trait Map {
+crate trait Map {
     fn format_with_state<'a>(&'a self, format: Format, state: &'a State) -> MapFormatter<'a>;
 }
 
@@ -107,13 +107,13 @@ fn write_cell_xsb(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::
 
 
 #[derive(Clone)]
-pub struct GoalMap {
-    pub grid: Vec2d<MapCell>,
-    pub goals: Vec<Pos>,
+crate struct GoalMap {
+    crate grid: Vec2d<MapCell>,
+    crate goals: Vec<Pos>,
 }
 
 impl GoalMap {
-    pub fn new(grid: Vec2d<MapCell>, goals: Vec<Pos>) -> Self {
+    crate fn new(grid: Vec2d<MapCell>, goals: Vec<Pos>) -> Self {
         GoalMap { grid, goals }
     }
 }
@@ -139,14 +139,14 @@ impl Debug for GoalMap {
 
 
 #[allow(unused)]
-pub struct RemoverMap {
-    pub grid: Vec2d<MapCell>,
-    pub remover: Pos,
+crate struct RemoverMap {
+    crate grid: Vec2d<MapCell>,
+    crate remover: Pos,
 }
 
 #[allow(unused)]
 impl RemoverMap {
-    pub fn new(grid: Vec2d<MapCell>, remover: Pos) -> Self {
+    crate fn new(grid: Vec2d<MapCell>, remover: Pos) -> Self {
         Self { grid, remover }
     }
 }
