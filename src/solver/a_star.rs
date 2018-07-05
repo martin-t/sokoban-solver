@@ -29,15 +29,15 @@ impl Stats {
         self.duplicate_states.iter().sum::<i32>()
     }
 
-    pub fn add_created(&mut self, state: &SearchState) -> bool {
+    pub(super) fn add_created(&mut self, state: &SearchState) -> bool {
         Self::add(&mut self.created_states, state)
     }
 
-    pub fn add_unique_visited(&mut self, state: &SearchState) -> bool {
+    pub(super) fn add_unique_visited(&mut self, state: &SearchState) -> bool {
         Self::add(&mut self.visited_states, state)
     }
 
-    pub fn add_reached_duplicate(&mut self, state: &SearchState) -> bool {
+    pub(super) fn add_reached_duplicate(&mut self, state: &SearchState) -> bool {
         Self::add(&mut self.duplicate_states, state)
     }
 
