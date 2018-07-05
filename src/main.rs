@@ -1,6 +1,6 @@
 #![cfg_attr(test, feature(proc_macro))]
+#![cfg_attr(test, feature(proc_macro_gen))]
 #![cfg_attr(test, feature(test))]
-#![cfg_attr(test, feature(inclusive_range_syntax))]
 
 // https://github.com/rust-lang/rust/issues/31844
 #![feature(specialization)]
@@ -99,7 +99,8 @@ mod tests {
 
     use super::*;
 
-    #[test_case("custom", "01-simplest-xsb.txt")]
+    // additional parens are a workaround for https://github.com/synek317/test-case-derive/issues/2
+    #[test_case(("custom", "01-simplest-xsb.txt"))]
     #[test_case("custom", "01-simplest-custom.txt")]
     #[test_case("custom", "02-one-way.txt")]
     #[test_case("custom", "03-long-way.txt")]
@@ -125,7 +126,7 @@ mod tests {
         test_level(level_pack, level_name, Method::Pushes);
     }
 
-    #[test_case("custom", "01-simplest-xsb.txt")]
+    #[test_case(("custom", "01-simplest-xsb.txt"))]
     #[test_case("custom", "01-simplest-custom.txt")]
     #[test_case("custom", "02-one-way.txt")]
     #[test_case("custom", "03-long-way.txt")]
