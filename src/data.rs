@@ -2,17 +2,14 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::ops::Add;
 
-
 crate const MAX_SIZE: usize = 255;
 crate const MAX_BOXES: usize = 254;
-
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 crate enum Format {
     Custom,
     Xsb,
 }
-
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 crate enum MapCell {
@@ -24,12 +21,16 @@ crate enum MapCell {
 
 impl Display for MapCell {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", match *self {
-            MapCell::Wall => '#',
-            MapCell::Empty => ' ',
-            MapCell::Goal => '.',
-            MapCell::Remover => 'r',
-        })
+        write!(
+            f,
+            "{}",
+            match *self {
+                MapCell::Wall => '#',
+                MapCell::Empty => ' ',
+                MapCell::Goal => '.',
+                MapCell::Remover => 'r',
+            }
+        )
     }
 }
 
@@ -39,7 +40,6 @@ crate enum Contents {
     Box,
     Player,
 }
-
 
 #[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash)]
 crate struct State {
@@ -53,7 +53,6 @@ impl State {
         State { player_pos, boxes }
     }
 }
-
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 crate struct Pos {
@@ -72,10 +71,22 @@ impl Pos {
 
     crate fn neighbors(self) -> [Pos; 4] {
         [
-            Pos { r: self.r - 1, c: self.c },
-            Pos { r: self.r, c: self.c + 1 },
-            Pos { r: self.r + 1, c: self.c },
-            Pos { r: self.r, c: self.c - 1 },
+            Pos {
+                r: self.r - 1,
+                c: self.c,
+            },
+            Pos {
+                r: self.r,
+                c: self.c + 1,
+            },
+            Pos {
+                r: self.r + 1,
+                c: self.c,
+            },
+            Pos {
+                r: self.r,
+                c: self.c - 1,
+            },
         ]
     }
 }
@@ -85,14 +96,25 @@ impl Add<Dir> for Pos {
 
     fn add(self, dir: Dir) -> Pos {
         match dir {
-            Dir::Up => Pos { r: self.r - 1, c: self.c },
-            Dir::Right => Pos { r: self.r, c: self.c + 1 },
-            Dir::Down => Pos { r: self.r + 1, c: self.c },
-            Dir::Left => Pos { r: self.r, c: self.c - 1 },
+            Dir::Up => Pos {
+                r: self.r - 1,
+                c: self.c,
+            },
+            Dir::Right => Pos {
+                r: self.r,
+                c: self.c + 1,
+            },
+            Dir::Down => Pos {
+                r: self.r + 1,
+                c: self.c,
+            },
+            Dir::Left => Pos {
+                r: self.r,
+                c: self.c - 1,
+            },
         }
     }
 }
-
 
 crate const DIRECTIONS: [Dir; 4] = [Dir::Up, Dir::Right, Dir::Down, Dir::Left];
 

@@ -5,9 +5,9 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
-use data::{MAX_BOXES, MapCell, State, Pos, DIRECTIONS};
+use data::{MapCell, Pos, State, DIRECTIONS, MAX_BOXES};
 use level::Level;
-use map::{GoalMap};
+use map::GoalMap;
 use vec2d::Vec2d;
 
 use self::a_star::{SearchState, Stats};
@@ -41,9 +41,15 @@ crate enum SolverErr {
 impl Display for SolverErr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
-            SolverErr::IncompleteBorder => write!(f, "Player can exit the level because of missing border"),
-            SolverErr::UnreachableBoxes => write!(f, "Boxes that are not on goal but can't be reached"),
-            SolverErr::UnreachableGoals => write!(f, "Goals that don't have a box but can't be reached"),
+            SolverErr::IncompleteBorder => {
+                write!(f, "Player can exit the level because of missing border")
+            }
+            SolverErr::UnreachableBoxes => {
+                write!(f, "Boxes that are not on goal but can't be reached")
+            }
+            SolverErr::UnreachableGoals => {
+                write!(f, "Goals that don't have a box but can't be reached")
+            }
             //SolverErr::UnreachableRemover => write!(f, "Remover is not reachable"),
             SolverErr::TooMany => write!(f, "More than 254 reachable boxes or goals"),
             SolverErr::BoxesGoals => write!(f, "Different number of reachable boxes and goals"),
@@ -60,7 +66,11 @@ crate struct SolverOk {
 
 impl SolverOk {
     fn new(path_states: Option<Vec<State>>, stats: Stats, method: Method) -> Self {
-        Self { path_states, stats, method }
+        Self {
+            path_states,
+            stats,
+            method,
+        }
     }
 }
 
@@ -74,12 +84,23 @@ impl Debug for SolverOk {
     }
 }
 
-
 crate fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
     let solver_level = process_level(level)?;
     match method {
-        Method::Moves => Ok(search(&solver_level, method, print_status, expand_move, heuristic_move)),
-        Method::Pushes => Ok(search(&solver_level, method, print_status, expand_push, heuristic_push)),
+        Method::Moves => Ok(search(
+            &solver_level,
+            method,
+            print_status,
+            expand_move,
+            heuristic_move,
+        )),
+        Method::Pushes => Ok(search(
+            &solver_level,
+            method,
+            print_status,
+            expand_push,
+            heuristic_push,
+        )),
     }
 }
 
@@ -105,7 +126,8 @@ fn process_level(level: &Level) -> Result<SolverLevel, SolverErr> {
             if nr < 0
                 || nc < 0
                 || nr >= level.map.grid.rows() as i32
-                || nc >= level.map.grid.cols() as i32 {
+                || nc >= level.map.grid.cols() as i32
+            {
                 // we got out of bounds without hitting a wall
                 return Err(SolverErr::IncompleteBorder);
             }
@@ -170,10 +192,16 @@ fn process_level(level: &Level) -> Result<SolverLevel, SolverErr> {
     Ok(SolverLevel::new(processed_map, clean_state, dead_ends))
 }
 
-fn search<Expand, Heuristic>(level: &SolverLevel, method: Method, print_status: bool,
-                             expand: Expand, heuristic: Heuristic) -> SolverOk
-    where Expand: Fn(&GoalMap, &State, &Vec2d<bool>) -> Vec<State>,
-          Heuristic: Fn(&GoalMap, &State) -> i32
+fn search<Expand, Heuristic>(
+    level: &SolverLevel,
+    method: Method,
+    print_status: bool,
+    expand: Expand,
+    heuristic: Heuristic,
+) -> SolverOk
+where
+    Expand: Fn(&GoalMap, &State, &Vec2d<bool>) -> Vec<State>,
+    Heuristic: Fn(&GoalMap, &State) -> i32,
 {
     let mut stats = Stats::new();
 
@@ -207,9 +235,7 @@ fn search<Expand, Heuristic>(level: &SolverLevel, method: Method, print_status: 
         }
 
         if solved(&level.map, &current.state) {
-            return SolverOk::new(
-                Some(backtrack_path(&prev, &current.state)),
-                stats, method);
+            return SolverOk::new(Some(backtrack_path(&prev, &current.state)), stats, method);
         }
 
         for neighbor_state in expand(&level.map, &current.state, &level.dead_ends) {
@@ -266,8 +292,14 @@ fn find_dead_ends(map: &GoalMap) -> Vec2d<bool> {
                     boxes: vec![box_pos],
                 };
                 let fake_level = SolverLevel::new(map.clone(), fake_state, dead_ends.clone());
-                if let Some(_) = search(&fake_level, Method::Pushes, false,
-                                        expand_push, heuristic_push).path_states {
+                if let Some(_) = search(
+                    &fake_level,
+                    Method::Pushes,
+                    false,
+                    expand_push,
+                    heuristic_push,
+                ).path_states
+                {
                     continue 'cell; // need to find only one solution
                 }
             }
@@ -369,7 +401,8 @@ fn expand_push(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<Sta
                 if box_grid[push_dest] == 255
                     // dead_end == true means either wall or dead end
                     // might not actually be faster (no diff in benches) but probably can't hurt
-                    && !dead_ends[push_dest] {
+                    && !dead_ends[push_dest]
+                {
                     // new state to explore
 
                     let mut new_boxes = state.boxes.clone();
@@ -378,8 +411,7 @@ fn expand_push(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<Sta
                     // otherwise we'd have to generate reachable twice or save them as part of state
                     new_states.push(State::new(new_player_pos, new_boxes));
                 }
-            } else if map.grid[new_player_pos] != MapCell::Wall
-                && !reachable[new_player_pos] {
+            } else if map.grid[new_player_pos] != MapCell::Wall && !reachable[new_player_pos] {
                 // new_pos is empty and not yet visited
                 reachable[new_player_pos] = true;
                 to_visit.push(new_player_pos);
@@ -409,7 +441,8 @@ fn expand_move(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<Sta
                 new_states.push(State::new(new_player_pos, state.boxes.clone()));
             } else if box_grid[push_dest] == 255
                 && map.grid[push_dest] != MapCell::Wall
-                && dead_ends[push_dest] == false {
+                && dead_ends[push_dest] == false
+            {
                 // push
 
                 let mut new_boxes = state.boxes.clone();
@@ -434,7 +467,10 @@ mod tests {
 ########
 ";
         let level = level.parse().unwrap();
-        assert_eq!(process_level(&level).unwrap_err(), SolverErr::UnreachableBoxes);
+        assert_eq!(
+            process_level(&level).unwrap_err(),
+            SolverErr::UnreachableBoxes
+        );
     }
 
     #[test]
@@ -453,7 +489,8 @@ mod tests {
 11111
 11001
 11111
-".trim_left();
+"
+            .trim_left();
         assert_eq!(solver_level.dead_ends.to_string(), expected);
     }
 
@@ -473,7 +510,11 @@ mod tests {
 ";
         let level = level.parse().unwrap();
         let solver_level = process_level(&level).unwrap();
-        let neighbor_states = expand_push(&solver_level.map, &solver_level.state, &solver_level.dead_ends);
+        let neighbor_states = expand_push(
+            &solver_level.map,
+            &solver_level.state,
+            &solver_level.dead_ends,
+        );
         assert_eq!(neighbor_states.len(), 2);
     }
 
@@ -489,7 +530,11 @@ mod tests {
 ";
         let level = level.parse().unwrap();
         let solver_level = process_level(&level).unwrap();
-        let neighbor_states = expand_move(&solver_level.map, &solver_level.state, &solver_level.dead_ends);
+        let neighbor_states = expand_move(
+            &solver_level.map,
+            &solver_level.state,
+            &solver_level.dead_ends,
+        );
         assert_eq!(neighbor_states.len(), 2);
     }
 
@@ -505,7 +550,11 @@ mod tests {
 ";
         let level = level.parse().unwrap();
         let solver_level = process_level(&level).unwrap();
-        let neighbor_states = expand_move(&solver_level.map, &solver_level.state, &solver_level.dead_ends);
+        let neighbor_states = expand_move(
+            &solver_level.map,
+            &solver_level.state,
+            &solver_level.dead_ends,
+        );
         assert_eq!(neighbor_states.len(), 4);
     }
 }

@@ -2,7 +2,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-use data::{MAX_SIZE, Format, MapCell, State, Pos};
+use data::{Format, MapCell, Pos, State, MAX_SIZE};
 use level::Level;
 use map::GoalMap;
 use vec2d::Vec2d;
@@ -71,16 +71,24 @@ crate fn parse_format(level: &str, format: Format) -> Result<Level, ParserErr> {
     } else {
         Ok(Level::new(
             GoalMap::new(grid, goals),
-            State::new(player_pos, boxes)))
+            State::new(player_pos, boxes),
+        ))
     }
 }
 
 /// Parses my custom format
-fn parse_custom(level: &str)
-                -> Result<
-                    (Vec<Vec<MapCell>>, Vec<Pos>, Option<Pos>, Vec<Pos>, Option<Pos>),
-                    ParserErr>
-{
+fn parse_custom(
+    level: &str,
+) -> Result<
+    (
+        Vec<Vec<MapCell>>,
+        Vec<Pos>,
+        Option<Pos>,
+        Vec<Pos>,
+        Option<Pos>,
+    ),
+    ParserErr,
+> {
     let mut grid = Vec::new();
     let mut goals = Vec::new();
     let mut remover = None;
@@ -88,18 +96,24 @@ fn parse_custom(level: &str)
     let mut player_pos = None;
 
     for (r, line) in level.lines().enumerate() {
-        if r > MAX_SIZE { return Err(ParserErr::TooLarge); }
+        if r > MAX_SIZE {
+            return Err(ParserErr::TooLarge);
+        }
         grid.push(Vec::new());
         let mut chars = line.chars();
         while let (Some(c1), Some(c2)) = (chars.next(), chars.next()) {
             let c = grid[r].len();
-            if c > MAX_SIZE { return Err(ParserErr::TooLarge); }
+            if c > MAX_SIZE {
+                return Err(ParserErr::TooLarge);
+            }
             let pos = Pos::new(r as u8, c as u8);
 
             let mut has_box = false;
             match c1 {
                 '<' => {
-                    if c2 != '>' { return Err(ParserErr::Pos(r, c)); }
+                    if c2 != '>' {
+                        return Err(ParserErr::Pos(r, c));
+                    }
                     grid[r].push(MapCell::Wall);
                     continue; // skip parsing c2
                 }
@@ -109,7 +123,9 @@ fn parse_custom(level: &str)
                     has_box = true;
                 }
                 'P' => {
-                    if player_pos.is_some() { return Err(ParserErr::MultiplePlayers); }
+                    if player_pos.is_some() {
+                        return Err(ParserErr::MultiplePlayers);
+                    }
                     player_pos = Some(pos);
                 }
                 _ => return Err(ParserErr::Pos(r, c)),
@@ -121,8 +137,12 @@ fn parse_custom(level: &str)
                     grid[r].push(MapCell::Goal);
                 }
                 'R' => {
-                    if remover.is_some() { return Err(ParserErr::MultipleRemovers); }
-                    if has_box { return Err(ParserErr::BoxOnRemover); }
+                    if remover.is_some() {
+                        return Err(ParserErr::MultipleRemovers);
+                    }
+                    if has_box {
+                        return Err(ParserErr::BoxOnRemover);
+                    }
                     remover = Some(pos);
                     grid[r].push(MapCell::Remover);
                 }
@@ -135,11 +155,18 @@ fn parse_custom(level: &str)
 }
 
 /// Parses (a subset of) the format described [here](http://www.sokobano.de/wiki/index.php?title=Level_format)
-fn parse_xsb(level: &str)
-             -> Result<
-                 (Vec<Vec<MapCell>>, Vec<Pos>, Option<Pos>, Vec<Pos>, Option<Pos>),
-                 ParserErr>
-{
+fn parse_xsb(
+    level: &str,
+) -> Result<
+    (
+        Vec<Vec<MapCell>>,
+        Vec<Pos>,
+        Option<Pos>,
+        Vec<Pos>,
+        Option<Pos>,
+    ),
+    ParserErr,
+> {
     let mut grid = Vec::new();
     let mut goals = Vec::new();
     let mut remover = None;
@@ -147,16 +174,18 @@ fn parse_xsb(level: &str)
     let mut player_pos = None;
 
     for (r, line) in level.lines().enumerate() {
-        if r > MAX_SIZE { return Err(ParserErr::TooLarge); }
+        if r > MAX_SIZE {
+            return Err(ParserErr::TooLarge);
+        }
         let mut line_tiles = Vec::new();
         for (c, cur_char) in line.chars().enumerate() {
-            if c > MAX_SIZE { return Err(ParserErr::TooLarge); }
+            if c > MAX_SIZE {
+                return Err(ParserErr::TooLarge);
+            }
             let pos = Pos::new(r as u8, c as u8);
 
             let tile = match cur_char {
-                '#' => {
-                    MapCell::Wall
-                }
+                '#' => MapCell::Wall,
                 'p' | '@' => {
                     if player_pos.is_some() {
                         return Err(ParserErr::MultiplePlayers);
@@ -205,10 +234,8 @@ fn parse_xsb(level: &str)
                     goals.push(pos);
                     MapCell::Goal
                 }
-                ' ' | '-' | '_' => {
-                    MapCell::Empty
-                }
-                _ => return Err(ParserErr::Pos(r, c))
+                ' ' | '-' | '_' => MapCell::Empty,
+                _ => return Err(ParserErr::Pos(r, c)),
             };
             line_tiles.push(tile);
         }
@@ -350,7 +377,10 @@ mod tests {
 
     fn assert_success_custom(input_level: &str) {
         let level = parse_format(input_level, Format::Custom).unwrap();
-        assert_eq!(level.custom().to_string(), input_level.trim_left_matches('\n'));
+        assert_eq!(
+            level.custom().to_string(),
+            input_level.trim_left_matches('\n')
+        );
     }
 
     fn assert_success_xsb(input_level: &str) {
@@ -358,4 +388,3 @@ mod tests {
         assert_eq!(level.to_string(), input_level.trim_left_matches('\n'));
     }
 }
-

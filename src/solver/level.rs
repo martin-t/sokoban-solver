@@ -5,7 +5,6 @@ use data::{Format, State};
 use map::{GoalMap, MapFormatter};
 use vec2d::Vec2d;
 
-
 #[derive(Clone)]
 crate struct SolverLevel {
     crate map: GoalMap,
@@ -15,7 +14,11 @@ crate struct SolverLevel {
 
 impl SolverLevel {
     crate fn new(map: GoalMap, state: State, dead_ends: Vec2d<bool>) -> Self {
-        Self { map, state, dead_ends }
+        Self {
+            map,
+            state,
+            dead_ends,
+        }
     }
 
     #[allow(unused)]
@@ -49,8 +52,8 @@ impl Debug for SolverLevel {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use solver;
     use map::Map;
+    use solver;
 
     #[test]
     fn formatting() {
@@ -58,22 +61,26 @@ mod tests {
 *###*
 #@$.#
 *###*#
-".trim_left_matches('\n');
+"
+            .trim_left_matches('\n');
         let custom: &str = r"
 B_<><><>B_
 <>P B  _<>
 B_<><><>B_<>
-".trim_left_matches('\n');
+"
+            .trim_left_matches('\n');
         let processed_xsb: &str = r"
 ######
 #@$.##
 ######
-".trim_left_matches('\n');
+"
+            .trim_left_matches('\n');
         let processed_custom: &str = r"
 <><><><><><>
 <>P B  _<><>
 <><><><><><>
-".trim_left_matches('\n');
+"
+            .trim_left_matches('\n');
 
         for level in [xsb, custom].iter() {
             let level: SolverLevel = solver::process_level(&level.parse().unwrap()).unwrap();
@@ -88,8 +95,20 @@ B_<><><>B_<>
             assert_eq!(format!("{}", level.custom()), processed_custom);
             assert_eq!(format!("{:?}", level.custom()), processed_custom);
 
-            assert_eq!(level.map.format_with_state(Format::Xsb, &level.state).to_string(), processed_xsb);
-            assert_eq!(level.map.format_with_state(Format::Custom, &level.state).to_string(), processed_custom);
+            assert_eq!(
+                level
+                    .map
+                    .format_with_state(Format::Xsb, &level.state)
+                    .to_string(),
+                processed_xsb
+            );
+            assert_eq!(
+                level
+                    .map
+                    .format_with_state(Format::Custom, &level.state)
+                    .to_string(),
+                processed_custom
+            );
         }
     }
 }

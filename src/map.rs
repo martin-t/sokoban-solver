@@ -1,9 +1,8 @@
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
-use data::{Format, MapCell, Contents, State, Pos};
+use data::{Contents, Format, MapCell, Pos, State};
 use vec2d::Vec2d;
-
 
 crate struct MapFormatter<'a> {
     grid: &'a Vec2d<MapCell>,
@@ -13,7 +12,11 @@ crate struct MapFormatter<'a> {
 
 impl<'a> MapFormatter<'a> {
     crate fn new(grid: &'a Vec2d<MapCell>, state: &'a State, format: Format) -> Self {
-        Self { grid, state, format }
+        Self {
+            grid,
+            state,
+            format,
+        }
     }
 }
 
@@ -29,13 +32,16 @@ impl<'a> Debug for MapFormatter<'a> {
     }
 }
 
-
 crate trait Map {
     fn format_with_state<'a>(&'a self, format: Format, state: &'a State) -> MapFormatter<'a>;
 }
 
-
-fn write_with_state(grid: &Vec2d<MapCell>, state: &State, format: Format, f: &mut Formatter) -> fmt::Result {
+fn write_with_state(
+    grid: &Vec2d<MapCell>,
+    state: &State,
+    format: Format,
+    f: &mut Formatter,
+) -> fmt::Result {
     let mut state_grid = grid.create_scratchpad(Contents::Empty);
     for &b in state.boxes.iter() {
         state_grid[b] = Contents::Box;
@@ -44,9 +50,13 @@ fn write_with_state(grid: &Vec2d<MapCell>, state: &State, format: Format, f: &mu
     write(grid, state_grid, format, f)
 }
 
-fn write(grid: &Vec2d<MapCell>, state_grid: Vec2d<Contents>, format: Format, f: &mut Formatter) -> fmt::Result {
+fn write(
+    grid: &Vec2d<MapCell>,
+    state_grid: Vec2d<Contents>,
+    format: Format,
+    f: &mut Formatter,
+) -> fmt::Result {
     for r in 0..grid.rows() {
-
         // don't print trailing empty cells to match the input level strings
         let mut last_non_empty = 0;
         for c in 0..grid.cols() {
@@ -105,7 +115,6 @@ fn write_cell_xsb(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::
     }
 }
 
-
 #[derive(Clone)]
 crate struct GoalMap {
     crate grid: Vec2d<MapCell>,
@@ -137,7 +146,6 @@ impl Debug for GoalMap {
     }
 }
 
-
 #[allow(unused)]
 crate struct RemoverMap {
     crate grid: Vec2d<MapCell>,
@@ -151,7 +159,6 @@ impl RemoverMap {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use level::Level;
@@ -162,18 +169,21 @@ mod tests {
 *###*
 #@$.#
 *###*#
-".trim_left_matches('\n');
+"
+            .trim_left_matches('\n');
         let xsb_map: &str = "
 .###.
 #  .#
 .###.#
-".trim_left_matches('\n');
+"
+            .trim_left_matches('\n');
         // the `\n\` is necessary because intellij removes trailing whitespace
         let xsb_grid: &str = "
 .###. \n\
 #  .# \n\
 .###.#
-".trim_left_matches('\n');
+"
+            .trim_left_matches('\n');
 
         let level: Level = xsb_level.parse().unwrap();
         assert_eq!(format!("{}", level.map), xsb_map);

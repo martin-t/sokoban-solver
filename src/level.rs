@@ -1,8 +1,8 @@
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
-use map::{GoalMap, MapFormatter};
 use data::{Format, State};
+use map::{GoalMap, MapFormatter};
 
 #[derive(Clone)]
 crate struct Level {
@@ -44,7 +44,7 @@ impl Debug for Level {
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
     use map::Map;
 
@@ -54,12 +54,14 @@ mod tests{
 *###*
 #@$.#
 *###*#
-".trim_left_matches('\n');
+"
+            .trim_left_matches('\n');
         let custom: &str = r"
 B_<><><>B_
 <>P B  _<>
 B_<><><>B_<>
-".trim_left_matches('\n');
+"
+            .trim_left_matches('\n');
 
         for level in [xsb, custom].iter() {
             let level: Level = level.parse().unwrap();
@@ -74,8 +76,20 @@ B_<><><>B_<>
             assert_eq!(format!("{}", level.custom()), custom);
             assert_eq!(format!("{:?}", level.custom()), custom);
 
-            assert_eq!(level.map.format_with_state(Format::Xsb, &level.state).to_string(), xsb);
-            assert_eq!(level.map.format_with_state(Format::Custom, &level.state).to_string(), custom);
+            assert_eq!(
+                level
+                    .map
+                    .format_with_state(Format::Xsb, &level.state)
+                    .to_string(),
+                xsb
+            );
+            assert_eq!(
+                level
+                    .map
+                    .format_with_state(Format::Custom, &level.state)
+                    .to_string(),
+                custom
+            );
         }
     }
 }

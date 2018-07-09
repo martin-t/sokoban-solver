@@ -1,79 +1,92 @@
 // Opt in to unstable features expected for Rust 2018
 #![feature(rust_2018_preview)]
-
 // Opt in to warnings about new 2018 idioms
 #![warn(rust_2018_idioms)]
-
 // https://github.com/rust-lang/rust/issues/31844
 #![feature(specialization)]
-
 #![cfg_attr(test, feature(proc_macro))]
 #![cfg_attr(test, feature(proc_macro_gen))]
 #![cfg_attr(test, feature(test))]
 
 #[cfg(test)]
-extern crate test_case_derive;
-#[cfg(test)]
 extern crate test;
+#[cfg(test)]
+extern crate test_case_derive;
 
 #[macro_use]
 extern crate clap;
 extern crate separator;
 
-mod parser;
-mod solver;
+mod data;
 mod level;
 mod map;
-mod vec2d;
-mod data;
+mod parser;
+mod solver;
 mod utils;
+mod vec2d;
 
 use std::env;
 use std::process;
 
 use clap::{App, Arg, ArgGroup};
 
-use solver::Method;
-use map::Map;
 use data::Format;
+use map::Map;
+use solver::Method;
 
 fn main() {
     let matches = App::new("sokoban-solver")
         .author(crate_authors!())
         .version(crate_version!())
-        .arg(Arg::with_name("custom")
-            .short("-c")
-            .long("--custom")
-            .help("print as custom format"))
-        .arg(Arg::with_name("xsb")
-            .short("-x")
-            .long("--xsb")
-            .help("print as XSB format (default)"))
-        .group(ArgGroup::with_name("format")
-            .args(&["custom", "xsb"]))
-        .arg(Arg::with_name("moves")
-            .short("-m")
-            .long("--moves")
-            .help("search for move-optimal solution"))
-        .arg(Arg::with_name("pushes")
-            .short("-p")
-            .long("--pushes")
-            .help("search for push-optimal solution (default)"))
-        .group(ArgGroup::with_name("method")
-            .args(&["moves", "pushes"]))
-        .arg(Arg::with_name("level-file")
-            .required(true))
+        .arg(
+            Arg::with_name("custom")
+                .short("-c")
+                .long("--custom")
+                .help("print as custom format"),
+        )
+        .arg(
+            Arg::with_name("xsb")
+                .short("-x")
+                .long("--xsb")
+                .help("print as XSB format (default)"),
+        )
+        .group(ArgGroup::with_name("format").args(&["custom", "xsb"]))
+        .arg(
+            Arg::with_name("moves")
+                .short("-m")
+                .long("--moves")
+                .help("search for move-optimal solution"),
+        )
+        .arg(
+            Arg::with_name("pushes")
+                .short("-p")
+                .long("--pushes")
+                .help("search for push-optimal solution (default)"),
+        )
+        .group(ArgGroup::with_name("method").args(&["moves", "pushes"]))
+        .arg(Arg::with_name("level-file").required(true))
         .get_matches();
 
-    let format =
-        if matches.is_present("custom") { Format::Custom } else { Format::Xsb };
-    let method =
-        if matches.is_present("moves") { Method::Moves } else { Method::Pushes };
+    let format = if matches.is_present("custom") {
+        Format::Custom
+    } else {
+        Format::Xsb
+    };
+    let method = if matches.is_present("moves") {
+        Method::Moves
+    } else {
+        Method::Pushes
+    };
     let path = matches.value_of("file").unwrap();
 
     let level = utils::read_file(path).unwrap_or_else(|err| {
         let current_dir = env::current_dir().unwrap();
-        println!("Can't read file {} in {}: {}", path, current_dir.display(), err);
+        println!(
+            "Can't read file {} in {}: {}",
+            path,
+            current_dir.display(),
+            err
+        );
         process::exit(1);
     });
 
@@ -100,8 +113,8 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use test_case_derive::test_case;
     use test::Bencher;
+    use test_case_derive::test_case;
 
     use super::*;
 
@@ -191,12 +204,14 @@ mod tests {
             let (expected_len, expected_created, expected_visited) = parse_stats(&expected);
             if out_len > expected_len
                 || out_created > expected_created
-                || out_visited > expected_visited {
+                || out_visited > expected_visited
+            {
                 println!("         >>> WORSE <<<\n\n");
             } else {
                 if out_len == expected_len
                     && out_created == expected_created
-                    && out_visited == expected_visited {
+                    && out_visited == expected_visited
+                {
                     println!("         >>> EQUAL <<<\n\n");
                 } else {
                     println!("         >>> BETTER <<<\n\n");
@@ -214,20 +229,41 @@ mod tests {
         let mut lines = stats.lines();
 
         // no solution or length
-        let length = lines.next().unwrap()
-            .split_whitespace().last().unwrap()
-            .split(',').collect::<Vec<_>>().join("")
-            .parse().unwrap_or(0);
+        let length = lines
+            .next()
+            .unwrap()
+            .split_whitespace()
+            .last()
+            .unwrap()
+            .split(',')
+            .collect::<Vec<_>>()
+            .join("")
+            .parse()
+            .unwrap_or(0);
 
         // created and visited
-        let created = lines.next().unwrap()
-            .split_whitespace().last().unwrap()
-            .split(',').collect::<Vec<_>>().join("")
-            .parse().unwrap();
-        let visited = lines.next().unwrap()
-            .split_whitespace().last().unwrap()
-            .split(',').collect::<Vec<_>>().join("")
-            .parse().unwrap();
+        let created = lines
+            .next()
+            .unwrap()
+            .split_whitespace()
+            .last()
+            .unwrap()
+            .split(',')
+            .collect::<Vec<_>>()
+            .join("")
+            .parse()
+            .unwrap();
+        let visited = lines
+            .next()
+            .unwrap()
+            .split_whitespace()
+            .last()
+            .unwrap()
+            .split(',')
+            .collect::<Vec<_>>()
+            .join("")
+            .parse()
+            .unwrap();
 
         (length, created, visited)
     }
@@ -272,7 +308,8 @@ mod tests {
             test::black_box(solver::solve(
                 test::black_box(&level),
                 test::black_box(method),
-                test::black_box(false)))
+                test::black_box(false),
+            ))
         });
     }
 }
