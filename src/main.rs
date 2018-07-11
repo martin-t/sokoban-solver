@@ -77,7 +77,7 @@ fn main() {
     } else {
         Method::Pushes
     };
-    let path = matches.value_of("file").unwrap();
+    let path = matches.value_of("level-file").unwrap();
 
     let level = utils::read_file(path).unwrap_or_else(|err| {
         let current_dir = env::current_dir().unwrap();
@@ -97,6 +97,7 @@ fn main() {
 
     println!("Solving...");
     // TODO use steps/moves/pushes/actions instead
+    // TODO kill unwrap and check the rest of the code for them
     let solver_ok = solver::solve(&level, method, true).unwrap();
     println!("{}", solver_ok.stats);
     match solver_ok.path_states {
@@ -124,12 +125,6 @@ mod tests {
     #[test_case("custom", "02-one-way.txt")]
     #[test_case("custom", "03-long-way.txt")]
     #[test_case("custom", "04-two-boxes.txt")]
-    #[test_case("custom", "05-google-images-play.txt")]
-    #[test_case("custom", "06-google-images-1.txt")]
-    #[test_case("custom", "07-boxxle-1-1.txt")]
-    #[test_case("custom", "easy-2.txt")]
-    #[test_case("custom", "moderate-6.txt")]
-    #[test_case("custom", "moderate-7.txt")]
     #[test_case("custom", "no-solution-parking.txt")]
     #[test_case("boxxle1", "1.txt")]
     #[test_case("boxxle1", "2.txt")]
@@ -150,12 +145,6 @@ mod tests {
     #[test_case("custom", "02-one-way.txt")]
     #[test_case("custom", "03-long-way.txt")]
     #[test_case("custom", "04-two-boxes.txt")]
-    #[test_case("custom", "05-google-images-play.txt")]
-    #[test_case("custom", "06-google-images-1.txt")]
-    #[test_case("custom", "07-boxxle-1-1.txt")]
-    #[test_case("custom", "easy-2.txt")]
-    #[test_case("custom", "moderate-6.txt")]
-    #[test_case("custom", "moderate-7.txt")]
     #[test_case("custom", "no-solution-parking.txt")]
     #[test_case("boxxle1", "1.txt")]
     //#[test_case("boxxle1", "2.txt")]
