@@ -1,0 +1,15 @@
+Pushes: 4
+States created total: 17
+Unique visited total: 9
+Reached duplicates total: 0
+Created but not reached total: 8
+
+Depth / created states:
+|                   Depth / unique visited:
+|                   |                   Depth / reached duplicate:
+|                   |                   |                   Depth / created but not reached:
+0:   1              0:   1              0:   0              0:   0
+1:   2              1:   2              1:   0              1:   0
+2:   6              2:   2              2:   0              2:   4
+3:   3              3:   3              3:   0              3:   0
+4:   5              4:   1              4:   0              4:   4
