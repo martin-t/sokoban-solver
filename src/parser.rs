@@ -22,12 +22,12 @@ impl Display for ParserErr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
             ParserErr::Pos(r, c) => write!(f, "Invalid cell at pos: [{}, {}]", r, c),
-            ParserErr::TooLarge => write!(f, "Map larger than 255 rows/columns"),
+            ParserErr::TooLarge => write!(f, "Map is larger than 255 rows/columns"),
             ParserErr::MultiplePlayers => write!(f, "More than one player"),
             ParserErr::MultipleRemovers => write!(f, "Multiple removers - only one allowed"),
             ParserErr::BoxOnRemover => write!(f, "Box on remover"),
             ParserErr::NoPlayer => write!(f, "No player"),
-            ParserErr::RemoverAndGoals => write!(f, "Both remover and goals"),
+            ParserErr::RemoverAndGoals => write!(f, "Map contains both remover and goals"),
         }
     }
 }

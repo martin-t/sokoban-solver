@@ -41,15 +41,15 @@ crate enum SolverErr {
 impl Display for SolverErr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
-            SolverErr::IncompleteBorder => {
-                write!(f, "Player can exit the level because of missing border")
-            }
-            SolverErr::UnreachableBoxes => {
-                write!(f, "Boxes that are not on goal but can't be reached")
-            }
-            SolverErr::UnreachableGoals => {
-                write!(f, "Goals that don't have a box but can't be reached")
-            }
+            SolverErr::IncompleteBorder => write!(f, "Incomplete border"),
+            SolverErr::UnreachableBoxes => write!(
+                f,
+                "Unreachable boxes - some boxes are not on goal but can't be reached"
+            ),
+            SolverErr::UnreachableGoals => write!(
+                f,
+                "Unreachable goals - some goals don't have a box but can't be reached"
+            ),
             //SolverErr::UnreachableRemover => write!(f, "Remover is not reachable"),
             SolverErr::TooMany => write!(f, "More than 254 reachable boxes or goals"),
             SolverErr::BoxesGoals => write!(f, "Different number of reachable boxes and goals"),

@@ -46,6 +46,7 @@ fn main() {
         )
         .arg(
             Arg::with_name("xsb")
+                .conflicts_with("custom")
                 .short("-x")
                 .long("--xsb")
                 .help("print as XSB format (default)"),
@@ -59,6 +60,7 @@ fn main() {
         )
         .arg(
             Arg::with_name("pushes")
+                .conflicts_with("moves")
                 .short("-p")
                 .long("--pushes")
                 .help("search for push-optimal solution (default)"),
@@ -97,8 +99,10 @@ fn main() {
 
     println!("Solving...");
     // TODO use steps/moves/pushes/actions instead
-    // TODO kill unwrap and check the rest of the code for them
-    let solver_ok = solver::solve(&level, method, true).unwrap();
+    let solver_ok = solver::solve(&level, method, true).unwrap_or_else(|err| {
+        println!("Invalid level: {}", err);
+        process::exit(1);
+    });
     println!("{}", solver_ok.stats);
     match solver_ok.path_states {
         Some(path) => {
