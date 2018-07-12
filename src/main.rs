@@ -164,17 +164,13 @@ mod tests {
         test_level(level_pack, level_name, Method::Moves);
     }
 
-    #[test]
-    #[ignore]
-    fn for_debugging() {}
-
     // separate fn to get stack traces with correct line numbers
     fn test_level(level_pack: &str, level_name: &str, method: Method) {
         use std::fmt::Write;
 
         let res_folder = method.to_string().to_lowercase();
         let level_path = format!("levels/{}/{}", level_pack, level_name);
-        let result_file = format!("levels/{}-{}/{}", level_pack, res_folder, level_name);
+        let result_file = format!("solutions/{}-{}/{}", level_pack, res_folder, level_name);
         println!("{}", level_path);
 
         let level = utils::read_file(&level_path).unwrap();
