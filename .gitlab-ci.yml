@@ -13,7 +13,7 @@ tests:
   script:
     - rustup override add nightly
     - rustc --version && cargo --version      # Print version info for debugging
+    - cargo fmt -- --check
     - cargo test --release --all --verbose
 
 # TODO clippy
-# TODO fmt
