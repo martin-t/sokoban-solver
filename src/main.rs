@@ -7,6 +7,7 @@
 #![cfg_attr(test, feature(proc_macro))]
 #![cfg_attr(test, feature(proc_macro_gen))]
 #![cfg_attr(test, feature(test))]
+#![allow(unknown_lints)]
 
 #[cfg(test)]
 extern crate test;

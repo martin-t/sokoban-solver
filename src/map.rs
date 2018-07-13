@@ -43,16 +43,16 @@ fn write_with_state(
     f: &mut Formatter,
 ) -> fmt::Result {
     let mut state_grid = grid.create_scratchpad(Contents::Empty);
-    for &b in state.boxes.iter() {
+    for &b in &state.boxes {
         state_grid[b] = Contents::Box;
     }
     state_grid[state.player_pos] = Contents::Player;
-    write(grid, state_grid, format, f)
+    write(grid, &state_grid, format, f)
 }
 
 fn write(
     grid: &Vec2d<MapCell>,
-    state_grid: Vec2d<Contents>,
+    state_grid: &Vec2d<Contents>,
     format: Format,
     f: &mut Formatter,
 ) -> fmt::Result {
@@ -75,7 +75,7 @@ fn write(
                 Format::Xsb => write_cell_xsb(cell, state_grid[pos], f)?,
             }
         }
-        write!(f, "\n")?;
+        writeln!(f)?;
     }
     Ok(())
 }
@@ -136,7 +136,7 @@ impl Map for GoalMap {
 impl Display for GoalMap {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let state_grid = self.grid.create_scratchpad(Contents::Empty);
-        write(&self.grid, state_grid, Format::Xsb, f)
+        write(&self.grid, &state_grid, Format::Xsb, f)
     }
 }
 

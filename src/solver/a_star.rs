@@ -94,7 +94,7 @@ impl Display for Stats {
             "Created but not reached total: {}",
             left.separated_string()
         )?;
-        writeln!(f, "")?;
+        writeln!(f)?;
 
         writeln!(f, "Depth / created states:")?;
         writeln!(f, "|                   Depth / unique visited:")?;

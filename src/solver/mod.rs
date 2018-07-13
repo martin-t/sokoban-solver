@@ -118,15 +118,15 @@ fn process_level(level: &Level) -> Result<SolverLevel, SolverErr> {
         let cur = to_visit.pop().unwrap();
         visited[cur] = true;
 
-        let (r, c) = (cur.r as i32, cur.c as i32);
+        let (r, c) = (i32::from(cur.r), i32::from(cur.c));
         let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
-        for &(nr, nc) in neighbors.iter() {
+        for &(nr, nc) in &neighbors {
             // this is the only place we need to check bounds (using signed types)
             // everything after that will be surrounded by walls
             if nr < 0
                 || nc < 0
-                || nr >= level.map.grid.rows() as i32
-                || nc >= level.map.grid.cols() as i32
+                || nr >= i32::from(level.map.grid.rows())
+                || nc >= i32::from(level.map.grid.cols())
             {
                 // we got out of bounds without hitting a wall
                 return Err(SolverErr::IncompleteBorder);
@@ -149,14 +149,14 @@ fn process_level(level: &Level) -> Result<SolverLevel, SolverErr> {
     // make sure all relevant game elements are reachable
     let mut reachable_goals = Vec::new();
     let mut reachable_boxes = Vec::new();
-    for &pos in level.state.boxes.iter() {
+    for &pos in &level.state.boxes {
         if visited[pos] {
             reachable_boxes.push(pos);
         } else if !level.map.goals.contains(&pos) {
             return Err(SolverErr::UnreachableBoxes);
         }
     }
-    for &pos in level.map.goals.iter() {
+    for &pos in &level.map.goals {
         if visited[pos] {
             reachable_goals.push(pos);
         } else if !level.state.boxes.contains(&pos) {
@@ -214,7 +214,7 @@ where
         state: level.state.clone(),
         prev: None,
         dist: 0,
-        h: h,
+        h,
     };
     stats.add_created(&start);
     to_visit.push(start);
@@ -248,7 +248,7 @@ where
                 state: neighbor_state,
                 prev: Some(current.state.clone()),
                 dist: current.dist + 1,
-                h: h,
+                h,
             };
             stats.add_created(&next);
             to_visit.push(next);
@@ -282,7 +282,7 @@ fn find_dead_ends(map: &GoalMap) -> Vec2d<bool> {
                 continue;
             }
 
-            for &player_pos in box_pos.neighbors().iter() {
+            for &player_pos in &box_pos.neighbors() {
                 if map.grid[player_pos] == MapCell::Wall {
                     continue;
                 }
@@ -292,13 +292,14 @@ fn find_dead_ends(map: &GoalMap) -> Vec2d<bool> {
                     boxes: vec![box_pos],
                 };
                 let fake_level = SolverLevel::new(map.clone(), fake_state, dead_ends.clone());
-                if let Some(_) = search(
+                if search(
                     &fake_level,
                     Method::Pushes,
                     false,
                     expand_push,
                     heuristic_push,
                 ).path_states
+                    .is_some()
                 {
                     continue 'cell; // need to find only one solution
                 }
@@ -392,7 +393,7 @@ fn expand_push(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<Sta
 
     while !to_visit.is_empty() {
         let player_pos = to_visit.pop().unwrap();
-        for &dir in DIRECTIONS.iter() {
+        for &dir in &DIRECTIONS {
             let new_player_pos = player_pos + dir;
             let box_index = box_grid[new_player_pos];
             if box_index < 255 {
@@ -430,7 +431,7 @@ fn expand_move(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<Sta
         box_grid[*b] = i as u8;
     }
 
-    for &dir in DIRECTIONS.iter() {
+    for &dir in &DIRECTIONS {
         let new_player_pos = state.player_pos + dir;
         if map.grid[new_player_pos] != MapCell::Wall {
             let box_index = box_grid[new_player_pos];
@@ -441,7 +442,7 @@ fn expand_move(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<Sta
                 new_states.push(State::new(new_player_pos, state.boxes.clone()));
             } else if box_grid[push_dest] == 255
                 && map.grid[push_dest] != MapCell::Wall
-                && dead_ends[push_dest] == false
+                && !dead_ends[push_dest]
             {
                 // push
 

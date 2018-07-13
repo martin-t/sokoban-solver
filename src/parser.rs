@@ -18,6 +18,17 @@ crate enum ParserErr {
     RemoverAndGoals,
 }
 
+type ParseResult = Result<
+    (
+        Vec<Vec<MapCell>>,
+        Vec<Pos>,
+        Option<Pos>,
+        Vec<Pos>,
+        Option<Pos>,
+    ),
+    ParserErr,
+>;
+
 impl Display for ParserErr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
@@ -60,7 +71,7 @@ crate fn parse_format(level: &str, format: Format) -> Result<Level, ParserErr> {
     let grid = Vec2d::new(&grid);
 
     if let Some(_remover) = remover {
-        if goals.len() > 0 {
+        if !goals.is_empty() {
             Err(ParserErr::RemoverAndGoals)
         } else {
             unimplemented!()
@@ -77,18 +88,7 @@ crate fn parse_format(level: &str, format: Format) -> Result<Level, ParserErr> {
 }
 
 /// Parses my custom format
-fn parse_custom(
-    level: &str,
-) -> Result<
-    (
-        Vec<Vec<MapCell>>,
-        Vec<Pos>,
-        Option<Pos>,
-        Vec<Pos>,
-        Option<Pos>,
-    ),
-    ParserErr,
-> {
+fn parse_custom(level: &str) -> ParseResult {
     let mut grid = Vec::new();
     let mut goals = Vec::new();
     let mut remover = None;
@@ -155,18 +155,7 @@ fn parse_custom(
 }
 
 /// Parses (a subset of) the format described [here](http://www.sokobano.de/wiki/index.php?title=Level_format)
-fn parse_xsb(
-    level: &str,
-) -> Result<
-    (
-        Vec<Vec<MapCell>>,
-        Vec<Pos>,
-        Option<Pos>,
-        Vec<Pos>,
-        Option<Pos>,
-    ),
-    ParserErr,
-> {
+fn parse_xsb(level: &str) -> ParseResult {
     let mut grid = Vec::new();
     let mut goals = Vec::new();
     let mut remover = None;

@@ -66,7 +66,7 @@ impl Pos {
     }
 
     crate fn dist(self, other: Pos) -> i32 {
-        (self.r as i32 - other.r as i32).abs() + (self.c as i32 - other.c as i32).abs()
+        (i32::from(self.r) - i32::from(other.r)).abs() + (i32::from(self.c) - i32::from(other.c)).abs()
     }
 
     crate fn neighbors(self) -> [Pos; 4] {
@@ -95,6 +95,7 @@ impl Add<Dir> for Pos {
     type Output = Pos;
 
     fn add(self, dir: Dir) -> Pos {
+        #![allow(suspicious_arithmetic_impl)]
         match dir {
             Dir::Up => Pos {
                 r: self.r - 1,

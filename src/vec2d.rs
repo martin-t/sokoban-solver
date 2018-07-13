@@ -22,16 +22,18 @@ impl<T> Vec2d<T> {
 }
 
 impl Vec2d<MapCell> {
-    crate fn new(grid: &Vec<Vec<MapCell>>) -> Self {
-        assert!(grid.len() > 0 && grid[0].len() > 0);
+    crate fn new(grid: &[Vec<MapCell>]) -> Self {
+        assert!(!grid.is_empty() && !grid[0].is_empty());
 
         let max_cols = grid.iter().map(|row| row.len()).max().unwrap();
         let mut data = Vec::with_capacity(grid.len() * max_cols);
         for row in grid.iter() {
-            for i in 0..row.len() {
-                data.push(row[i]);
+            for c in row.iter() {
+                data.push(*c);
             }
             for _ in row.len()..max_cols {
+                // could also fill with wall but then we wouldn't detect
+                // some broken maps and silently accept them instead
                 data.push(MapCell::Empty);
             }
         }
