@@ -2,12 +2,18 @@
 # https://hub.docker.com/r/library/rust/tags/
 image: "rust:latest"
 
-# Use cargo to test the project
+variables:
+  CARGO_HOME: $CI_PROJECT_DIR/cargo
+
 tests:
+  cache:
+    paths:
+      - cargo/
+      - target/
   script:
-  - rustup override add nightly
-  - rustc --version && cargo --version      # Print version info for debugging
-  - cargo test --release --all --verbose
+    - rustup override add nightly
+    - rustc --version && cargo --version      # Print version info for debugging
+    - cargo test --release --all --verbose
 
 # TODO clippy
 # TODO fmt
