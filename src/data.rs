@@ -66,7 +66,8 @@ impl Pos {
     }
 
     crate fn dist(self, other: Pos) -> i32 {
-        (i32::from(self.r) - i32::from(other.r)).abs() + (i32::from(self.c) - i32::from(other.c)).abs()
+        (i32::from(self.r) - i32::from(other.r)).abs()
+            + (i32::from(self.c) - i32::from(other.c)).abs()
     }
 
     crate fn neighbors(self) -> [Pos; 4] {
