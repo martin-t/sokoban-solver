@@ -8,6 +8,7 @@
 #![cfg_attr(test, feature(proc_macro_gen))]
 #![cfg_attr(test, feature(test))]
 #![allow(unknown_lints)]
+#![warn(clippy)]
 
 #[cfg(test)]
 extern crate test;

@@ -60,14 +60,14 @@ fn write(
         // don't print trailing empty cells to match the input level strings
         let mut last_non_empty = 0;
         for c in 0..grid.cols() {
-            let pos = Pos::new(r as u8, c as u8);
+            let pos = Pos::new(r, c);
             if grid[pos] != MapCell::Empty || state_grid[pos] != Contents::Empty {
                 last_non_empty = pos.c;
             }
         }
 
         for c in 0..last_non_empty + 1 {
-            let pos = Pos::new(r as u8, c as u8);
+            let pos = Pos::new(r, c);
             let cell = grid[pos];
 
             match format {

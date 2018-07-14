@@ -5,4 +5,6 @@ Sokoban solver
 
 So far can't do much, I am more playing with than language than trying to write a good solver.
 
+Use `git config core.hooksPath git-hooks` to check fmt and clippy before commit.
+
 License is GPLv3 or later.
