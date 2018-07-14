@@ -12,9 +12,9 @@ tests:
       - target/
   script:
     - rustup override add nightly
-    - rustc --version && cargo --version      # Print version info for debugging
+    - rustc --version && cargo --version  # Print version info for debugging
     - rustup component add rustfmt-preview
+    - cargo install clippy --force
     - cargo fmt -- --check
+    - cargo clippy -- --deny warnings
     - cargo test --release --all --verbose
-
-# TODO clippy
