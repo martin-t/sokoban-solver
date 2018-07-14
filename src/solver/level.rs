@@ -82,7 +82,7 @@ B_<><><>B_<>
 "
             .trim_left_matches('\n');
 
-        for level in [xsb, custom].iter() {
+        for level in &[xsb, custom] {
             let level: SolverLevel = solver::process_level(&level.parse().unwrap()).unwrap();
             assert_eq!(level.to_string(), processed_xsb);
             assert_eq!(level.xsb().to_string(), processed_xsb);

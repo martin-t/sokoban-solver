@@ -4,10 +4,19 @@
 #![warn(rust_2018_idioms)]
 // https://github.com/rust-lang/rust/issues/31844
 #![feature(specialization)]
+// Stuff for testing
 #![cfg_attr(test, feature(proc_macro))]
 #![cfg_attr(test, feature(proc_macro_gen))]
 #![cfg_attr(test, feature(test))]
-#![allow(unknown_lints)]
+// Additional warnings that are allow by default (`rustc -W help`)
+#![warn(missing_copy_implementations)]
+#![warn(missing_debug_implementations)]
+#![warn(trivial_casts)]
+#![warn(trivial_numeric_casts)]
+#![warn(unreachable_pub)]
+#![warn(unused)]
+// Clippy
+#![allow(unknown_lints)] // necessary because rustc doesn't know about clippy
 #![warn(clippy)]
 
 #[cfg(test)]
@@ -176,6 +185,8 @@ mod tests {
 
     // separate fn to get stack traces with correct line numbers
     fn test_level(level_pack: &str, level_name: &str, method: Method) {
+        #![allow(collapsible_if)] // for updating results more easily
+
         use std::fmt::Write;
 
         let res_folder = method.to_string().to_lowercase();

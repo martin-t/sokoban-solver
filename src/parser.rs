@@ -7,7 +7,7 @@ use level::Level;
 use map::GoalMap;
 use vec2d::Vec2d;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 crate enum ParserErr {
     Pos(usize, usize),
     TooLarge,
