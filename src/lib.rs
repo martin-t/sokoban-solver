@@ -1,9 +1,9 @@
+// https://github.com/rust-lang/rust/issues/31844
+#![feature(specialization)]
 // Opt in to unstable features expected for Rust 2018
 #![feature(rust_2018_preview)]
 // Opt in to warnings about new 2018 idioms
 #![warn(rust_2018_idioms)]
-// https://github.com/rust-lang/rust/issues/31844
-#![feature(specialization)]
 // Additional warnings that are allow by default (`rustc -W help`)
 #![warn(missing_copy_implementations)]
 #![warn(missing_debug_implementations)]
