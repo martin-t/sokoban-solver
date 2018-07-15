@@ -1,10 +1,13 @@
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
-use data::{Contents, Format, MapCell, Pos, State};
+use config::Format;
+use data::{Contents, MapCell, Pos, State};
 use vec2d::Vec2d;
 
-crate struct MapFormatter<'a> {
+// TODO none of this should be pub probably
+
+pub struct MapFormatter<'a> {
     grid: &'a Vec2d<MapCell>,
     state: &'a State,
     format: Format,
@@ -32,7 +35,7 @@ impl<'a> Debug for MapFormatter<'a> {
     }
 }
 
-crate trait Map {
+pub trait Map {
     fn format_with_state<'a>(&'a self, format: Format, state: &'a State) -> MapFormatter<'a>;
 }
 
@@ -116,7 +119,7 @@ fn write_cell_xsb(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::
 }
 
 #[derive(Clone)]
-crate struct GoalMap {
+pub struct GoalMap {
     crate grid: Vec2d<MapCell>,
     crate goals: Vec<Pos>,
 }

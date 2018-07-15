@@ -2,13 +2,14 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-use data::{Format, MapCell, Pos, State, MAX_SIZE};
+use config::Format;
+use data::{MapCell, Pos, State, MAX_SIZE};
 use level::Level;
 use map::GoalMap;
 use vec2d::Vec2d;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-crate enum ParserErr {
+pub enum ParserErr {
     Pos(usize, usize),
     TooLarge,
     MultiplePlayers,

@@ -4,10 +4,6 @@
 #![warn(rust_2018_idioms)]
 // https://github.com/rust-lang/rust/issues/31844
 #![feature(specialization)]
-// Stuff for testing
-#![cfg_attr(test, feature(proc_macro))]
-#![cfg_attr(test, feature(proc_macro_gen))]
-#![cfg_attr(test, feature(test))]
 // Additional warnings that are allow by default (`rustc -W help`)
 #![warn(missing_copy_implementations)]
 #![warn(missing_debug_implementations)]
@@ -18,6 +14,10 @@
 // Clippy
 #![allow(unknown_lints)] // necessary because rustc doesn't know about clippy
 #![warn(clippy)]
+// Stuff for testing
+#![cfg_attr(test, feature(proc_macro))]
+#![cfg_attr(test, feature(proc_macro_gen))]
+#![cfg_attr(test, feature(test))]
 
 #[cfg(test)]
 extern crate test;
@@ -26,24 +26,18 @@ extern crate test_case_derive;
 
 #[macro_use]
 extern crate clap;
-extern crate separator;
 
-mod data;
-mod level;
-mod map;
-mod parser;
-mod solver;
-mod utils;
-mod vec2d;
+extern crate sokoban_solver;
 
 use std::env;
 use std::process;
 
 use clap::{App, Arg, ArgGroup};
 
-use data::Format;
-use map::Map;
-use solver::Method;
+use sokoban_solver::config::{Format, Method};
+use sokoban_solver::map::Map;
+use sokoban_solver::solver;
+use sokoban_solver::utils;
 
 fn main() {
     let matches = App::new("sokoban-solver")
@@ -185,7 +179,9 @@ mod tests {
 
     // separate fn to get stack traces with correct line numbers
     fn test_level(level_pack: &str, level_name: &str, method: Method) {
-        #![allow(collapsible_if)] // for updating results more easily
+        // for updating results more easily
+        // (need to update when equal too because the file includes individual depths)
+        #![allow(collapsible_if)]
 
         use std::fmt::Write;
 

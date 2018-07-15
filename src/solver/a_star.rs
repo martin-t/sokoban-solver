@@ -6,7 +6,7 @@ use separator::Separatable;
 use data::State;
 
 #[derive(PartialEq, Eq)]
-crate struct Stats {
+pub struct Stats {
     created_states: Vec<i32>,
     visited_states: Vec<i32>,
     duplicate_states: Vec<i32>,

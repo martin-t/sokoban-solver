@@ -1,7 +1,8 @@
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
-use data::{Format, State};
+use config::Format;
+use data::State;
 use map::{GoalMap, MapFormatter};
 use vec2d::Vec2d;
 

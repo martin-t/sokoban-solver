@@ -5,6 +5,7 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
+use config::Method;
 use data::{MapCell, Pos, State, DIRECTIONS, MAX_BOXES};
 use level::Level;
 use map::GoalMap;
@@ -13,23 +14,8 @@ use vec2d::Vec2d;
 use self::a_star::{SearchState, Stats};
 use self::level::SolverLevel;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-crate enum Method {
-    Moves,
-    Pushes,
-}
-
-impl Display for Method {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match *self {
-            Method::Moves => write!(f, "Moves"),
-            Method::Pushes => write!(f, "Pushes"),
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Eq)]
-crate enum SolverErr {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SolverErr {
     IncompleteBorder,
     UnreachableBoxes,
     UnreachableGoals,
@@ -57,10 +43,10 @@ impl Display for SolverErr {
     }
 }
 
-crate struct SolverOk {
+pub struct SolverOk {
     // TODO probably wanna use Dirs or Moves eventually
-    crate path_states: Option<Vec<State>>,
-    crate stats: Stats,
+    pub path_states: Option<Vec<State>>,
+    pub stats: Stats,
     crate method: Method,
 }
 
@@ -84,7 +70,7 @@ impl Debug for SolverOk {
     }
 }
 
-crate fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
+pub fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
     let solver_level = process_level(level)?;
     match method {
         Method::Moves => Ok(search(

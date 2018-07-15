@@ -5,12 +5,6 @@ use std::ops::Add;
 crate const MAX_SIZE: usize = 255;
 crate const MAX_BOXES: usize = 254;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-crate enum Format {
-    Custom,
-    Xsb,
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 crate enum MapCell {
     Wall,
@@ -42,7 +36,8 @@ crate enum Contents {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash)]
-crate struct State {
+// TODO remove pub when using moves/dirs
+pub struct State {
     crate player_pos: Pos,
     crate boxes: Vec<Pos>,
 }

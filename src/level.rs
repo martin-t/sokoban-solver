@@ -1,12 +1,13 @@
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
-use data::{Format, State};
+use config::Format;
+use data::State;
 use map::{GoalMap, MapFormatter};
 
 #[derive(Clone)]
-crate struct Level {
-    crate map: GoalMap,
+pub struct Level {
+    pub map: GoalMap,
     crate state: State,
 }
 
