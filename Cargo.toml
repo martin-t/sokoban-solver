@@ -4,7 +4,6 @@ version = "0.1.0"
 authors = ["Martin Taibr <taibr.martin@gmail.com>"]
 
 [dev-dependencies]
-test-case-derive = "0.*"
 criterion = { version = "0.*", features = ['real_blackbox'] }
 
 [[bench]]

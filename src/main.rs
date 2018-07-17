@@ -13,14 +13,11 @@
 #![allow(unknown_lints)] // necessary because rustc doesn't know about clippy
 #![warn(clippy)]
 // Stuff for testing
-#![cfg_attr(test, feature(proc_macro))]
-#![cfg_attr(test, feature(proc_macro_gen))]
+#![cfg_attr(test, feature(duration_as_u128))]
 #![cfg_attr(test, feature(test))]
 
 #[cfg(test)]
 extern crate test;
-#[cfg(test)]
-extern crate test_case_derive;
 
 #[macro_use]
 extern crate clap;
@@ -122,75 +119,96 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use test::Bencher;
-    use test_case_derive::test_case;
 
     use super::*;
 
-    // additional parens are a workaround for https://github.com/synek317/test-case-derive/issues/2
-    #[test_case(("custom", "01-simplest-xsb.txt"))]
-    #[test_case("custom", "01-simplest-custom.txt")]
-    #[test_case("custom", "02-one-way.txt")]
-    #[test_case("custom", "03-long-way.txt")]
-    #[test_case("custom", "04-two-boxes-no-packing.txt")]
-    //#[test_case("custom", "04-two-boxes-remover.txt")]
-    #[test_case("custom", "04-two-boxes.txt")]
-    #[test_case("custom", "no-solution-parking.txt")]
-    //#[test_case("custom", "original-sokoban-01-remover.txt")]
-    //#[test_case("custom", "supaplex.txt")]
-    #[test_case("boxxle1", "1.txt")]
-    #[test_case("boxxle1", "2.txt")]
-    #[test_case("boxxle1", "3.txt")]
-    #[test_case("boxxle1", "4.txt")]
-    #[test_case("boxxle1", "5.txt")]
-    #[test_case("boxxle1", "6.txt")]
-    #[test_case("boxxle1", "7.txt")]
-    #[test_case("boxxle1", "8.txt")]
-    #[test_case("boxxle1", "9.txt")]
-    #[test_case("boxxle1", "10.txt")]
-    fn push_optimal(level_pack: &str, level_name: &str) {
-        test_level(level_pack, level_name, Method::Pushes);
+    #[test]
+    fn test_levels() {
+        let levels = [
+            (Method::Pushes, "custom", "01-simplest-xsb.txt"),
+            (Method::Pushes, "custom", "01-simplest-custom.txt"),
+            (Method::Pushes, "custom", "02-one-way.txt"),
+            (Method::Pushes, "custom", "03-long-way.txt"),
+            (Method::Pushes, "custom", "04-two-boxes-no-packing.txt"),
+            //(Method::Pushes, "custom", "04-two-boxes-remover.txt"),
+            (Method::Pushes, "custom", "04-two-boxes.txt"),
+            (Method::Pushes, "custom", "no-solution-parking.txt"),
+            //(Method::Pushes, "custom", "original-sokoban-01-remover.txt"),
+            //(Method::Pushes, "custom", "supaplex.txt"),
+            (Method::Pushes, "boxxle1", "1.txt"),
+            (Method::Pushes, "boxxle1", "2.txt"),
+            (Method::Pushes, "boxxle1", "3.txt"),
+            (Method::Pushes, "boxxle1", "4.txt"),
+            (Method::Pushes, "boxxle1", "5.txt"),
+            (Method::Pushes, "boxxle1", "6.txt"),
+            (Method::Pushes, "boxxle1", "7.txt"),
+            (Method::Pushes, "boxxle1", "8.txt"),
+            (Method::Pushes, "boxxle1", "9.txt"),
+            (Method::Pushes, "boxxle1", "10.txt"),
+            (Method::Pushes, "boxxle1", "11.txt"),
+            //(Method::Pushes, "boxxle1", "12.txt"),
+            (Method::Pushes, "boxxle1", "13.txt"),
+            //(Method::Pushes, "boxxle1", "14.txt"),
+            (Method::Pushes, "boxxle1", "15.txt"),
+            //(Method::Pushes, "boxxle1", "16.txt"),
+            (Method::Pushes, "boxxle1", "17.txt"),
+            (Method::Pushes, "boxxle1", "18.txt"),
+            (Method::Pushes, "boxxle1", "19.txt"),
+            (Method::Pushes, "boxxle1", "20.txt"),
+            (Method::Moves, "custom", "01-simplest-xsb.txt"),
+            (Method::Moves, "custom", "01-simplest-custom.txt"),
+            (Method::Moves, "custom", "02-one-way.txt"),
+            (Method::Moves, "custom", "03-long-way.txt"),
+            (Method::Moves, "custom", "04-two-boxes-no-packing.txt"),
+            //(Method::Moves, "custom", "04-two-boxes-remover.txt"),
+            (Method::Moves, "custom", "04-two-boxes.txt"),
+            (Method::Moves, "custom", "no-solution-parking.txt"),
+            //(Method::Moves, "custom", "original-sokoban-01-remover.txt"),
+            //(Method::Moves, "custom", "supaplex.txt"),
+            (Method::Moves, "boxxle1", "1.txt"),
+            (Method::Moves, "boxxle1", "2.txt"),
+            (Method::Moves, "boxxle1", "3.txt"),
+            (Method::Moves, "boxxle1", "4.txt"),
+            (Method::Moves, "boxxle1", "5.txt"),
+            //(Method::Moves, "boxxle1", "6.txt"),
+            (Method::Moves, "boxxle1", "7.txt"),
+            (Method::Moves, "boxxle1", "8.txt"),
+            //(Method::Moves, "boxxle1", "9.txt"),
+            (Method::Moves, "boxxle1", "10.txt"),
+        ];
+
+        // for some reason rayon makes this actually slower
+        for &(method, level_pack, level_name) in levels.iter() {
+            test_level(method, level_pack, level_name);
+        }
     }
 
-    #[test_case(("custom", "01-simplest-xsb.txt"))]
-    #[test_case("custom", "01-simplest-custom.txt")]
-    #[test_case("custom", "02-one-way.txt")]
-    #[test_case("custom", "03-long-way.txt")]
-    #[test_case("custom", "04-two-boxes-no-packing.txt")]
-    //#[test_case("custom", "04-two-boxes-remover.txt")]
-    #[test_case("custom", "04-two-boxes.txt")]
-    #[test_case("custom", "no-solution-parking.txt")]
-    //#[test_case("custom", "original-sokoban-01-remover.txt")]
-    //#[test_case("custom", "supaplex.txt")]
-    #[test_case("boxxle1", "1.txt")]
-    //#[test_case("boxxle1", "2.txt")]
-    #[test_case("boxxle1", "3.txt")]
-    #[test_case("boxxle1", "4.txt")]
-    #[test_case("boxxle1", "5.txt")]
-    //#[test_case("boxxle1", "6.txt")]
-    #[test_case("boxxle1", "7.txt")]
-    #[test_case("boxxle1", "8.txt")]
-    //#[test_case("boxxle1", "9.txt")]
-    #[test_case("boxxle1", "10.txt")]
-    fn move_optimal(level_pack: &str, level_name: &str) {
-        test_level(level_pack, level_name, Method::Moves);
-    }
-
-    // separate fn to get stack traces with correct line numbers
-    fn test_level(level_pack: &str, level_name: &str, method: Method) {
+    fn test_level(method: Method, level_pack: &str, level_name: &str) {
         // for updating results more easily
         // (need to update when equal too because the file includes individual depths)
         #![allow(collapsible_if)]
 
         use std::fmt::Write;
+        use std::time::Instant;
 
-        let res_folder = method.to_string().to_lowercase();
+        let method_name = method.to_string().to_lowercase();
         let level_path = format!("levels/{}/{}", level_pack, level_name);
-        let result_file = format!("solutions/{}-{}/{}", level_pack, res_folder, level_name);
-        println!("{}", level_path);
+        let result_file = format!("solutions/{}-{}/{}", level_pack, method_name, level_name);
+
+        println!("Solving {} using {}", level_path, method_name);
+        let started = Instant::now();
 
         let level = utils::read_file(&level_path).unwrap();
         let level = level.parse().unwrap();
         let solution = solver::solve(&level, method, false).unwrap();
+
+        // innacurate, only useful to quickly see which levels are difficult
+        println!(
+            "Solved {} using {} in approximately {} ms",
+            level_path,
+            method_name,
+            started.elapsed().as_millis(),
+        );
 
         let mut out = String::new();
         write!(out, "{:?}", solution).unwrap();
