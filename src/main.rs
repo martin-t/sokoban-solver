@@ -272,13 +272,17 @@ mod tests {
         (length, created, visited)
     }
 
+    // old benches using the default bencher - all ignored since moving to criterion
+
     #[bench]
+    #[ignore]
     fn bench_boxxle1_001(b: &mut Bencher) {
         // 3 goals in a row
         bench_level("levels/boxxle1/1.txt", Method::Pushes, b);
     }
 
     #[bench]
+    #[ignore]
     fn bench_boxxle1_005(b: &mut Bencher) {
         // 4 boxes goal room
         bench_level("levels/boxxle1/5.txt", Method::Pushes, b);

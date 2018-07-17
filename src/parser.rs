@@ -52,7 +52,8 @@ impl FromStr for Level {
     }
 }
 
-crate fn parse(level: &str) -> Result<Level, ParserErr> {
+// TODO make private again
+pub fn parse(level: &str) -> Result<Level, ParserErr> {
     if level.trim_left().contains('<') {
         parse_format(level, Format::Custom)
     } else {

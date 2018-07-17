@@ -5,6 +5,11 @@ authors = ["Martin Taibr <taibr.martin@gmail.com>"]
 
 [dev-dependencies]
 test-case-derive = "0.*"
+criterion = { version = "0.*", features = ['real_blackbox'] }
+
+[[bench]]
+name = "criterion_benches"
+harness = false
 
 [dependencies]
 clap = "2.*"
