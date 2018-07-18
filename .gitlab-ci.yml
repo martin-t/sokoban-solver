@@ -5,7 +5,7 @@ image: "rust:latest"
 variables:
   CARGO_HOME: $CI_PROJECT_DIR/cargo
 
-# TODO reenable cippy when it's more stable (https://github.com/rust-lang/rfcs/pull/2476)
+# TODO reenable clippy when it's more stable (https://github.com/rust-lang/rfcs/pull/2476)
 # currently it sometimes doesn't build with latest nightly
 
 tests:
