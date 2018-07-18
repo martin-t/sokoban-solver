@@ -19,17 +19,6 @@ pub enum ParserErr {
     RemoverAndGoals,
 }
 
-type ParseResult = Result<
-    (
-        Vec<Vec<MapCell>>,
-        Vec<Pos>,
-        Option<Pos>,
-        Vec<Pos>,
-        Option<Pos>,
-    ),
-    ParserErr,
->;
-
 impl Display for ParserErr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
@@ -43,6 +32,17 @@ impl Display for ParserErr {
         }
     }
 }
+
+type ParseResult = Result<
+    (
+        Vec<Vec<MapCell>>,
+        Vec<Pos>,
+        Option<Pos>,
+        Vec<Pos>,
+        Option<Pos>,
+    ),
+    ParserErr,
+>;
 
 impl FromStr for Level {
     type Err = ParserErr;

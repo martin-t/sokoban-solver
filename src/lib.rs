@@ -17,7 +17,7 @@
 
 extern crate separator;
 
-// TODO ideally only config, fs and level would be public
+// TODO ideally only config and level would be public
 pub mod config;
 pub mod data;
 pub mod fs;
