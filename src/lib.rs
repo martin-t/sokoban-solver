@@ -17,12 +17,13 @@
 
 extern crate separator;
 
+// TODO ideally only config, fs and level would be public
 pub mod config;
 pub mod data;
+pub mod fs;
 pub mod level;
-pub mod map; // TODO maybe not pub?
-pub mod parser;
+pub mod map;
 pub mod solver;
-pub mod utils;
 
+mod parser;
 mod vec2d;

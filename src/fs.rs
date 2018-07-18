@@ -11,7 +11,6 @@ pub fn read_file<T: AsRef<Path>>(path: T) -> Result<String, Box<dyn Error>> {
     Ok(contents)
 }
 
-#[allow(unused)] // this is only so i can have a one-liner elsewhere anyway ;)
 pub fn write_file<T: AsRef<Path>>(path: T, text: &str) -> Result<(), Box<dyn Error>> {
     let mut file = File::create(path)?;
     file.write_all(text.as_ref())?;

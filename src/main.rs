@@ -30,9 +30,9 @@ use std::process;
 use clap::{App, Arg, ArgGroup};
 
 use sokoban_solver::config::{Format, Method};
+use sokoban_solver::fs;
 use sokoban_solver::map::Map;
 use sokoban_solver::solver;
-use sokoban_solver::utils;
 
 fn main() {
     let matches = App::new("sokoban-solver")
@@ -81,7 +81,7 @@ fn main() {
     };
     let path = matches.value_of("level-file").unwrap();
 
-    let level = utils::read_file(path).unwrap_or_else(|err| {
+    let level = fs::read_file(path).unwrap_or_else(|err| {
         let current_dir = env::current_dir().unwrap();
         println!(
             "Can't read file {} in {}: {}",
@@ -198,7 +198,7 @@ mod tests {
         println!("Solving {} using {}", level_path, method_name);
         let started = Instant::now();
 
-        let level = utils::read_file(&level_path).unwrap();
+        let level = fs::read_file(&level_path).unwrap();
         let level = level.parse().unwrap();
         let solution = solver::solve(&level, method, false).unwrap();
 
@@ -214,9 +214,9 @@ mod tests {
         write!(out, "{:?}", solution).unwrap();
 
         // uncomment to add new files, directory needs to exist, don't update this way - see below
-        //utils::write_file(&result_file, &out).unwrap();
+        //fs::write_file(&result_file, &out).unwrap();
 
-        let expected = utils::read_file(&result_file).unwrap();
+        let expected = fs::read_file(&result_file).unwrap();
         if out != expected {
             print!("Expected:\n{}", expected);
             print!("Got:\n{}", out);
@@ -240,7 +240,7 @@ mod tests {
                 }
 
                 // uncomment to update results - here to avoid accidentally accepting worse
-                //utils::write_file(&result_file, &out).unwrap();
+                //fs::write_file(&result_file, &out).unwrap();
             }
 
             assert!(false);
@@ -327,7 +327,7 @@ mod tests {
     }
 
     fn bench_level(level_path: &str, method: Method, b: &mut Bencher) {
-        let level = utils::read_file(level_path).unwrap();
+        let level = fs::read_file(level_path).unwrap();
         let level = level.parse().unwrap();
 
         b.iter(|| {
