@@ -83,7 +83,7 @@ fn main() {
 
     let level = fs::read_file(path).unwrap_or_else(|err| {
         let current_dir = env::current_dir().unwrap();
-        println!(
+        eprintln!(
             "Can't read file {} in {}: {}",
             path,
             current_dir.display(),
@@ -93,14 +93,14 @@ fn main() {
     });
 
     let level = level.parse().unwrap_or_else(|err| {
-        println!("Failed to parse: {}", err);
+        eprintln!("Failed to parse: {}", err);
         process::exit(1);
     });
 
     println!("Solving...");
     // TODO use steps/moves/pushes/actions instead
     let solver_ok = solver::solve(&level, method, true).unwrap_or_else(|err| {
-        println!("Invalid level: {}", err);
+        eprintln!("Invalid level: {}", err);
         process::exit(1);
     });
     println!("{}", solver_ok.stats);
