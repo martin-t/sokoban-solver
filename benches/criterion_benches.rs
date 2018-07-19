@@ -6,8 +6,8 @@ extern crate sokoban_solver;
 use criterion::{Benchmark, Criterion};
 
 use sokoban_solver::config::Method;
-use sokoban_solver::fs;
 use sokoban_solver::solver;
+use sokoban_solver::LoadLevel;
 
 fn benech_boxxle_1(c: &mut Criterion) {
     // 3 goals in a row
@@ -35,7 +35,7 @@ fn benech_boxxle_1_moves(c: &mut Criterion) {
 }
 
 fn bench_level(c: &mut Criterion, method: Method, level_path: &str, samples: usize) {
-    let level = fs::read_file(level_path).unwrap().parse().unwrap();
+    let level = level_path.load_level().unwrap();
 
     c.bench(
         &format!("{}", method),

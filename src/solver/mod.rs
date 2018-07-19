@@ -2,6 +2,7 @@ crate mod a_star;
 mod level;
 
 use std::collections::{BinaryHeap, HashMap, HashSet};
+use std::error::Error;
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
@@ -42,6 +43,8 @@ impl Display for SolverErr {
         }
     }
 }
+
+impl Error for SolverErr {}
 
 pub struct SolverOk {
     // TODO probably wanna use Dirs or Moves eventually

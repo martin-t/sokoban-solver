@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
@@ -32,6 +33,8 @@ impl Display for ParserErr {
         }
     }
 }
+
+impl Error for ParserErr {}
 
 type ParseResult = Result<
     (
