@@ -11,6 +11,7 @@ use data::{MapCell, Pos, State, DIRECTIONS, MAX_BOXES};
 use level::Level;
 use map::GoalMap;
 use vec2d::Vec2d;
+use Solve;
 
 use self::a_star::{SearchState, Stats};
 use self::level::SolverLevel;
@@ -73,7 +74,13 @@ impl Debug for SolverOk {
     }
 }
 
-pub fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
+impl Solve for Level {
+    fn solve(&self, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
+        solve(self, method, print_status)
+    }
+}
+
+fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
     let solver_level = process_level(level)?;
     match method {
         Method::Moves => Ok(search(

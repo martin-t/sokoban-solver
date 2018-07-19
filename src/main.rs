@@ -24,8 +24,7 @@ use clap::{App, Arg, ArgGroup};
 
 use sokoban_solver::config::{Format, Method};
 use sokoban_solver::map::Map;
-use sokoban_solver::solver;
-use sokoban_solver::LoadLevel;
+use sokoban_solver::{LoadLevel, Solve};
 
 fn main() {
     let matches = App::new("sokoban-solver")
@@ -81,7 +80,7 @@ fn main() {
 
     println!("Solving...");
     // TODO use steps/moves/pushes/actions instead
-    let solver_ok = solver::solve(&level, method, true).unwrap_or_else(|err| {
+    let solver_ok = level.solve(method, true).unwrap_or_else(|err| {
         eprintln!("Invalid level: {}", err);
         process::exit(1);
     });

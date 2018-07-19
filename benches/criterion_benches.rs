@@ -6,8 +6,7 @@ extern crate sokoban_solver;
 use criterion::{Benchmark, Criterion};
 
 use sokoban_solver::config::Method;
-use sokoban_solver::solver;
-use sokoban_solver::LoadLevel;
+use sokoban_solver::{LoadLevel, Solve};
 
 fn benech_boxxle_1(c: &mut Criterion) {
     // 3 goals in a row
@@ -41,11 +40,9 @@ fn bench_level(c: &mut Criterion, method: Method, level_path: &str, samples: usi
         &format!("{}", method),
         Benchmark::new(level_path, move |b| {
             b.iter(|| {
-                criterion::black_box(solver::solve(
-                    criterion::black_box(&level),
-                    criterion::black_box(method),
-                    criterion::black_box(false),
-                ))
+                criterion::black_box(
+                    level.solve(criterion::black_box(method), criterion::black_box(false)),
+                )
             })
         }).sample_size(samples),
     );

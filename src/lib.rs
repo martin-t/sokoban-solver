@@ -23,7 +23,6 @@ extern crate test;
 
 extern crate separator;
 
-// TODO ideally only config and level would be public
 pub mod config;
 pub mod data;
 pub mod level;
@@ -34,18 +33,18 @@ mod fs;
 mod parser;
 mod vec2d;
 
+use config::Method;
 use std::error::Error;
 
 use level::Level;
+use solver::{SolverErr, SolverOk};
 
 pub trait LoadLevel {
     fn load_level(self) -> Result<Level, Box<dyn Error>>;
 }
 
-impl LoadLevel for &str {
-    fn load_level(self) -> Result<Level, Box<dyn Error>> {
-        Ok(fs::read_file(self)?.parse()?)
-    }
+pub trait Solve {
+    fn solve(&self, method: Method, print_status: bool) -> Result<SolverOk, SolverErr>;
 }
 
 #[cfg(test)]
@@ -132,8 +131,11 @@ mod tests {
         println!("Solving {} using {}", level_path, method_name);
         let started = Instant::now();
 
-        let level = level_path.load_level().unwrap();
-        let solution = solver::solve(&level, method, false).unwrap();
+        let solution = level_path
+            .load_level()
+            .unwrap()
+            .solve(method, false)
+            .unwrap();
 
         // innacurate, only useful to quickly see which levels are difficult
         println!(
@@ -262,12 +264,6 @@ mod tests {
     fn bench_level(level_path: &str, method: Method, b: &mut Bencher) {
         let level = level_path.load_level().unwrap();
 
-        b.iter(|| {
-            test::black_box(solver::solve(
-                test::black_box(&level),
-                test::black_box(method),
-                test::black_box(false),
-            ))
-        });
+        b.iter(|| test::black_box(level.solve(test::black_box(method), test::black_box(false))));
     }
 }

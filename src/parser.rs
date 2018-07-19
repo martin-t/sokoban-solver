@@ -5,9 +5,11 @@ use std::str::FromStr;
 
 use config::Format;
 use data::{MapCell, Pos, State, MAX_SIZE};
+use fs;
 use level::Level;
 use map::GoalMap;
 use vec2d::Vec2d;
+use LoadLevel;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ParserErr {
@@ -36,6 +38,20 @@ impl Display for ParserErr {
 
 impl Error for ParserErr {}
 
+impl FromStr for Level {
+    type Err = ParserErr;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        parse(s)
+    }
+}
+
+impl LoadLevel for &str {
+    fn load_level(self) -> Result<Level, Box<dyn Error>> {
+        Ok(fs::read_file(self)?.parse()?)
+    }
+}
+
 type ParseResult = Result<
     (
         Vec<Vec<MapCell>>,
@@ -46,14 +62,6 @@ type ParseResult = Result<
     ),
     ParserErr,
 >;
-
-impl FromStr for Level {
-    type Err = ParserErr;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parse(s)
-    }
-}
 
 fn parse(level: &str) -> Result<Level, ParserErr> {
     if level.trim_left().contains('<') {
