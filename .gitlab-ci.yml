@@ -5,6 +5,9 @@ image: "rust:latest"
 variables:
   CARGO_HOME: $CI_PROJECT_DIR/cargo
 
+# TODO reenable clippy when it's more stable (https://github.com/rust-lang/rfcs/pull/2476)
+# currently it sometimes doesn't build with latest nightly
+
 tests:
   cache:
     paths:
@@ -12,9 +15,9 @@ tests:
       - target/
   script:
     - rustup override add nightly
-    - rustup component add rustfmt-preview
-    - rustup component add clippy-preview
     - rustc --version && cargo --version  # Print version info for debugging
+    - rustup component add rustfmt-preview
+    #- cargo install clippy --force
     - cargo fmt -- --check
-    - cargo clippy -- --deny warnings
+    #- cargo clippy -- --deny warnings
     - cargo test --release --all --verbose
