@@ -200,6 +200,8 @@ where
     Expand: Fn(&GoalMap, &State, &Vec2d<bool>) -> Vec<State>,
     Heuristic: Fn(&GoalMap, &State) -> i16,
 {
+    // TODO get rid of all the cloning
+
     let mut stats = Stats::new();
 
     let mut to_visit = BinaryHeap::new();
@@ -236,9 +238,6 @@ where
         }
 
         for neighbor_state in expand(&level.map, &cur_node.state, &level.dead_ends) {
-            // TODO this could probably be optimized a bit by allocating on the heap
-            // and storing references only (to current state, neighbor state is always different)
-
             // insert and then ignore duplicates
             let h = heuristic(&level.map, &neighbor_state);
             let next_node = SearchNode::new(

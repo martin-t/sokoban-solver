@@ -21,3 +21,4 @@ tests:
     - cargo fmt -- --check
     #- cargo clippy -- --deny warnings
     - cargo test --release --all --verbose
+    - cargo bench --verbose  # make sure benches compile
