@@ -13,7 +13,7 @@ use map::GoalMap;
 use vec2d::Vec2d;
 use Solve;
 
-use self::a_star::{SearchState, Stats};
+use self::a_star::{SearchNode, Stats};
 use self::level::SolverLevel;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -203,54 +203,53 @@ where
 
     let mut to_visit = BinaryHeap::new();
     let mut closed = HashSet::new();
-    let mut prev = HashMap::new();
+    let mut prevs = HashMap::new();
 
-    let h = heuristic(&level.map, &level.state);
-    let start = SearchState {
-        state: level.state.clone(),
-        prev: None,
-        dist: 0,
-        h,
-    };
+    let start = SearchNode::new(
+        level.state.clone(),
+        None,
+        0,
+        heuristic(&level.map, &level.state),
+    );
     stats.add_created(&start);
     to_visit.push(start);
-    while let Some(current) = to_visit.pop() {
-        if closed.contains(&current.state) {
-            stats.add_reached_duplicate(&current);
+    while let Some(cur_node) = to_visit.pop() {
+        if closed.contains(&cur_node.state) {
+            stats.add_reached_duplicate(&cur_node);
             continue;
         }
-        if stats.add_unique_visited(&current) && print_status {
-            println!("Visited new depth: {}", current.dist);
+        if stats.add_unique_visited(&cur_node) && print_status {
+            println!("Visited new depth: {}", cur_node.dist);
             println!("{:?}", stats);
         }
 
         // insert here and not as soon as we discover it
         // otherwise we overwrite the shortest path with longer ones
-        if let Some(p) = current.prev {
-            prev.insert(current.state.clone(), p.clone());
+        if let Some(p) = cur_node.prev {
+            prevs.insert(cur_node.state.clone(), p.clone());
         }
 
-        if solved(&level.map, &current.state) {
-            return SolverOk::new(Some(backtrack_path(&prev, &current.state)), stats, method);
+        if solved(&level.map, &cur_node.state) {
+            return SolverOk::new(Some(backtrack_path(&prevs, &cur_node.state)), stats, method);
         }
 
-        for neighbor_state in expand(&level.map, &current.state, &level.dead_ends) {
+        for neighbor_state in expand(&level.map, &cur_node.state, &level.dead_ends) {
             // TODO this could probably be optimized a bit by allocating on the heap
             // and storing references only (to current state, neighbor state is always different)
 
             // insert and then ignore duplicates
             let h = heuristic(&level.map, &neighbor_state);
-            let next = SearchState {
-                state: neighbor_state,
-                prev: Some(current.state.clone()),
-                dist: current.dist + 1,
+            let next_node = SearchNode::new(
+                neighbor_state,
+                Some(cur_node.state.clone()),
+                cur_node.dist + 1,
                 h,
-            };
-            stats.add_created(&next);
-            to_visit.push(next);
+            );
+            stats.add_created(&next_node);
+            to_visit.push(next_node);
         }
 
-        closed.insert(current.state);
+        closed.insert(cur_node.state);
     }
 
     SolverOk::new(None, stats, method)

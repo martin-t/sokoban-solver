@@ -6,6 +6,8 @@ use data::State;
 use map::{GoalMap, MapFormatter};
 use vec2d::Vec2d;
 
+// TODO kill this? it's not even consistently used in the solver
+// make a Solver struct instead?
 #[derive(Clone)]
 crate struct SolverLevel {
     crate map: GoalMap,

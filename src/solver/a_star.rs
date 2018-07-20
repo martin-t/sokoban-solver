@@ -33,22 +33,22 @@ impl Stats {
         self.duplicate_states.iter().sum::<i32>()
     }
 
-    pub(super) fn add_created(&mut self, state: &SearchState) -> bool {
+    pub(super) fn add_created(&mut self, state: &SearchNode) -> bool {
         Self::add(&mut self.created_states, state)
     }
 
-    pub(super) fn add_unique_visited(&mut self, state: &SearchState) -> bool {
+    pub(super) fn add_unique_visited(&mut self, state: &SearchNode) -> bool {
         Self::add(&mut self.visited_states, state)
     }
 
-    pub(super) fn add_reached_duplicate(&mut self, state: &SearchState) -> bool {
+    pub(super) fn add_reached_duplicate(&mut self, state: &SearchNode) -> bool {
         Self::add(&mut self.duplicate_states, state)
     }
 
-    fn add(counts: &mut Vec<i32>, state: &SearchState) -> bool {
+    fn add(counts: &mut Vec<i32>, state: &SearchNode) -> bool {
         let mut ret = false;
 
-        // while because some depths might be skipped - duplicates or tunnel optimizations (NYI)
+        // `while` because some depths might be skipped - duplicates or tunnel optimizations (NYI)
         while state.dist as usize >= counts.len() {
             counts.push(0);
             ret = true;
@@ -133,30 +133,42 @@ impl Display for Stats {
 }
 
 #[derive(Debug)]
-crate struct SearchState {
+crate struct SearchNode {
     crate state: State,
     crate prev: Option<State>,
     crate dist: i16,
-    crate h: i16,
+    crate cost: i16,
 }
 
-impl PartialOrd for SearchState {
+impl SearchNode {
+    crate fn new(state: State, prev: Option<State>, dist: i16, heuristic: i16) -> Self {
+        Self {
+            state,
+            prev,
+            dist,
+            cost: dist + heuristic,
+        }
+    }
+}
+
+impl PartialOrd for SearchNode {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Ord for SearchState {
+impl Ord for SearchNode {
     fn cmp(&self, other: &Self) -> Ordering {
         // intentionally reversed for BinaryHeap
-        (other.dist + other.h).cmp(&(self.dist + self.h))
+        // TODO bench std::cmp::Reverse
+        (other.cost).cmp(&(self.cost))
     }
 }
 
-impl PartialEq for SearchState {
+impl PartialEq for SearchNode {
     fn eq(&self, other: &Self) -> bool {
         self.state == other.state
     }
 }
 
-impl Eq for SearchState {}
+impl Eq for SearchNode {}
