@@ -136,8 +136,8 @@ impl Display for Stats {
 crate struct SearchState {
     crate state: State,
     crate prev: Option<State>,
-    crate dist: i32,
-    crate h: i32,
+    crate dist: i16,
+    crate h: i16,
 }
 
 impl PartialOrd for SearchState {

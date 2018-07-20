@@ -197,7 +197,7 @@ fn search<Expand, Heuristic>(
 ) -> SolverOk
 where
     Expand: Fn(&GoalMap, &State, &Vec2d<bool>) -> Vec<State>,
-    Heuristic: Fn(&GoalMap, &State) -> i32,
+    Heuristic: Fn(&GoalMap, &State) -> i16,
 {
     let mut stats = Stats::new();
 
@@ -307,12 +307,12 @@ fn find_dead_ends(map: &GoalMap) -> Vec2d<bool> {
     dead_ends
 }
 
-fn heuristic_push(map: &GoalMap, state: &State) -> i32 {
+fn heuristic_push(map: &GoalMap, state: &State) -> i16 {
     // less is better
 
     let mut goal_dist_sum = 0;
     for box_pos in &state.boxes {
-        let mut min = i32::max_value();
+        let mut min = i16::max_value();
         for goal in &map.goals {
             let dist = box_pos.dist(*goal);
             if dist < min {
@@ -324,10 +324,10 @@ fn heuristic_push(map: &GoalMap, state: &State) -> i32 {
     goal_dist_sum
 }
 
-fn heuristic_move(map: &GoalMap, state: &State) -> i32 {
+fn heuristic_move(map: &GoalMap, state: &State) -> i16 {
     // less is better
 
-    let mut closest_box = i32::max_value();
+    let mut closest_box = i16::max_value();
     for box_pos in &state.boxes {
         let dist = state.player_pos.dist(*box_pos);
         if dist < closest_box {
@@ -337,7 +337,7 @@ fn heuristic_move(map: &GoalMap, state: &State) -> i32 {
 
     let mut goal_dist_sum = 0;
     for box_pos in &state.boxes {
-        let mut min = i32::max_value();
+        let mut min = i16::max_value();
         for goal in &map.goals {
             let dist = box_pos.dist(*goal);
             if dist < min {
