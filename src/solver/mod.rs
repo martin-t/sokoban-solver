@@ -1,6 +1,7 @@
 crate mod a_star;
 mod level;
 
+use std::cmp::Reverse;
 use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
@@ -212,8 +213,9 @@ where
         heuristic(&level.map, &level.state),
     );
     stats.add_created(&start);
-    to_visit.push(start);
-    while let Some(cur_node) = to_visit.pop() {
+    to_visit.push(Reverse(start));
+
+    while let Some(Reverse(cur_node)) = to_visit.pop() {
         if closed.contains(&cur_node.state) {
             stats.add_reached_duplicate(&cur_node);
             continue;
@@ -246,7 +248,7 @@ where
                 h,
             );
             stats.add_created(&next_node);
-            to_visit.push(next_node);
+            to_visit.push(Reverse(next_node));
         }
 
         closed.insert(cur_node.state);

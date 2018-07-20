@@ -159,9 +159,11 @@ impl PartialOrd for SearchNode {
 
 impl Ord for SearchNode {
     fn cmp(&self, other: &Self) -> Ordering {
-        // intentionally reversed for BinaryHeap
-        // TODO bench std::cmp::Reverse
-        (other.cost).cmp(&(self.cost))
+        // orders acording to cost lowest to highest
+        // needs std::cmp::Reverse when using BinaryHeap (it's a max heap)
+        // according to Criterion, the difference between Reversed and actually reversing the order
+        // (if any) is usually within noise threshold
+        (self.cost).cmp(&(other.cost))
     }
 }
 
