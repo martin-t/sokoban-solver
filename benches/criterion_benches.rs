@@ -9,7 +9,7 @@ use sokoban_solver::config::Method;
 use sokoban_solver::{LoadLevel, Solve};
 
 // allowing unused so i can bench just one or few
-// and still notice other warnings if thre are any
+// and still notice other warnings if there are any
 #[allow(unused)]
 fn benech_boxxle_1(c: &mut Criterion) {
     // 3 goals in a row

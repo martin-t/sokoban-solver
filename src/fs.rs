@@ -11,7 +11,9 @@ crate fn read_file<P: AsRef<Path>>(path: P) -> Result<String, Box<dyn Error>> {
     Ok(contents)
 }
 
-#[allow(unused)] // will be useful when writing out results
+// will be useful when writing out results
+// also used in tests for updating results but usually commented out
+#[allow(unused)]
 crate fn write_file<P: AsRef<Path>>(path: P, text: &str) -> Result<(), Box<dyn Error>> {
     let mut file = File::create(path)?;
     file.write_all(text.as_ref())?;
