@@ -40,7 +40,7 @@ use level::Level;
 use solver::{SolverErr, SolverOk};
 
 pub trait LoadLevel {
-    fn load_level(self) -> Result<Level, Box<dyn Error>>;
+    fn load_level(&self) -> Result<Level, Box<dyn Error>>;
 }
 
 pub trait Solve {

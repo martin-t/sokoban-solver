@@ -58,7 +58,7 @@ fn main() {
                 .help("search for push-optimal solution (default)"),
         )
         .group(ArgGroup::with_name("method").args(&["moves", "pushes"]))
-        .arg(Arg::with_name("level-file").required(true))
+        .arg(Arg::with_name("level-file").required(true).multiple(true))
         .get_matches();
 
     let format = if matches.is_present("custom") {
@@ -71,28 +71,30 @@ fn main() {
     } else {
         Method::Pushes
     };
-    let path = matches.value_of("level-file").unwrap();
 
-    let level = path.load_level().unwrap_or_else(|err| {
-        eprintln!("Can't load level: {}", err);
-        process::exit(1);
-    });
+    for path in matches.values_of_os("level-file").unwrap() {
+        let level = path.load_level().unwrap_or_else(|err| {
+            eprintln!("Can't load level: {}", err);
+            process::exit(1);
+        });
 
-    println!("Solving...");
-    // TODO use steps/moves/pushes/actions instead
-    let solver_ok = level.solve(method, true).unwrap_or_else(|err| {
-        eprintln!("Invalid level: {}", err);
-        process::exit(1);
-    });
-    println!("{}", solver_ok.stats);
-    match solver_ok.path_states {
-        Some(path) => {
-            println!("Found solution:");
-            for state in &path {
-                println!("{}", level.map.format_with_state(format, &state));
+        println!("Solving {}...", path.to_string_lossy());
+        // TODO use steps/moves/pushes/actions instead
+        let solver_ok = level.solve(method, true).unwrap_or_else(|err| {
+            eprintln!("Invalid level: {}", err);
+            process::exit(1);
+        });
+        println!("{}", solver_ok.stats);
+        match solver_ok.path_states {
+            Some(path) => {
+                println!("Found solution:");
+                for state in &path {
+                    println!("{}", level.map.format_with_state(format, &state));
+                }
+                println!("{} steps", &path.len() - 1);
             }
-            println!("{} steps", &path.len() - 1);
+            None => println!("No solution"),
         }
-        None => println!("No solution"),
+        println!();
     }
 }

@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::path::Path;
 use std::str::FromStr;
 
 use config::Format;
@@ -46,8 +47,11 @@ impl FromStr for Level {
     }
 }
 
-impl LoadLevel for &str {
-    fn load_level(self) -> Result<Level, Box<dyn Error>> {
+impl<P> LoadLevel for P
+where
+    P: AsRef<Path>,
+{
+    fn load_level(&self) -> Result<Level, Box<dyn Error>> {
         Ok(fs::read_file(self)?.parse()?)
     }
 }
