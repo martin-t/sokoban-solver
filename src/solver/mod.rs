@@ -2,10 +2,12 @@ crate mod a_star;
 mod level;
 
 use std::cmp::Reverse;
-use std::collections::{BinaryHeap, HashMap};
+use std::collections::BinaryHeap;
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
+
+use fnv::FnvHashMap;
 
 use config::Method;
 use data::{MapCell, Pos, State, DIRECTIONS, MAX_BOXES};
@@ -203,14 +205,13 @@ where
     Heuristic: Fn(&GoalMap, &State) -> i16,
 {
     // TODO get rid of all the cloning
-    // TODO faster hash
 
     debug!("Search called");
 
     let mut stats = Stats::new();
 
     let mut to_visit = BinaryHeap::new();
-    let mut prevs = HashMap::new();
+    let mut prevs = FnvHashMap::default();
 
     let start = SearchNode::new(
         level.state.clone(),
@@ -355,7 +356,7 @@ fn heuristic_move(map: &GoalMap, state: &State) -> i16 {
     closest_box + goal_dist_sum
 }
 
-fn backtrack_path(prevs: &HashMap<State, State>, final_state: &State) -> Vec<State> {
+fn backtrack_path(prevs: &FnvHashMap<State, State>, final_state: &State) -> Vec<State> {
     let mut ret = Vec::new();
     let mut state = final_state;
     loop {
