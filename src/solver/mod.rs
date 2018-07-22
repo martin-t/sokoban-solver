@@ -2,7 +2,7 @@ crate mod a_star;
 mod level;
 
 use std::cmp::Reverse;
-use std::collections::{BinaryHeap, HashMap, HashSet};
+use std::collections::{BinaryHeap, HashMap};
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
@@ -82,7 +82,9 @@ impl Solve for Level {
 }
 
 fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
+    debug!("Processing level...");
     let solver_level = process_level(level)?;
+    debug!("Processed level");
     match method {
         Method::Moves => Ok(search(
             &solver_level,
@@ -201,11 +203,13 @@ where
     Heuristic: Fn(&GoalMap, &State) -> i16,
 {
     // TODO get rid of all the cloning
+    // TODO faster hash
+
+    debug!("Search called");
 
     let mut stats = Stats::new();
 
     let mut to_visit = BinaryHeap::new();
-    let mut closed = HashSet::new();
     let mut prevs = HashMap::new();
 
     let start = SearchNode::new(
@@ -218,7 +222,7 @@ where
     to_visit.push(Reverse(start));
 
     while let Some(Reverse(cur_node)) = to_visit.pop() {
-        if closed.contains(&cur_node.state) {
+        if prevs.contains_key(&cur_node.state) {
             stats.add_reached_duplicate(&cur_node);
             continue;
         }
@@ -231,9 +235,13 @@ where
         // otherwise we overwrite the shortest path with longer ones
         if let Some(p) = cur_node.prev {
             prevs.insert(cur_node.state.clone(), p.clone());
+        } else {
+            // initial state has no prev - hack to avoid Option
+            prevs.insert(cur_node.state.clone(), cur_node.state.clone());
         }
 
         if solved(&level.map, &cur_node.state) {
+            debug!("Solved, backtracking path");
             return SolverOk::new(Some(backtrack_path(&prevs, &cur_node.state)), stats, method);
         }
 
@@ -249,8 +257,6 @@ where
             stats.add_created(&next_node);
             to_visit.push(Reverse(next_node));
         }
-
-        closed.insert(cur_node.state);
     }
 
     SolverOk::new(None, stats, method)
@@ -269,10 +275,9 @@ fn find_dead_ends(map: &GoalMap) -> Vec2d<bool> {
         }
     }
 
+    // put box on every position and try to get it to a goal
     for r in 0..map.grid.rows() {
         'cell: for c in 0..map.grid.cols() {
-            // put box on every position and try to get it to a goal
-
             let box_pos = Pos::new(r, c);
             if dead_ends[box_pos] {
                 continue;
@@ -350,17 +355,17 @@ fn heuristic_move(map: &GoalMap, state: &State) -> i16 {
     closest_box + goal_dist_sum
 }
 
-fn backtrack_path(prev: &HashMap<State, State>, final_state: &State) -> Vec<State> {
+fn backtrack_path(prevs: &HashMap<State, State>, final_state: &State) -> Vec<State> {
     let mut ret = Vec::new();
     let mut state = final_state;
     loop {
         ret.push(state.clone());
-        if let Some(prev) = prev.get(state) {
-            state = prev;
-        } else {
+        let prev = &prevs[&state];
+        if prev == state {
             ret.reverse();
             return ret;
         }
+        state = prev;
     }
 }
 

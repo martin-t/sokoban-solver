@@ -13,3 +13,5 @@ harness = false
 [dependencies]
 clap = "2.*"
 separator = "0.*"
+log = { version = "0.*", features = ["release_max_level_off"] }
+env_logger = "0.*"

@@ -21,6 +21,8 @@
 #[cfg(test)]
 extern crate test;
 
+#[macro_use]
+extern crate log;
 extern crate separator;
 
 pub mod config;
@@ -113,12 +115,14 @@ mod tests {
         ];
 
         // for some reason rayon makes this actually slower
-        for &(method, level_pack, level_name) in levels.iter() {
-            test_level(method, level_pack, level_name);
-        }
+        let succeeded = levels
+            .iter()
+            .filter(|&&(method, level_pack, level_name)| test_level(method, level_pack, level_name))
+            .count();
+        assert_eq!(succeeded, levels.len());
     }
 
-    fn test_level(method: Method, level_pack: &str, level_name: &str) {
+    fn test_level(method: Method, level_pack: &str, level_name: &str) -> bool {
         // for updating results more easily
         // (need to update when equal too because the file includes individual depths)
         #![allow(collapsible_if)]
@@ -180,7 +184,9 @@ mod tests {
                 //fs::write_file(&result_file, &out).unwrap();
             }
 
-            assert!(false);
+            false
+        } else {
+            true
         }
     }
 

@@ -15,6 +15,7 @@
 
 #[macro_use]
 extern crate clap;
+extern crate env_logger;
 
 extern crate sokoban_solver;
 
@@ -27,6 +28,11 @@ use sokoban_solver::map::Map;
 use sokoban_solver::{LoadLevel, Solve};
 
 fn main() {
+    // show all logs unless disabled in Cargo.toml
+    env_logger::Builder::from_default_env()
+        .filter_level(log::LevelFilter::Trace)
+        .init();
+
     let matches = App::new("sokoban-solver")
         .author(crate_authors!())
         .version(crate_version!())
