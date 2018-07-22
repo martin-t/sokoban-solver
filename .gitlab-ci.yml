@@ -8,7 +8,7 @@ variables:
 tests:
   cache:
     paths:
-      - cargo/
+      #- cargo/  clippy doesn't play well with caching
       - target/
   script:
     - rustup override add nightly
