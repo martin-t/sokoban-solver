@@ -13,7 +13,6 @@
 #![allow(unknown_lints)] // necessary because rustc doesn't know about clippy
 #![warn(clippy)]
 
-#[macro_use]
 extern crate clap;
 extern crate env_logger;
 
@@ -21,11 +20,14 @@ extern crate sokoban_solver;
 
 use std::process;
 
+use clap::{crate_authors, crate_version};
 use clap::{App, Arg, ArgGroup};
 
 use sokoban_solver::config::{Format, Method};
 use sokoban_solver::map::Map;
 use sokoban_solver::{LoadLevel, Solve};
+
+extern crate log;
 
 fn main() {
     // show all logs unless disabled in Cargo.toml

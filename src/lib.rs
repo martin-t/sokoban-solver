@@ -21,9 +21,8 @@
 #[cfg(test)]
 extern crate test;
 
-#[macro_use]
-extern crate log;
 extern crate fnv;
+extern crate log;
 extern crate separator;
 
 pub mod config;

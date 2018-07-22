@@ -8,6 +8,7 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
 use fnv::FnvHashMap;
+use log::{debug, log};
 
 use config::Method;
 use data::{MapCell, Pos, State, DIRECTIONS, MAX_BOXES};
