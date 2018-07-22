@@ -14,7 +14,7 @@ tests:
     - rustup override add nightly
     - rustc --version && cargo --version  # Print version info for debugging
     - rustup component add rustfmt-preview
-    - cargo install clippy --force
+    - rustup component add clippy-preview
     - cargo fmt -- --check
     - cargo clippy -- --deny warnings
     - cargo test --release --all --verbose
