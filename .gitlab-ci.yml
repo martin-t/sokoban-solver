@@ -16,7 +16,9 @@ tests:
     - rustc --version && cargo --version  # Print version info for debugging
     - rustup component add rustfmt-preview
     - rustup component add clippy-preview
+    - cargo install cargo-audit
     - cargo fmt -- --check
     - cargo clippy -- --deny warnings
+    - cargo audit
     - cargo test --release --all --verbose
     - cargo bench --verbose  # make sure benches compile
