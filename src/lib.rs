@@ -21,10 +21,6 @@
 #[cfg(test)]
 extern crate test;
 
-extern crate fnv;
-extern crate log;
-extern crate separator;
-
 pub mod config;
 pub mod data;
 pub mod level;

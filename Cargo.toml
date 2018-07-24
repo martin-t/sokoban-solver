@@ -1,7 +1,10 @@
+cargo-features = ["edition"]
+
 [package]
 name = "sokoban-solver"
 version = "0.1.0"
 authors = ["Martin Taibr <taibr.martin@gmail.com>"]
+edition = '2018'
 
 [dev-dependencies]
 criterion = { version = "0.*", features = ['real_blackbox'] }
