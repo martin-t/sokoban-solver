@@ -1,9 +1,9 @@
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
-use config::Format;
-use data::{Contents, MapCell, Pos, State};
-use vec2d::Vec2d;
+use crate::config::Format;
+use crate::data::{Contents, MapCell, Pos, State};
+use crate::vec2d::Vec2d;
 
 // TODO none of this should be pub probably
 
@@ -24,13 +24,13 @@ impl<'a> MapFormatter<'a> {
 }
 
 impl<'a> Display for MapFormatter<'a> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write_with_state(&self.grid, self.state, self.format, f)
     }
 }
 
 impl<'a> Debug for MapFormatter<'a> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self)
     }
 }
@@ -43,7 +43,7 @@ fn write_with_state(
     grid: &Vec2d<MapCell>,
     state: &State,
     format: Format,
-    f: &mut Formatter,
+    f: &mut Formatter<'_>,
 ) -> fmt::Result {
     let mut state_grid = grid.create_scratchpad(Contents::Empty);
     for &b in &state.boxes {
@@ -57,7 +57,7 @@ fn write(
     grid: &Vec2d<MapCell>,
     state_grid: &Vec2d<Contents>,
     format: Format,
-    f: &mut Formatter,
+    f: &mut Formatter<'_>,
 ) -> fmt::Result {
     for r in 0..grid.rows() {
         // don't print trailing empty cells to match the input level strings
@@ -83,7 +83,7 @@ fn write(
     Ok(())
 }
 
-fn write_cell_custom(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::Result {
+fn write_cell_custom(cell: MapCell, contents: Contents, f: &mut Formatter<'_>) -> fmt::Result {
     if cell == MapCell::Wall {
         write!(f, "<>")?;
     } else {
@@ -102,7 +102,7 @@ fn write_cell_custom(cell: MapCell, contents: Contents, f: &mut Formatter) -> fm
     Ok(())
 }
 
-fn write_cell_xsb(cell: MapCell, contents: Contents, f: &mut Formatter) -> fmt::Result {
+fn write_cell_xsb(cell: MapCell, contents: Contents, f: &mut Formatter<'_>) -> fmt::Result {
     match (cell, contents) {
         (MapCell::Wall, Contents::Empty) => write!(f, "#"),
         (MapCell::Wall, _) => unreachable!(),
@@ -137,14 +137,14 @@ impl Map for GoalMap {
 }
 
 impl Display for GoalMap {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let state_grid = self.grid.create_scratchpad(Contents::Empty);
         write(&self.grid, &state_grid, Format::Xsb, f)
     }
 }
 
 impl Debug for GoalMap {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self)
     }
 }
@@ -164,7 +164,7 @@ impl RemoverMap {
 
 #[cfg(test)]
 mod tests {
-    use level::Level;
+    use crate::level::Level;
 
     #[test]
     fn formatting_map() {

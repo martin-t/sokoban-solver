@@ -3,7 +3,7 @@ use std::fmt::{Debug, Display, Formatter, Result};
 
 use separator::Separatable;
 
-use data::State;
+use crate::data::State;
 
 #[derive(PartialEq, Eq)]
 pub struct Stats {
@@ -59,7 +59,7 @@ impl Stats {
 }
 
 impl Debug for Stats {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         writeln!(f, "total created / unique visited / reached duplicates:",)?;
         writeln!(
             f,
@@ -77,7 +77,7 @@ impl Debug for Stats {
 }
 
 impl Display for Stats {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let created = self.total_created();
         let visited = self.total_unique_visited();
         let duplicates = self.total_reached_duplicates();

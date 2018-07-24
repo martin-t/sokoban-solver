@@ -13,7 +13,7 @@ pub enum Method {
 }
 
 impl Display for Method {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match *self {
             Method::Moves => write!(f, "Moves"),
             Method::Pushes => write!(f, "Pushes"),

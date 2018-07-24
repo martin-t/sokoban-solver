@@ -10,12 +10,12 @@ use std::fmt::{Debug, Display, Formatter};
 use fnv::FnvHashMap;
 use log::{debug, log};
 
-use config::Method;
-use data::{MapCell, Pos, State, DIRECTIONS, MAX_BOXES};
-use level::Level;
-use map::GoalMap;
-use vec2d::Vec2d;
-use Solve;
+use crate::config::Method;
+use crate::data::{MapCell, Pos, State, DIRECTIONS, MAX_BOXES};
+use crate::level::Level;
+use crate::map::GoalMap;
+use crate::vec2d::Vec2d;
+use crate::Solve;
 
 use self::a_star::{SearchNode, Stats};
 use self::level::SolverLevel;
@@ -31,7 +31,7 @@ pub enum SolverErr {
 }
 
 impl Display for SolverErr {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match *self {
             SolverErr::IncompleteBorder => write!(f, "Incomplete border"),
             SolverErr::UnreachableBoxes => write!(
@@ -69,7 +69,7 @@ impl SolverOk {
 }
 
 impl Debug for SolverOk {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self.path_states {
             None => writeln!(f, "No solution")?,
             Some(ref states) => writeln!(f, "{}: {}", self.method, states.len() - 1)?,

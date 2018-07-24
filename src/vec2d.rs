@@ -2,7 +2,7 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Index, IndexMut};
 
-use data::{MapCell, Pos};
+use crate::data::{MapCell, Pos};
 
 #[derive(Clone, PartialEq, Eq)]
 crate struct Vec2d<T> {
@@ -54,7 +54,7 @@ impl Vec2d<MapCell> {
 }
 
 impl<T: Display> Display for Vec2d<T> {
-    default fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    default fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         for row in self.data.chunks(self.cols.into()) {
             for cell in row {
                 write!(f, "{}", cell)?;
@@ -66,7 +66,7 @@ impl<T: Display> Display for Vec2d<T> {
 }
 
 impl Display for Vec2d<bool> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         for row in self.data.chunks(self.cols.into()) {
             for &cell in row {
                 write!(f, "{}", if cell { 1 } else { 0 })?;
@@ -78,7 +78,7 @@ impl Display for Vec2d<bool> {
 }
 
 impl<T: Display> Debug for Vec2d<T> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self)
     }
 }

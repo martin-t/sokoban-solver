@@ -35,11 +35,11 @@ mod fs;
 mod parser;
 mod vec2d;
 
-use config::Method;
 use std::error::Error;
 
-use level::Level;
-use solver::{SolverErr, SolverOk};
+use crate::config::Method;
+use crate::level::Level;
+use crate::solver::{SolverErr, SolverOk};
 
 pub trait LoadLevel {
     fn load_level(&self) -> Result<Level, Box<dyn Error>>;
@@ -53,7 +53,7 @@ pub trait Solve {
 mod tests {
     use test::Bencher;
 
-    use config::Method;
+    use crate::config::Method;
 
     use super::*;
 

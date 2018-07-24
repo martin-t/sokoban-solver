@@ -1,10 +1,10 @@
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
-use config::Format;
-use data::State;
-use map::{GoalMap, MapFormatter};
-use vec2d::Vec2d;
+use crate::config::Format;
+use crate::data::State;
+use crate::map::{GoalMap, MapFormatter};
+use crate::vec2d::Vec2d;
 
 // TODO kill this? it's not even consistently used in the solver
 // make a Solver struct instead?
@@ -25,29 +25,29 @@ impl SolverLevel {
     }
 
     #[allow(unused)]
-    crate fn xsb(&self) -> MapFormatter {
+    crate fn xsb(&self) -> MapFormatter<'_> {
         MapFormatter::new(&self.map.grid, &self.state, Format::Xsb)
     }
 
     #[allow(unused)]
-    crate fn custom(&self) -> MapFormatter {
+    crate fn custom(&self) -> MapFormatter<'_> {
         MapFormatter::new(&self.map.grid, &self.state, Format::Custom)
     }
 
     #[allow(unused)]
-    crate fn format(&self, format: Format) -> MapFormatter {
+    crate fn format(&self, format: Format) -> MapFormatter<'_> {
         MapFormatter::new(&self.map.grid, &self.state, format)
     }
 }
 
 impl Display for SolverLevel {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.xsb())
     }
 }
 
 impl Debug for SolverLevel {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self.xsb())
     }
 }
@@ -55,8 +55,8 @@ impl Debug for SolverLevel {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use map::Map;
-    use solver;
+    use crate::map::Map;
+    use crate::solver;
 
     #[test]
     fn formatting() {

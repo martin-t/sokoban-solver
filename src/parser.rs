@@ -4,13 +4,13 @@ use std::fmt::{Display, Formatter};
 use std::path::Path;
 use std::str::FromStr;
 
-use config::Format;
-use data::{MapCell, Pos, State, MAX_SIZE};
-use fs;
-use level::Level;
-use map::GoalMap;
-use vec2d::Vec2d;
-use LoadLevel;
+use crate::config::Format;
+use crate::data::{MapCell, Pos, State, MAX_SIZE};
+use crate::fs;
+use crate::level::Level;
+use crate::map::GoalMap;
+use crate::vec2d::Vec2d;
+use crate::LoadLevel;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ParserErr {
@@ -24,7 +24,7 @@ pub enum ParserErr {
 }
 
 impl Display for ParserErr {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match *self {
             ParserErr::Pos(r, c) => write!(f, "Invalid cell at pos: [{}, {}]", r, c),
             ParserErr::TooLarge => write!(f, "Map is larger than 255 rows/columns"),
