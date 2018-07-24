@@ -6,6 +6,9 @@ image: "rust:latest"
 #variables:
 #  CARGO_HOME: $CI_PROJECT_DIR/cargo
 
+before_script:
+  - apt-get update && apt-get -y install cmake  # needed for cargo audit
+
 tests:
   #cache:
   #  paths:
