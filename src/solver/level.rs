@@ -64,26 +64,22 @@ mod tests {
 *###*
 #@$.#
 *###*#
-"
-            .trim_left_matches('\n');
+".trim_left_matches('\n');
         let custom: &str = r"
 B_<><><>B_
 <>P B  _<>
 B_<><><>B_<>
-"
-            .trim_left_matches('\n');
+".trim_left_matches('\n');
         let processed_xsb: &str = r"
 ######
 #@$.##
 ######
-"
-            .trim_left_matches('\n');
+".trim_left_matches('\n');
         let processed_custom: &str = r"
 <><><><><><>
 <>P B  _<><>
 <><><><><><>
-"
-            .trim_left_matches('\n');
+".trim_left_matches('\n');
 
         for level in &[xsb, custom] {
             let level: SolverLevel = solver::process_level(&level.parse().unwrap()).unwrap();

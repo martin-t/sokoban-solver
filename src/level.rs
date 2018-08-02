@@ -55,14 +55,12 @@ mod tests {
 *###*
 #@$.#
 *###*#
-"
-            .trim_left_matches('\n');
+".trim_left_matches('\n');
         let custom: &str = r"
 B_<><><>B_
 <>P B  _<>
 B_<><><>B_<>
-"
-            .trim_left_matches('\n');
+".trim_left_matches('\n');
 
         for level in &[xsb, custom] {
             let level: Level = level.parse().unwrap();

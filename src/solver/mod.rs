@@ -302,7 +302,7 @@ fn find_dead_ends(map: &GoalMap) -> Vec2d<bool> {
                     expand_push,
                     heuristic_push,
                 ).path_states
-                    .is_some()
+                .is_some()
                 {
                     continue 'cell; // need to find only one solution
                 }
@@ -371,6 +371,7 @@ fn backtrack_path(prevs: &FnvHashMap<State, State>, final_state: &State) -> Vec<
     }
 }
 
+// TODO bench this against a counter in state
 fn solved(map: &GoalMap, state: &State) -> bool {
     // to detect dead ends, this has to test all boxes are on a goal, not that all goals have a box
     for pos in &state.boxes {
@@ -392,6 +393,8 @@ fn expand_push(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<Sta
     // find each box and each direction from which it can be pushed
     let mut reachable = map.grid.create_scratchpad(false);
     reachable[state.player_pos] = true;
+    // TODO bench using a queue and having both options
+    // this produces really hard to read solutions
     let mut to_visit = vec![state.player_pos];
 
     while !to_visit.is_empty() {
@@ -493,8 +496,7 @@ mod tests {
 11111
 11001
 11111
-"
-            .trim_left();
+".trim_left();
         assert_eq!(solver_level.dead_ends.to_string(), expected);
     }
 

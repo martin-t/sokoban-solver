@@ -38,29 +38,25 @@ fn main() {
                 .short("-c")
                 .long("--custom")
                 .help("print as custom format"),
-        )
-        .arg(
+        ).arg(
             Arg::with_name("xsb")
                 .conflicts_with("custom")
                 .short("-x")
                 .long("--xsb")
                 .help("print as XSB format (default)"),
-        )
-        .group(ArgGroup::with_name("format").args(&["custom", "xsb"]))
+        ).group(ArgGroup::with_name("format").args(&["custom", "xsb"]))
         .arg(
             Arg::with_name("moves")
                 .short("-m")
                 .long("--moves")
                 .help("search for move-optimal solution"),
-        )
-        .arg(
+        ).arg(
             Arg::with_name("pushes")
                 .conflicts_with("moves")
                 .short("-p")
                 .long("--pushes")
                 .help("search for push-optimal solution (default)"),
-        )
-        .group(ArgGroup::with_name("method").args(&["moves", "pushes"]))
+        ).group(ArgGroup::with_name("method").args(&["moves", "pushes"]))
         .arg(Arg::with_name("level-file").required(true).multiple(true))
         .get_matches();
 
