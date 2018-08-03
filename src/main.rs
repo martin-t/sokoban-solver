@@ -12,6 +12,7 @@
 // Clippy
 #![allow(unknown_lints)] // necessary because rustc doesn't know about clippy
 #![warn(clippy)]
+#![warn(unknown_lints)]
 
 use std::process;
 
