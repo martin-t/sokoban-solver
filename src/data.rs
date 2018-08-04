@@ -7,10 +7,16 @@ crate const MAX_BOXES: usize = 254;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 crate enum MapCell {
-    Wall,
     Empty,
+    Wall,
     Goal,
     Remover,
+}
+
+impl Default for MapCell {
+    fn default() -> MapCell {
+        MapCell::Empty
+    }
 }
 
 impl Display for MapCell {
@@ -19,8 +25,8 @@ impl Display for MapCell {
             f,
             "{}",
             match *self {
-                MapCell::Wall => '#',
                 MapCell::Empty => ' ',
+                MapCell::Wall => '#',
                 MapCell::Goal => '.',
                 MapCell::Remover => 'r',
             }
@@ -33,6 +39,12 @@ crate enum Contents {
     Empty,
     Box,
     Player,
+}
+
+impl Default for Contents {
+    fn default() -> Contents {
+        Contents::Empty
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

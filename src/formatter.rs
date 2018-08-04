@@ -21,7 +21,7 @@ impl<'a> MapFormatter<'a> {
     }
 
     fn write_to_formatter(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let mut state_grid = self.grid.create_scratchpad(Contents::Empty);
+        let mut state_grid = self.grid.scratchpad();
         if let Some(state) = self.state {
             for &b in &state.boxes {
                 state_grid[b] = Contents::Box;
@@ -74,11 +74,11 @@ impl<'a> MapFormatter<'a> {
 
     fn write_cell_xsb(cell: MapCell, contents: Contents, f: &mut Formatter<'_>) -> fmt::Result {
         match (cell, contents) {
-            (MapCell::Wall, Contents::Empty) => write!(f, "#"),
-            (MapCell::Wall, _) => unreachable!(),
             (MapCell::Empty, Contents::Empty) => write!(f, " "),
             (MapCell::Empty, Contents::Box) => write!(f, "$"),
             (MapCell::Empty, Contents::Player) => write!(f, "@"),
+            (MapCell::Wall, Contents::Empty) => write!(f, "#"),
+            (MapCell::Wall, _) => unreachable!(),
             (MapCell::Goal, Contents::Empty) => write!(f, "."),
             (MapCell::Goal, Contents::Box) => write!(f, "*"),
             (MapCell::Goal, Contents::Player) => write!(f, "+"),

@@ -121,7 +121,7 @@ impl Solver {
 
         // make sure the level is surrounded by wall
         let mut to_visit = vec![level.state.player_pos];
-        let mut visited = level.map.grid.create_scratchpad(false);
+        let mut visited = level.map.grid.scratchpad();
 
         while !to_visit.is_empty() {
             let cur = to_visit.pop().unwrap();
@@ -277,7 +277,7 @@ where
 }
 
 fn find_dead_ends(map: &GoalMap) -> Vec2d<bool> {
-    let mut dead_ends = map.grid.create_scratchpad(false);
+    let mut dead_ends = map.grid.scratchpad();
 
     // mark walls as dead ends first because expand_push needs it
     for r in 0..map.grid.rows() {
@@ -401,13 +401,13 @@ fn solved(map: &GoalMap, state: &State) -> bool {
 fn expand_push(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
     let mut new_states = Vec::new();
 
-    let mut box_grid = map.grid.create_scratchpad(255);
+    let mut box_grid = map.grid.scratchpad_with_default(255);
     for (i, b) in state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }
 
     // find each box and each direction from which it can be pushed
-    let mut reachable = map.grid.create_scratchpad(false);
+    let mut reachable = map.grid.scratchpad();
     reachable[state.player_pos] = true;
     // TODO bench using a queue and having both options
     // this produces really hard to read solutions
@@ -448,7 +448,7 @@ fn expand_push(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<Sta
 fn expand_move(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
     let mut new_states = Vec::new();
 
-    let mut box_grid = map.grid.create_scratchpad(255);
+    let mut box_grid = map.grid.scratchpad_with_default(255);
     for (i, b) in state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }

@@ -2,7 +2,7 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Index, IndexMut};
 
-use crate::data::{MapCell, Pos};
+use crate::data::Pos;
 
 #[derive(Clone, PartialEq, Eq)]
 crate struct Vec2d<T> {
@@ -12,18 +12,10 @@ crate struct Vec2d<T> {
 }
 
 impl<T> Vec2d<T> {
-    crate fn rows(&self) -> u8 {
-        self.rows
-    }
-
-    crate fn cols(&self) -> u8 {
-        self.cols
-    }
-}
-
-// TODO impl Default for MapCell, then generalize this
-impl Vec2d<MapCell> {
-    crate fn new(grid: &[Vec<MapCell>]) -> Self {
+    crate fn new(grid: &[Vec<T>]) -> Self
+    where
+        T: Copy + Default,
+    {
         assert!(!grid.is_empty() && !grid[0].is_empty());
 
         let max_cols = grid.iter().map(|row| row.len()).max().unwrap();
@@ -35,7 +27,7 @@ impl Vec2d<MapCell> {
             for _ in row.len()..max_cols {
                 // could also fill with wall but then we wouldn't detect
                 // some broken maps and silently accept them instead
-                data.push(MapCell::Empty);
+                data.push(T::default());
             }
         }
         Vec2d {
@@ -45,12 +37,30 @@ impl Vec2d<MapCell> {
         }
     }
 
-    crate fn create_scratchpad<T: Copy>(&self, default: T) -> Vec2d<T> {
+    crate fn rows(&self) -> u8 {
+        self.rows
+    }
+
+    crate fn cols(&self) -> u8 {
+        self.cols
+    }
+
+    crate fn scratchpad_with_default<U>(&self, default: U) -> Vec2d<U>
+    where
+        U: Copy,
+    {
         Vec2d {
             data: vec![default; self.data.len()],
             rows: self.rows,
             cols: self.cols,
         }
+    }
+
+    crate fn scratchpad<U>(&self) -> Vec2d<U>
+    where
+        U: Copy + Default,
+    {
+        self.scratchpad_with_default(U::default())
     }
 }
 
