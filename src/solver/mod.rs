@@ -42,7 +42,7 @@ impl Display for SolverErr {
                 "Unreachable goals - some goals don't have a box but can't be reached"
             ),
             //SolverErr::UnreachableRemover => write!(f, "Remover is not reachable"),
-            SolverErr::TooMany => write!(f, "More than 254 reachable boxes or goals"),
+            SolverErr::TooMany => write!(f, "More than {} reachable boxes or goals", MAX_BOXES),
             SolverErr::BoxesGoals => write!(f, "Different number of reachable boxes and goals"),
         }
     }
