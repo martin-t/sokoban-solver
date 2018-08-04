@@ -190,7 +190,7 @@ impl Solver {
             return Err(SolverErr::BoxesGoals);
         }
 
-        // only 254 because 255 is used to represent empty in expand_{move,push}
+        // only 255 boxes max because 255 (index of the 256th box) is used to represent empty in expand_{move,push}
         if reachable_boxes.len() > MAX_BOXES {
             return Err(SolverErr::TooMany);
         }
@@ -401,7 +401,7 @@ fn solved(map: &GoalMap, state: &State) -> bool {
 fn expand_push(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
     let mut new_states = Vec::new();
 
-    let mut box_grid = map.grid.scratchpad_with_default(255);
+    let mut box_grid = map.grid.scratchpad_with_default(255u8);
     for (i, b) in state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }
@@ -448,7 +448,7 @@ fn expand_push(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<Sta
 fn expand_move(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
     let mut new_states = Vec::new();
 
-    let mut box_grid = map.grid.scratchpad_with_default(255);
+    let mut box_grid = map.grid.scratchpad_with_default(255u8);
     for (i, b) in state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }
@@ -530,6 +530,35 @@ mod tests {
                 SolverErr::IncompleteBorder
             );
         }
+    }
+
+    #[test]
+    fn too_many() {
+        let level = r"
+##################
+#****************#
+#****************#
+#****************#
+#****************#
+#****************#
+#****************#
+#****************#
+#****************#
+#****************#
+#****************#
+#****************#
+#****************#
+#****************#
+#****************#
+#****************#
+#****************#
+#@################
+###
+";
+        let level = level.parse().unwrap();
+        let err = Solver::new(&level).unwrap_err();
+        assert_eq!(err, SolverErr::TooMany);
+        assert_eq!(err.to_string(), "More than 255 reachable boxes or goals");
     }
 
     #[test]

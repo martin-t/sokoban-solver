@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use std::ops::Add;
 
 crate const MAX_SIZE: usize = 255;
-crate const MAX_BOXES: usize = 254;
+crate const MAX_BOXES: usize = 255;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 crate enum MapCell {
