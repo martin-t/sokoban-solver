@@ -21,6 +21,7 @@ impl<T> Vec2d<T> {
     }
 }
 
+// TODO impl Default for MapCell, then generalize this
 impl Vec2d<MapCell> {
     crate fn new(grid: &[Vec<MapCell>]) -> Self {
         assert!(!grid.is_empty() && !grid[0].is_empty());
@@ -99,5 +100,29 @@ impl<T> IndexMut<Pos> for Vec2d<T> {
         let index = usize::from(index.r) * usize::from(self.cols) + usize::from(index.c);
         //unsafe { self.data.get_unchecked_mut(index) }
         &mut self.data[index]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::level::Level;
+
+    #[test]
+    fn formatting_vec2d() {
+        let xsb_level: &str = r"
+*####*
+#@$.*#
+*####*#
+".trim_left_matches('\n');
+        // the `\n\` is necessary because intellij removes trailing whitespace
+        let xsb_grid: &str = "
+.####. \n\
+#  ..# \n\
+.####.#
+".trim_left_matches('\n');
+        let level: Level = xsb_level.parse().unwrap();
+
+        assert_eq!(format!("{}", level.map.grid), xsb_grid);
+        assert_eq!(format!("{:?}", level.map.grid), xsb_grid);
     }
 }

@@ -23,9 +23,11 @@ extern crate test;
 
 pub mod config;
 pub mod data;
+pub mod formatter;
 pub mod level;
 pub mod map;
 pub mod solver;
+pub mod state;
 
 mod fs;
 mod parser;

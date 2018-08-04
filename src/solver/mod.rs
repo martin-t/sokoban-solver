@@ -10,9 +10,10 @@ use fnv::FnvHashMap;
 use log::{debug, log};
 
 use crate::config::Method;
-use crate::data::{MapCell, Pos, State, DIRECTIONS, MAX_BOXES};
+use crate::data::{MapCell, Pos, DIRECTIONS, MAX_BOXES};
 use crate::level::Level;
 use crate::map::GoalMap;
+use crate::state::State;
 use crate::vec2d::Vec2d;
 use crate::Solve;
 

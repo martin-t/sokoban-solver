@@ -5,10 +5,11 @@ use std::path::Path;
 use std::str::FromStr;
 
 use crate::config::Format;
-use crate::data::{MapCell, Pos, State, MAX_SIZE};
+use crate::data::{MapCell, Pos, MAX_SIZE};
 use crate::fs;
 use crate::level::Level;
 use crate::map::GoalMap;
+use crate::state::State;
 use crate::vec2d::Vec2d;
 use crate::LoadLevel;
 

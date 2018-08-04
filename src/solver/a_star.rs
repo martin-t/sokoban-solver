@@ -3,7 +3,7 @@ use std::fmt::{Debug, Display, Formatter, Result};
 
 use separator::Separatable;
 
-use crate::data::State;
+use crate::state::State;
 
 #[derive(PartialEq, Eq)]
 pub struct Stats {
