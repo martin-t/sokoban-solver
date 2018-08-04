@@ -542,6 +542,7 @@ mod tests {
 #####";
         let level = level.parse().unwrap();
         let solver_level = Solver::new(&level).unwrap();
+
         let expected = r"
 11111
 11111
@@ -555,20 +556,25 @@ mod tests {
     #[test]
     fn processing() {
         let level: &str = r"
-*###*
-#@$.#
-*###*#
-".trim_left_matches('\n');
-
-        let processed_empty_level: &str = r"
-######
-#  .##
-######
+*####*
+#@$.*#
+*####*#
 ".trim_left_matches('\n');
 
         let solver = Solver::new(&level.parse().unwrap()).unwrap();
+
+        let processed_empty_level: &str = r"
+#######
+#  ..##
+#######
+".trim_left_matches('\n');
         assert_eq!(solver.map.to_string(), processed_empty_level);
-        // TODO test state
+
+        assert_eq!(solver.initial_state.player_pos, Pos { r: 1, c: 1 });
+        assert_eq!(
+            solver.initial_state.boxes,
+            vec![Pos { r: 1, c: 2 }, Pos { r: 1, c: 4 }]
+        );
     }
 
     #[test]
