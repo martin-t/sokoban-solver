@@ -497,6 +497,20 @@ mod tests {
     }
 
     #[test]
+    fn incomplete_border() {
+        let level = r"
+####
+#@*
+####
+        ";
+        let level = level.parse().unwrap();
+        assert_eq!(
+            Solver::new(&level).unwrap_err(),
+            SolverErr::IncompleteBorder
+        );
+    }
+
+    #[test]
     fn dead_ends() {
         let level = r"
 #####
