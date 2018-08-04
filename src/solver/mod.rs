@@ -88,20 +88,8 @@ fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, 
     let solver = Solver::new(level)?;
     debug!("Processed level");
     match method {
-        Method::Moves => Ok(search(
-            &solver,
-            method,
-            print_status,
-            expand_move,
-            heuristic_move,
-        )),
-        Method::Pushes => Ok(search(
-            &solver,
-            method,
-            print_status,
-            expand_push,
-            heuristic_push,
-        )),
+        Method::Moves => Ok(solver.search(method, print_status, expand_move, heuristic_move)),
+        Method::Pushes => Ok(solver.search(method, print_status, expand_push, heuristic_push)),
     }
 }
 
@@ -204,76 +192,76 @@ impl Solver {
             initial_state: clean_state,
         })
     }
-}
 
-fn search<Expand, Heuristic>(
-    solver: &Solver,
-    method: Method,
-    print_status: bool,
-    expand: Expand,
-    heuristic: Heuristic,
-) -> SolverOk
-where
-    Expand: Fn(&GoalMap, &State, &Vec2d<bool>) -> Vec<State>,
-    Heuristic: Fn(&GoalMap, &State) -> i16,
-{
-    // TODO get rid of all the cloning
+    fn search<Expand, Heuristic>(
+        &self,
+        method: Method,
+        print_status: bool,
+        expand: Expand,
+        heuristic: Heuristic,
+    ) -> SolverOk
+    where
+        Expand: Fn(&GoalMap, &State, &Vec2d<bool>) -> Vec<State>,
+        Heuristic: Fn(&GoalMap, &State) -> i16,
+    {
+        // TODO get rid of all the cloning
 
-    debug!("Search called");
+        debug!("Search called");
 
-    let mut stats = Stats::new();
+        let mut stats = Stats::new();
 
-    let mut to_visit = BinaryHeap::new();
-    let mut prevs = FnvHashMap::default();
+        let mut to_visit = BinaryHeap::new();
+        let mut prevs = FnvHashMap::default();
 
-    let start = SearchNode::new(
-        solver.initial_state.clone(),
-        None,
-        0,
-        heuristic(&solver.map, &solver.initial_state),
-    );
-    stats.add_created(&start);
-    to_visit.push(Reverse(start));
+        let start = SearchNode::new(
+            self.initial_state.clone(),
+            None,
+            0,
+            heuristic(&self.map, &self.initial_state),
+        );
+        stats.add_created(&start);
+        to_visit.push(Reverse(start));
 
-    while let Some(Reverse(cur_node)) = to_visit.pop() {
-        if prevs.contains_key(&cur_node.state) {
-            stats.add_reached_duplicate(&cur_node);
-            continue;
+        while let Some(Reverse(cur_node)) = to_visit.pop() {
+            if prevs.contains_key(&cur_node.state) {
+                stats.add_reached_duplicate(&cur_node);
+                continue;
+            }
+            if stats.add_unique_visited(&cur_node) && print_status {
+                println!("Visited new depth: {}", cur_node.dist);
+                println!("{:?}", stats);
+            }
+
+            // insert here and not as soon as we discover it
+            // otherwise we overwrite the shortest path with longer ones
+            if let Some(p) = cur_node.prev {
+                prevs.insert(cur_node.state.clone(), p.clone());
+            } else {
+                // initial state has no prev - hack to avoid Option
+                prevs.insert(cur_node.state.clone(), cur_node.state.clone());
+            }
+
+            if solved(&self.map, &cur_node.state) {
+                debug!("Solved, backtracking path");
+                return SolverOk::new(Some(backtrack_path(&prevs, &cur_node.state)), stats, method);
+            }
+
+            for neighbor_state in expand(&self.map, &cur_node.state, &self.dead_ends) {
+                // insert and then ignore duplicates
+                let h = heuristic(&self.map, &neighbor_state);
+                let next_node = SearchNode::new(
+                    neighbor_state,
+                    Some(cur_node.state.clone()),
+                    cur_node.dist + 1,
+                    h,
+                );
+                stats.add_created(&next_node);
+                to_visit.push(Reverse(next_node));
+            }
         }
-        if stats.add_unique_visited(&cur_node) && print_status {
-            println!("Visited new depth: {}", cur_node.dist);
-            println!("{:?}", stats);
-        }
 
-        // insert here and not as soon as we discover it
-        // otherwise we overwrite the shortest path with longer ones
-        if let Some(p) = cur_node.prev {
-            prevs.insert(cur_node.state.clone(), p.clone());
-        } else {
-            // initial state has no prev - hack to avoid Option
-            prevs.insert(cur_node.state.clone(), cur_node.state.clone());
-        }
-
-        if solved(&solver.map, &cur_node.state) {
-            debug!("Solved, backtracking path");
-            return SolverOk::new(Some(backtrack_path(&prevs, &cur_node.state)), stats, method);
-        }
-
-        for neighbor_state in expand(&solver.map, &cur_node.state, &solver.dead_ends) {
-            // insert and then ignore duplicates
-            let h = heuristic(&solver.map, &neighbor_state);
-            let next_node = SearchNode::new(
-                neighbor_state,
-                Some(cur_node.state.clone()),
-                cur_node.dist + 1,
-                h,
-            );
-            stats.add_created(&next_node);
-            to_visit.push(Reverse(next_node));
-        }
+        SolverOk::new(None, stats, method)
     }
-
-    SolverOk::new(None, stats, method)
 }
 
 fn find_dead_ends(map: &GoalMap) -> Vec2d<bool> {
@@ -311,14 +299,10 @@ fn find_dead_ends(map: &GoalMap) -> Vec2d<bool> {
                     dead_ends: dead_ends.clone(),
                     initial_state: fake_state,
                 };
-                if search(
-                    &fake_solver,
-                    Method::Pushes,
-                    false,
-                    expand_push,
-                    heuristic_push,
-                ).path_states
-                .is_some()
+                if fake_solver
+                    .search(Method::Pushes, false, expand_push, heuristic_push)
+                    .path_states
+                    .is_some()
                 {
                     continue 'cell; // need to find only one solution
                 }
