@@ -15,6 +15,8 @@ crate enum MapCell {
 
 impl Default for MapCell {
     fn default() -> MapCell {
+        // Empty imho makes slightly more sense than Wall
+        // if changing this, make sure maps without complete borders are rejected properly
         MapCell::Empty
     }
 }

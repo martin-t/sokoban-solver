@@ -25,8 +25,6 @@ impl<T> Vec2d<T> {
                 data.push(*c);
             }
             for _ in row.len()..max_cols {
-                // could also fill with wall but then we wouldn't detect
-                // some broken maps and silently accept them instead
                 data.push(T::default());
             }
         }
