@@ -498,16 +498,38 @@ mod tests {
 
     #[test]
     fn incomplete_border() {
-        let level = r"
+        let level0 = r"
 ####
 #@*
 ####
         ";
-        let level = level.parse().unwrap();
-        assert_eq!(
-            Solver::new(&level).unwrap_err(),
-            SolverErr::IncompleteBorder
-        );
+        let level1 = r"
+####
+#@ *
+####
+        ";
+        let level2 = r"
+## #
+#@*#
+####
+        ";
+        let level3 = r"
+####
+# *#
+#@##
+        ";
+        let level4 = r"
+####
+.@$*
+####
+        ";
+        for level in &[level0, level1, level2, level3, level4] {
+            let level = level.parse().unwrap();
+            assert_eq!(
+                Solver::new(&level).unwrap_err(),
+                SolverErr::IncompleteBorder
+            );
+        }
     }
 
     #[test]
