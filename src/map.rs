@@ -190,5 +190,8 @@ mod tests {
         assert_eq!(format!("{:?}", level.map), xsb_map);
         assert_eq!(format!("{}", level.map.grid), xsb_grid);
         assert_eq!(format!("{:?}", level.map.grid), xsb_grid);
+        // TODO Format::Custom
     }
+
+    // TODO test formatting with state in both formats
 }

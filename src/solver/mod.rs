@@ -1,5 +1,4 @@
 crate mod a_star;
-mod level;
 
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
@@ -18,7 +17,6 @@ use crate::vec2d::Vec2d;
 use crate::Solve;
 
 use self::a_star::{SearchNode, Stats};
-use self::level::SolverLevel;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SolverErr {
@@ -86,18 +84,18 @@ impl Solve for Level {
 
 fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
     debug!("Processing level...");
-    let solver_level = process_level(level)?;
+    let solver = Solver::new(level)?;
     debug!("Processed level");
     match method {
         Method::Moves => Ok(search(
-            &solver_level,
+            &solver,
             method,
             print_status,
             expand_move,
             heuristic_move,
         )),
         Method::Pushes => Ok(search(
-            &solver_level,
+            &solver,
             method,
             print_status,
             expand_push,
@@ -106,96 +104,109 @@ fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, 
     }
 }
 
-fn process_level(level: &Level) -> Result<SolverLevel, SolverErr> {
-    // Guarantees we have here:
-    // - the player exists and therefore map is at least 1x1.
-    // - rows and cols is <= 255
-    // Do some more low level checking so we can omit some checks later.
+#[derive(Debug)]
+struct Solver {
+    map: GoalMap,
+    dead_ends: Vec2d<bool>,
+    initial_state: State,
+}
 
-    // make sure the level is surrounded by wall
-    let mut to_visit = vec![level.state.player_pos];
-    let mut visited = level.map.grid.create_scratchpad(false);
+impl Solver {
+    fn new(level: &Level) -> Result<Solver, SolverErr> {
+        // Guarantees we have here:
+        // - the player exists and therefore map is at least 1x1.
+        // - rows and cols is <= 255
+        // Do some more low level checking so we can omit some checks later.
 
-    while !to_visit.is_empty() {
-        let cur = to_visit.pop().unwrap();
-        visited[cur] = true;
+        // make sure the level is surrounded by wall
+        let mut to_visit = vec![level.state.player_pos];
+        let mut visited = level.map.grid.create_scratchpad(false);
 
-        let (r, c) = (i32::from(cur.r), i32::from(cur.c));
-        let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
-        for &(nr, nc) in &neighbors {
-            // this is the only place we need to check bounds (using signed types)
-            // everything after that will be surrounded by walls
-            if nr < 0
-                || nc < 0
-                || nr >= i32::from(level.map.grid.rows())
-                || nc >= i32::from(level.map.grid.cols())
-            {
-                // we got out of bounds without hitting a wall
-                return Err(SolverErr::IncompleteBorder);
-            }
+        while !to_visit.is_empty() {
+            let cur = to_visit.pop().unwrap();
+            visited[cur] = true;
 
-            let new_pos = Pos::new(nr as u8, nc as u8);
-            if !visited[new_pos] && level.map.grid[new_pos] != MapCell::Wall {
-                to_visit.push(new_pos);
-            }
-        }
-    }
+            let (r, c) = (i32::from(cur.r), i32::from(cur.c));
+            let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
+            for &(nr, nc) in &neighbors {
+                // this is the only place we need to check bounds (using signed types)
+                // everything after that will be surrounded by walls
+                if nr < 0
+                    || nc < 0
+                    || nr >= i32::from(level.map.grid.rows())
+                    || nc >= i32::from(level.map.grid.cols())
+                {
+                    // we got out of bounds without hitting a wall
+                    return Err(SolverErr::IncompleteBorder);
+                }
 
-    // TODO move into specialized function when removers work
-    /*if let Some(pos) = remover {
-        if !visited.0[pos.r as usize][pos.c as usize] {
-            return Err(SolverErr::UnreachableRemover);
-        }
-    }*/
-
-    // make sure all relevant game elements are reachable
-    let mut reachable_goals = Vec::new();
-    let mut reachable_boxes = Vec::new();
-    for &pos in &level.state.boxes {
-        if visited[pos] {
-            reachable_boxes.push(pos);
-        } else if !level.map.goals.contains(&pos) {
-            return Err(SolverErr::UnreachableBoxes);
-        }
-    }
-    for &pos in &level.map.goals {
-        if visited[pos] {
-            reachable_goals.push(pos);
-        } else if !level.state.boxes.contains(&pos) {
-            return Err(SolverErr::UnreachableGoals);
-        }
-    }
-
-    // TODO maybe do this first and use it instead of visited when detecting reachability in specialized fns?
-    // make sure all non-reachable cells are walls
-    // to avoid errors with some code that iterates through all non-walls
-    let mut processed_grid = level.map.grid.clone();
-    for r in 0..processed_grid.rows() {
-        for c in 0..processed_grid.cols() {
-            let pos = Pos::new(r, c);
-            if !visited[pos] {
-                processed_grid[pos] = MapCell::Wall;
+                let new_pos = Pos::new(nr as u8, nc as u8);
+                if !visited[new_pos] && level.map.grid[new_pos] != MapCell::Wall {
+                    to_visit.push(new_pos);
+                }
             }
         }
-    }
 
-    if reachable_boxes.len() != reachable_goals.len() {
-        return Err(SolverErr::BoxesGoals);
-    }
+        // TODO move into specialized function when removers work
+        /*if let Some(pos) = remover {
+            if !visited.0[pos.r as usize][pos.c as usize] {
+                return Err(SolverErr::UnreachableRemover);
+            }
+        }*/
 
-    // only 254 because 255 is used to represent empty in expand_{move,push}
-    if reachable_boxes.len() > MAX_BOXES {
-        return Err(SolverErr::TooMany);
-    }
+        // make sure all relevant game elements are reachable
+        let mut reachable_goals = Vec::new();
+        let mut reachable_boxes = Vec::new();
+        for &pos in &level.state.boxes {
+            if visited[pos] {
+                reachable_boxes.push(pos);
+            } else if !level.map.goals.contains(&pos) {
+                return Err(SolverErr::UnreachableBoxes);
+            }
+        }
+        for &pos in &level.map.goals {
+            if visited[pos] {
+                reachable_goals.push(pos);
+            } else if !level.state.boxes.contains(&pos) {
+                return Err(SolverErr::UnreachableGoals);
+            }
+        }
 
-    let processed_map = GoalMap::new(processed_grid, reachable_goals);
-    let clean_state = State::new(level.state.player_pos, reachable_boxes);
-    let dead_ends = find_dead_ends(&processed_map);
-    Ok(SolverLevel::new(processed_map, clean_state, dead_ends))
+        // TODO maybe do this first and use it instead of visited when detecting reachability in specialized fns?
+        // make sure all non-reachable cells are walls
+        // to avoid errors with some code that iterates through all non-walls
+        let mut processed_grid = level.map.grid.clone();
+        for r in 0..processed_grid.rows() {
+            for c in 0..processed_grid.cols() {
+                let pos = Pos::new(r, c);
+                if !visited[pos] {
+                    processed_grid[pos] = MapCell::Wall;
+                }
+            }
+        }
+
+        if reachable_boxes.len() != reachable_goals.len() {
+            return Err(SolverErr::BoxesGoals);
+        }
+
+        // only 254 because 255 is used to represent empty in expand_{move,push}
+        if reachable_boxes.len() > MAX_BOXES {
+            return Err(SolverErr::TooMany);
+        }
+
+        let processed_map = GoalMap::new(processed_grid, reachable_goals);
+        let clean_state = State::new(level.state.player_pos, reachable_boxes);
+        let dead_ends = find_dead_ends(&processed_map);
+        Ok(Solver {
+            map: processed_map,
+            dead_ends,
+            initial_state: clean_state,
+        })
+    }
 }
 
 fn search<Expand, Heuristic>(
-    level: &SolverLevel,
+    solver: &Solver,
     method: Method,
     print_status: bool,
     expand: Expand,
@@ -215,10 +226,10 @@ where
     let mut prevs = FnvHashMap::default();
 
     let start = SearchNode::new(
-        level.state.clone(),
+        solver.initial_state.clone(),
         None,
         0,
-        heuristic(&level.map, &level.state),
+        heuristic(&solver.map, &solver.initial_state),
     );
     stats.add_created(&start);
     to_visit.push(Reverse(start));
@@ -242,14 +253,14 @@ where
             prevs.insert(cur_node.state.clone(), cur_node.state.clone());
         }
 
-        if solved(&level.map, &cur_node.state) {
+        if solved(&solver.map, &cur_node.state) {
             debug!("Solved, backtracking path");
             return SolverOk::new(Some(backtrack_path(&prevs, &cur_node.state)), stats, method);
         }
 
-        for neighbor_state in expand(&level.map, &cur_node.state, &level.dead_ends) {
+        for neighbor_state in expand(&solver.map, &cur_node.state, &solver.dead_ends) {
             // insert and then ignore duplicates
-            let h = heuristic(&level.map, &neighbor_state);
+            let h = heuristic(&solver.map, &neighbor_state);
             let next_node = SearchNode::new(
                 neighbor_state,
                 Some(cur_node.state.clone()),
@@ -294,9 +305,13 @@ fn find_dead_ends(map: &GoalMap) -> Vec2d<bool> {
                     player_pos,
                     boxes: vec![box_pos],
                 };
-                let fake_level = SolverLevel::new(map.clone(), fake_state, dead_ends.clone());
+                let fake_solver = Solver {
+                    map: map.clone(),
+                    dead_ends: dead_ends.clone(),
+                    initial_state: fake_state,
+                };
                 if search(
-                    &fake_level,
+                    &fake_solver,
                     Method::Pushes,
                     false,
                     expand_push,
@@ -475,7 +490,7 @@ mod tests {
 ";
         let level = level.parse().unwrap();
         assert_eq!(
-            process_level(&level).unwrap_err(),
+            Solver::new(&level).unwrap_err(),
             SolverErr::UnreachableBoxes
         );
     }
@@ -489,7 +504,7 @@ mod tests {
 #  .#
 #####";
         let level = level.parse().unwrap();
-        let solver_level = process_level(&level).unwrap();
+        let solver_level = Solver::new(&level).unwrap();
         let expected = r"
 11111
 11111
@@ -498,6 +513,25 @@ mod tests {
 11111
 ".trim_left();
         assert_eq!(solver_level.dead_ends.to_string(), expected);
+    }
+
+    #[test]
+    fn processing() {
+        let level: &str = r"
+*###*
+#@$.#
+*###*#
+".trim_left_matches('\n');
+
+        let processed_empty_level: &str = r"
+######
+#  .##
+######
+".trim_left_matches('\n');
+
+        let solver = Solver::new(&level.parse().unwrap()).unwrap();
+        assert_eq!(solver.map.to_string(), processed_empty_level);
+        // TODO test state
     }
 
     #[test]
@@ -515,10 +549,10 @@ mod tests {
 <><><><><>
 ";
         let level = level.parse().unwrap();
-        let solver_level = process_level(&level).unwrap();
+        let solver_level = Solver::new(&level).unwrap();
         let neighbor_states = expand_push(
             &solver_level.map,
-            &solver_level.state,
+            &solver_level.initial_state,
             &solver_level.dead_ends,
         );
         assert_eq!(neighbor_states.len(), 2);
@@ -535,10 +569,10 @@ mod tests {
  ####
 ";
         let level = level.parse().unwrap();
-        let solver_level = process_level(&level).unwrap();
+        let solver_level = Solver::new(&level).unwrap();
         let neighbor_states = expand_move(
             &solver_level.map,
-            &solver_level.state,
+            &solver_level.initial_state,
             &solver_level.dead_ends,
         );
         assert_eq!(neighbor_states.len(), 2);
@@ -555,10 +589,10 @@ mod tests {
  ####
 ";
         let level = level.parse().unwrap();
-        let solver_level = process_level(&level).unwrap();
+        let solver_level = Solver::new(&level).unwrap();
         let neighbor_states = expand_move(
             &solver_level.map,
-            &solver_level.state,
+            &solver_level.initial_state,
             &solver_level.dead_ends,
         );
         assert_eq!(neighbor_states.len(), 4);
