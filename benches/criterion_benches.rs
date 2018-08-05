@@ -13,7 +13,7 @@ use sokoban_solver::{LoadLevel, Solve};
 #[allow(unused)]
 fn benech_boxxle_1(c: &mut Criterion) {
     // 3 goals in a row
-    bench_level(c, Method::Pushes, "levels/boxxle1/1.txt", 100);
+    bench_level(c, Method::Pushes, "levels/boxxle1/1.txt", 200);
 }
 
 #[allow(unused)]
