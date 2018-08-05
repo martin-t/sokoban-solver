@@ -20,9 +20,7 @@ panic = 'abort'
 # makes compilation unacceptably slow (over a minute for simple changes)
 #lto = true
 
-# Setting to 1 recompiles all deps but commenting it out doesn't.
-# The speedup (5-10%) is only present when it's 1 so idk why recompiling deps matters.
-# Doesn't seem to affect compile time for simple changes.
+# 5-10% speedup, doesn't seem to affect compile time for simple changes
 codegen-units = 1
 
 
