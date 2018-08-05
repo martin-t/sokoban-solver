@@ -27,15 +27,15 @@ codegen-units = 1
 
 
 [dev-dependencies]
-criterion = { version = "0.*", features = ['real_blackbox'] }
+criterion = { version = "0.2.4", features = ['real_blackbox'] }
 
 [[bench]]
 name = "criterion_benches"
 harness = false
 
 [dependencies]
-clap = "2.*"
-separator = "0.*"
-log = { version = "0.*", features = ["release_max_level_off"] }
-env_logger = "0.*"
-fnv = "1.*"
+clap = "2.32.0"
+separator = "0.3.1"
+log = { version = "0.4.3", features = ["release_max_level_off"] }
+env_logger = "0.5.12"
+fnv = "1.0.6"
