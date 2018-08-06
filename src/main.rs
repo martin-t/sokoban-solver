@@ -41,7 +41,6 @@ fn main() {
                 .help("print as custom format"),
         ).arg(
             Arg::with_name("xsb")
-                .conflicts_with("custom")
                 .short("-x")
                 .long("--xsb")
                 .help("print as XSB format (default)"),
@@ -53,7 +52,6 @@ fn main() {
                 .help("search for move-optimal solution"),
         ).arg(
             Arg::with_name("pushes")
-                .conflicts_with("moves")
                 .short("-p")
                 .long("--pushes")
                 .help("search for push-optimal solution (default)"),

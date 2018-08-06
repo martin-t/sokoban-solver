@@ -6,6 +6,7 @@ version = "0.1.0"
 authors = ["Martin Taibr <taibr.martin@gmail.com>"]
 edition = '2018'
 
+
 # abort on panic might be better when using threads
 # (https://vorner.github.io/2018/07/22/dont_panic.html)
 
@@ -26,6 +27,7 @@ codegen-units = 1
 
 [dev-dependencies]
 criterion = { version = "0.2.4", features = ['real_blackbox'] }
+assert_cmd = "0.9"
 
 [[bench]]
 name = "criterion_benches"
