@@ -82,27 +82,17 @@ impl Display for Stats {
         let visited = self.total_unique_visited();
         let duplicates = self.total_reached_duplicates();
         let left = created - visited - duplicates;
-        writeln!(f, "States created total: {}", created.separated_string())?;
-        writeln!(f, "Unique visited total: {}", visited.separated_string())?;
-        writeln!(
-            f,
-            "Reached duplicates total: {}",
-            duplicates.separated_string()
-        )?;
-        writeln!(
-            f,
-            "Created but not reached total: {}",
-            left.separated_string()
-        )?;
-        writeln!(f)?;
 
-        writeln!(f, "Depth / created states:")?;
-        writeln!(f, "|                   Depth / unique visited:")?;
-        writeln!(
-            f,
-            "|                   |                   Depth / reached duplicates:"
-        )?;
-        writeln!(f, "|                   |                   |                   Depth / created but not reached:")?;
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        {
+            writeln!(f, "States created total: {}", created.separated_string())?;
+            writeln!(f, "Unique visited total: {}", visited.separated_string())?;
+            writeln!(f, "Reached duplicates total: {}", duplicates.separated_string())?;
+            writeln!(f, "Created but not reached total: {}",left.separated_string())?;
+            writeln!(f)?;
+            writeln!(f, "Depth          Created        Unique         Duplicates     Unknown (not reached)")?;
+        }
+
         for i in 0..self.created_states.len() {
             // created_states should be the longest vec
             let depth = format!("{}: ", i);
@@ -120,7 +110,7 @@ impl Display for Stats {
             let left = created - visited - duplicates;
             writeln!(
                 f,
-                "{0:<5}{1:<15}{0:<5}{2:<15}{0:<5}{3:<15}{0:<5}{4}",
+                "{:<15}{:<15}{:<15}{:<15}{}",
                 depth,
                 created.separated_string(),
                 visited.separated_string(),

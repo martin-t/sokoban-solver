@@ -4,21 +4,18 @@ Unique visited total: 518
 Reached duplicates total: 584
 Created but not reached total: 362
 
-Depth / created states:
-|                   Depth / unique visited:
-|                   |                   Depth / reached duplicates:
-|                   |                   |                   Depth / created but not reached:
-0:   1              0:   1              0:   0              0:   0
-1:   2              1:   2              1:   0              1:   0
-2:   7              2:   7              2:   0              2:   0
-3:   15             3:   12             3:   3              3:   0
-4:   36             4:   26             4:   10             4:   0
-5:   69             5:   49             5:   20             5:   0
-6:   145            6:   87             6:   57             6:   1
-7:   294            7:   130            7:   132            7:   32
-8:   366            8:   121            8:   180            8:   65
-9:   343            9:   66             9:   135            9:   142
-10:  155            10:  10             10:  45             10:  100
-11:  19             11:  3              11:  2              11:  14
-12:  6              12:  3              12:  0              12:  3
-13:  6              13:  1              13:  0              13:  5
+Depth          Created        Unique         Duplicates     Unknown (not reached)
+0:             1              1              0              0
+1:             2              2              0              0
+2:             7              7              0              0
+3:             15             12             3              0
+4:             36             26             10             0
+5:             69             49             20             0
+6:             145            87             57             1
+7:             294            130            132            32
+8:             366            121            180            65
+9:             343            66             135            142
+10:            155            10             45             100
+11:            19             3              2              14
+12:            6              3              0              3
+13:            6              1              0              5

@@ -4,17 +4,14 @@ Unique visited total: 37
 Reached duplicates total: 25
 Created but not reached total: 24
 
-Depth / created states:
-|                   Depth / unique visited:
-|                   |                   Depth / reached duplicates:
-|                   |                   |                   Depth / created but not reached:
-0:   1              0:   1              0:   0              0:   0
-1:   2              1:   2              1:   0              1:   0
-2:   5              2:   4              2:   1              2:   0
-3:   10             3:   6              3:   4              3:   0
-4:   16             4:   8              4:   8              4:   0
-5:   18             5:   7              5:   6              5:   5
-6:   15             6:   5              6:   3              6:   7
-7:   12             7:   2              7:   3              7:   7
-8:   4              8:   1              8:   0              8:   3
-9:   3              9:   1              9:   0              9:   2
+Depth          Created        Unique         Duplicates     Unknown (not reached)
+0:             1              1              0              0
+1:             2              2              0              0
+2:             5              4              1              0
+3:             10             6              4              0
+4:             16             8              8              0
+5:             18             7              6              5
+6:             15             5              3              7
+7:             12             2              3              7
+8:             4              1              0              3
+9:             3              1              0              2
