@@ -25,14 +25,11 @@ Unique visited total: 4
 Reached duplicates total: 0
 Created but not reached total: 0
 
-Depth / created states:
-|                   Depth / unique visited:
-|                   |                   Depth / reached duplicate:
-|                   |                   |                   Depth / created but not reached:
-0:   1              0:   1              0:   0              0:   0
-1:   1              1:   1              1:   0              1:   0
-2:   1              2:   1              2:   0              2:   0
-3:   1              3:   1              3:   0              3:   0
+Depth          Created        Unique         Duplicates     Unknown (not reached)
+0:             1              1              0              0
+1:             1              1              0              0
+2:             1              1              0              0
+3:             1              1              0              0
 
 Found solution:
 ###
@@ -104,14 +101,11 @@ Unique visited total: 4
 Reached duplicates total: 0
 Created but not reached total: 3
 
-Depth / created states:
-|                   Depth / unique visited:
-|                   |                   Depth / reached duplicate:
-|                   |                   |                   Depth / created but not reached:
-0:   1              0:   1              0:   0              0:   0
-1:   2              1:   1              1:   0              1:   1
-2:   2              2:   1              2:   0              2:   1
-3:   2              3:   1              3:   0              3:   1
+Depth          Created        Unique         Duplicates     Unknown (not reached)
+0:             1              1              0              0
+1:             2              1              0              1
+2:             2              1              0              1
+3:             2              1              0              1
 
 Found solution:
 <><><><><><><><><>
