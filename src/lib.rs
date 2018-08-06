@@ -58,8 +58,9 @@ mod tests {
     #[test]
     fn test_levels() {
         let levels = [
-            (Method::Pushes, "custom", "01-simplest-xsb.txt"),
             (Method::Pushes, "custom", "01-simplest-custom.txt"),
+            (Method::Pushes, "custom", "01-simplest-xsb.txt"),
+            (Method::Pushes, "custom", "02-one-way-xsb.txt"),
             (Method::Pushes, "custom", "02-one-way.txt"),
             (Method::Pushes, "custom", "03-long-way.txt"),
             (Method::Pushes, "custom", "04-two-boxes-no-packing.txt"),
@@ -89,8 +90,9 @@ mod tests {
             (Method::Pushes, "boxxle1", "18.txt"),
             (Method::Pushes, "boxxle1", "19.txt"),
             (Method::Pushes, "boxxle1", "20.txt"),
-            (Method::Moves, "custom", "01-simplest-xsb.txt"),
             (Method::Moves, "custom", "01-simplest-custom.txt"),
+            (Method::Moves, "custom", "01-simplest-xsb.txt"),
+            (Method::Moves, "custom", "02-one-way-xsb.txt"),
             (Method::Moves, "custom", "02-one-way.txt"),
             (Method::Moves, "custom", "03-long-way.txt"),
             (Method::Moves, "custom", "04-two-boxes-no-packing.txt"),
