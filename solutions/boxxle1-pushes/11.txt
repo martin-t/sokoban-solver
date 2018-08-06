@@ -6,7 +6,7 @@ Created but not reached total: 335
 
 Depth / created states:
 |                   Depth / unique visited:
-|                   |                   Depth / reached duplicate:
+|                   |                   Depth / reached duplicates:
 |                   |                   |                   Depth / created but not reached:
 0:   1              0:   1              0:   0              0:   0
 1:   5              1:   5              1:   0              1:   0

@@ -100,7 +100,7 @@ impl Display for Stats {
         writeln!(f, "|                   Depth / unique visited:")?;
         writeln!(
             f,
-            "|                   |                   Depth / reached duplicate:"
+            "|                   |                   Depth / reached duplicates:"
         )?;
         writeln!(f, "|                   |                   |                   Depth / created but not reached:")?;
         for i in 0..self.created_states.len() {
