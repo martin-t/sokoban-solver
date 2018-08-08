@@ -58,7 +58,7 @@ fn bench_level(c: &mut Criterion, method: Method, level_path: &str, samples: usi
 criterion_group!(
     benches,
     benech_boxxle_1,
-    //benech_boxxle_5,
+    benech_boxxle_5,
     //benech_boxxle_18,
     //benech_boxxle_108,
     //benech_boxxle_1_moves,
