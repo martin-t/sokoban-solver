@@ -8,7 +8,7 @@ use criterion::{Benchmark, Criterion};
 use sokoban_solver::config::Method;
 use sokoban_solver::{LoadLevel, Solve};
 
-// allowing unused so i can bench just one or few
+// allowing unused so i can bench just one or a few
 // and still notice other warnings if there are any
 #[allow(unused)]
 fn benech_boxxle_1(c: &mut Criterion) {
