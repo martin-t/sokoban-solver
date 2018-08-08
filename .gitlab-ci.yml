@@ -24,4 +24,4 @@ tests:
     - cargo clippy -- --deny warnings
     - cargo audit
     - cargo test --release --all --verbose
-    - cargo bench --verbose  # make sure benches compile
+    - cargo bench --verbose --no-run  # make sure benches compile
