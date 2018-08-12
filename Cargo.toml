@@ -39,3 +39,4 @@ separator = "0.3.1"
 log = { version = "0.4.3", features = ["release_max_level_off"] }
 env_logger = "0.5.12"
 fnv = "1.0.6"
+prettytable-rs = "0.7.0"

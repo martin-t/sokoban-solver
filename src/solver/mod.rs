@@ -96,7 +96,7 @@ fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, 
 #[derive(Debug)]
 struct Solver {
     map: GoalMap,
-    dead_ends: Vec2d<bool>,
+    distances: Vec2d<Option<u16>>,
     initial_state: State,
 }
 
@@ -185,10 +185,10 @@ impl Solver {
 
         let processed_map = GoalMap::new(processed_grid, reachable_goals);
         let clean_state = State::new(level.state.player_pos, reachable_boxes);
-        let dead_ends = find_dead_ends(&processed_map);
+        let distances = find_distances(&processed_map);
         Ok(Solver {
             map: processed_map,
-            dead_ends,
+            distances,
             initial_state: clean_state,
         })
     }
@@ -201,7 +201,7 @@ impl Solver {
         heuristic: Heuristic,
     ) -> SolverOk
     where
-        Expand: Fn(&GoalMap, &State, &Vec2d<bool>) -> Vec<State>,
+        Expand: Fn(&GoalMap, &State, &Vec2d<Option<u16>>) -> Vec<State>,
         Heuristic: Fn(&GoalMap, &State) -> i16,
     {
         // TODO get rid of all the cloning
@@ -246,7 +246,7 @@ impl Solver {
                 return SolverOk::new(Some(backtrack_path(&prevs, &cur_node.state)), stats, method);
             }
 
-            for neighbor_state in expand(&self.map, &cur_node.state, &self.dead_ends) {
+            for neighbor_state in expand(&self.map, &cur_node.state, &self.distances) {
                 // insert and then ignore duplicates
                 let h = heuristic(&self.map, &neighbor_state);
                 let next_node = SearchNode::new(
@@ -264,24 +264,25 @@ impl Solver {
     }
 }
 
-fn find_dead_ends(map: &GoalMap) -> Vec2d<bool> {
-    let mut dead_ends = map.grid.scratchpad();
+fn find_distances(map: &GoalMap) -> Vec2d<Option<u16>> {
+    let mut distances = map.grid.scratchpad();
 
-    // mark walls as dead ends first because expand_push needs it
+    // some functions don't check walls but only dead ends
+    let mut fake_distances = map.grid.scratchpad();
     for r in 0..map.grid.rows() {
         for c in 0..map.grid.cols() {
             let pos = Pos::new(r, c);
-            if map.grid[pos] == MapCell::Wall {
-                dead_ends[pos] = true;
+            if map.grid[pos] != MapCell::Wall {
+                fake_distances[pos] = Some(0);
             }
         }
     }
 
-    // put box on every position and try to get it to a goal
+    // put box on every position and try to get it to the nearest goal
     for r in 0..map.grid.rows() {
-        'cell: for c in 0..map.grid.cols() {
+        for c in 0..map.grid.cols() {
             let box_pos = Pos::new(r, c);
-            if dead_ends[box_pos] {
+            if map.grid[box_pos] == MapCell::Wall {
                 continue;
             }
 
@@ -296,22 +297,26 @@ fn find_dead_ends(map: &GoalMap) -> Vec2d<bool> {
                 };
                 let fake_solver = Solver {
                     map: map.clone(),
-                    dead_ends: dead_ends.clone(),
+                    distances: fake_distances.clone(),
                     initial_state: fake_state,
                 };
-                if fake_solver
+                let path_states = fake_solver
                     .search(Method::Pushes, false, expand_push, heuristic_push)
-                    .path_states
-                    .is_some()
-                {
-                    continue 'cell; // need to find only one solution
+                    .path_states;
+                if let Some(state_cnt) = path_states {
+                    let new_dist = (state_cnt.len() - 1) as u16; // dist can't be larger than MAX_SIZE^2
+                    match distances[box_pos] {
+                        None => distances[box_pos] = Some(new_dist),
+                        Some(cur_min_dist) => if new_dist < cur_min_dist {
+                            distances[box_pos] = Some(new_dist);
+                        },
+                    }
                 }
             }
-            dead_ends[box_pos] = true; // no solution from any direction
         }
     }
 
-    dead_ends
+    distances
 }
 
 fn heuristic_push(map: &GoalMap, state: &State) -> i16 {
@@ -373,7 +378,7 @@ fn backtrack_path(prevs: &FnvHashMap<State, State>, final_state: &State) -> Vec<
 
 // TODO bench this against a counter in state
 fn solved(map: &GoalMap, state: &State) -> bool {
-    // to detect dead ends, this has to test all boxes are on a goal, not that all goals have a box
+    // for find_distances to work, this has to test all boxes are on a goal, not that all goals have a box
     for pos in &state.boxes {
         if map.grid[*pos] != MapCell::Goal {
             return false;
@@ -382,7 +387,7 @@ fn solved(map: &GoalMap, state: &State) -> bool {
     true
 }
 
-fn expand_push(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
+fn expand_push(map: &GoalMap, state: &State, distances: &Vec2d<Option<u16>>) -> Vec<State> {
     let mut new_states = Vec::new();
 
     let mut box_grid = map.grid.scratchpad_with_default(255u8);
@@ -406,9 +411,8 @@ fn expand_push(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<Sta
                 // new_pos has a box
                 let push_dest = new_player_pos + dir;
                 if box_grid[push_dest] == 255
-                    // dead_end == true means either wall or dead end
-                    // might not actually be faster (no diff in benches) but probably can't hurt
-                    && !dead_ends[push_dest]
+                    // either wall or dead end
+                    && distances[push_dest].is_some()
                 {
                     // new state to explore
 
@@ -429,7 +433,7 @@ fn expand_push(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<Sta
     new_states
 }
 
-fn expand_move(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<State> {
+fn expand_move(map: &GoalMap, state: &State, distances: &Vec2d<Option<u16>>) -> Vec<State> {
     let mut new_states = Vec::new();
 
     let mut box_grid = map.grid.scratchpad_with_default(255u8);
@@ -448,7 +452,7 @@ fn expand_move(map: &GoalMap, state: &State, dead_ends: &Vec2d<bool>) -> Vec<Sta
                 new_states.push(State::new(new_player_pos, state.boxes.clone()));
             } else if box_grid[push_dest] == 255
                 && map.grid[push_dest] != MapCell::Wall
-                && !dead_ends[push_dest]
+                && distances[push_dest].is_some()
             {
                 // push
 
@@ -546,7 +550,7 @@ mod tests {
     }
 
     #[test]
-    fn dead_ends() {
+    fn distances1() {
         let level = r"
 #####
 ##@##
@@ -556,14 +560,47 @@ mod tests {
         let level = level.parse().unwrap();
         let solver_level = Solver::new(&level).unwrap();
 
+        let expected = Vec2d::new(&[
+            vec![None, None, None, None, None],
+            vec![None, None, None, None, None],
+            vec![None, None, None, None, None],
+            vec![None, None, Some(1), Some(0), None],
+            vec![None, None, None, None, None],
+        ]);
+        assert_eq!(solver_level.distances, expected);
+    }
+
+    #[test]
+    fn distances2() {
+        let level = r"
+###########
+#@$$$$$$ ##
+######## ##
+######...##
+#      .  #
+#         #
+## ########
+#.       ##
+#        ##
+##  #.#####
+###########";
+        let level = level.parse().unwrap();
+        let solver_level = Solver::new(&level).unwrap();
+
         let expected = r"
-11111
-11111
-11111
-11001
-11111
-".trim_left();
-        assert_eq!(solver_level.dead_ends.to_string(), expected);
+None    None    None    None    None    None    None     None     None None None 
+None    None    None    None    None    None    None     None     None None None 
+None    None    None    None    None    None    None     None  Some(1) None None 
+None    None    None    None    None    None Some(0)  Some(0)  Some(0) None None 
+None    None Some(5) Some(4) Some(3) Some(2) Some(1)  Some(0)  Some(1) None None 
+None    None Some(5) Some(6) Some(7) Some(8) Some(9) Some(10) Some(11) None None 
+None    None Some(4)    None    None    None    None     None     None None None 
+None Some(0) Some(1) Some(2) Some(3) Some(4) Some(5)  Some(6)     None None None 
+None    None Some(2) Some(3) Some(2) Some(1) Some(2)  Some(3)     None None None 
+None    None    None    None    None Some(0)    None     None     None None None 
+None    None    None    None    None    None    None     None     None None None 
+".trim_left_matches('\n');
+        assert_eq!(format!("{:?}", solver_level.distances), expected);
     }
 
     #[test]
@@ -609,7 +646,7 @@ mod tests {
         let neighbor_states = expand_push(
             &solver_level.map,
             &solver_level.initial_state,
-            &solver_level.dead_ends,
+            &solver_level.distances,
         );
         assert_eq!(neighbor_states.len(), 2);
     }
@@ -629,7 +666,7 @@ mod tests {
         let neighbor_states = expand_move(
             &solver_level.map,
             &solver_level.initial_state,
-            &solver_level.dead_ends,
+            &solver_level.distances,
         );
         assert_eq!(neighbor_states.len(), 2);
     }
@@ -649,7 +686,7 @@ mod tests {
         let neighbor_states = expand_move(
             &solver_level.map,
             &solver_level.initial_state,
-            &solver_level.dead_ends,
+            &solver_level.distances,
         );
         assert_eq!(neighbor_states.len(), 4);
     }

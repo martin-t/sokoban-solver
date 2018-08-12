@@ -173,25 +173,31 @@ mod tests {
             print!("Got:\n{}", out);
 
             // other stats can go up with a better solution
-            let (out_len, out_created, out_visited) = parse_stats(&out);
-            let (expected_len, expected_created, expected_visited) = parse_stats(&expected);
-            if out_len > expected_len
-                || out_created > expected_created
-                || out_visited > expected_visited
-            {
-                println!("         >>> WORSE <<<\n\n");
+            let (maybe_out_len, out_created, out_visited) = parse_stats(&out);
+            let (maybe_expected_len, expected_created, expected_visited) = parse_stats(&expected);
+            if maybe_out_len.is_some() != maybe_expected_len.is_some() {
+                println!("         >>> SOLVABILITY CHANGED <<<\n\n");
             } else {
-                if out_len == expected_len
-                    && out_created == expected_created
-                    && out_visited == expected_visited
+                let out_len = maybe_out_len.unwrap_or(-1);
+                let expected_len = maybe_expected_len.unwrap_or(-1);
+                if out_len > expected_len
+                    || out_created > expected_created
+                    || out_visited > expected_visited
                 {
-                    println!("         >>> EQUAL <<<\n\n");
+                    println!("         >>> WORSE <<<\n\n");
                 } else {
-                    println!("         >>> BETTER <<<\n\n");
-                }
+                    if out_len == expected_len
+                        && out_created == expected_created
+                        && out_visited == expected_visited
+                    {
+                        println!("         >>> EQUAL <<<\n\n");
+                    } else {
+                        println!("         >>> BETTER <<<\n\n");
+                    }
 
-                // uncomment to update results - here to avoid accidentally accepting worse
-                //fs::write_file(&result_file, &out).unwrap();
+                    // uncomment to update results - here to avoid accidentally accepting worse
+                    //fs::write_file(&result_file, &out).unwrap();
+                }
             }
 
             false
@@ -200,11 +206,11 @@ mod tests {
         }
     }
 
-    fn parse_stats(stats: &str) -> (i32, i32, i32) {
+    fn parse_stats(stats: &str) -> (Option<i32>, i32, i32) {
         let mut lines = stats.lines();
 
         // no solution or length
-        let length = lines
+        let maybe_length = lines
             .next()
             .unwrap()
             .split_whitespace()
@@ -214,7 +220,7 @@ mod tests {
             .collect::<Vec<_>>()
             .join("")
             .parse()
-            .unwrap_or(0);
+            .ok();
 
         // created and visited
         let created = lines
@@ -240,7 +246,7 @@ mod tests {
             .parse()
             .unwrap();
 
-        (length, created, visited)
+        (maybe_length, created, visited)
     }
 
     // old benches using the default bencher - all ignored since moving to criterion

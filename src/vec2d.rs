@@ -2,7 +2,12 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Index, IndexMut};
 
-use crate::data::Pos;
+use prettytable::cell::Cell;
+use prettytable::format::{Alignment, FormatBuilder};
+use prettytable::row::Row;
+use prettytable::Table;
+
+use crate::data::{MapCell, Pos};
 
 #[derive(Clone, PartialEq, Eq)]
 crate struct Vec2d<T> {
@@ -64,8 +69,23 @@ impl<T> Vec2d<T> {
 
 impl<T: Display> Display for Vec2d<T> {
     default fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let mut table = Table::new();
         for row in self.data.chunks(self.cols.into()) {
+            let mut table_cells = Vec::new();
             for cell in row {
+                table_cells.push(Cell::new_align(&format!("{}", cell), Alignment::RIGHT));
+            }
+            table.add_row(Row::new(table_cells));
+        }
+        table.set_format(FormatBuilder::new().padding(0, 1).build());
+        write!(f, "{}", table)
+    }
+}
+
+impl Display for Vec2d<MapCell> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        for row in self.data.chunks(self.cols.into()) {
+            for &cell in row {
                 write!(f, "{}", cell)?;
             }
             writeln!(f)?;
@@ -86,7 +106,28 @@ impl Display for Vec2d<bool> {
     }
 }
 
-impl<T: Display> Debug for Vec2d<T> {
+impl<T: Debug> Debug for Vec2d<T> {
+    default fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let mut table = Table::new();
+        for row in self.data.chunks(self.cols.into()) {
+            let mut table_cells = Vec::new();
+            for cell in row {
+                table_cells.push(Cell::new_align(&format!("{:?}", cell), Alignment::RIGHT));
+            }
+            table.add_row(Row::new(table_cells));
+        }
+        table.set_format(FormatBuilder::new().padding(0, 1).build());
+        write!(f, "{}", table)
+    }
+}
+
+impl Debug for Vec2d<MapCell> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
+impl Debug for Vec2d<bool> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self)
     }
