@@ -1,12 +1,12 @@
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::fs;
 use std::path::Path;
 use std::str::FromStr;
 
 use crate::config::Format;
 use crate::data::{MapCell, Pos, MAX_SIZE};
-use crate::fs;
 use crate::level::Level;
 use crate::map::GoalMap;
 use crate::state::State;
@@ -53,7 +53,7 @@ where
     P: AsRef<Path>,
 {
     fn load_level(&self) -> Result<Level, Box<dyn Error>> {
-        Ok(fs::read_file(self)?.parse()?)
+        Ok(fs::read_to_string(self)?.parse()?)
     }
 }
 

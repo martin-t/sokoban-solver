@@ -29,7 +29,6 @@ pub mod map;
 pub mod solver;
 pub mod state;
 
-mod fs;
 mod parser;
 mod vec2d;
 
@@ -50,6 +49,8 @@ pub trait Solve {
 #[cfg(test)]
 mod tests {
     use test::Bencher;
+
+    use std::fs;
 
     use crate::config::Method;
 
@@ -165,9 +166,9 @@ mod tests {
         write!(out, "{:?}", solution).unwrap();
 
         // uncomment to add new files, directory needs to exist, don't update this way - see below
-        //fs::write_file(&result_file, &out).unwrap();
+        //fs::write(&result_file, &out).unwrap();
 
-        let expected = fs::read_file(&result_file).unwrap();
+        let expected = fs::read_to_string(&result_file).unwrap();
         if out != expected {
             print!("Expected:\n{}", expected);
             print!("Got:\n{}", out);
@@ -196,7 +197,7 @@ mod tests {
                     }
 
                     // uncomment to update results - here to avoid accidentally accepting worse
-                    //fs::write_file(&result_file, &out).unwrap();
+                    //fs::write(&result_file, &out).unwrap();
                 }
             }
 
