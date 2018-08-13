@@ -241,7 +241,8 @@ impl Solver {
                 prevs.insert(cur_node.state.clone(), cur_node.state.clone());
             }
 
-            if solved(&self.map, &cur_node.state) {
+            if cur_node.cost == cur_node.dist {
+                // heuristic is 0 so level is solved
                 debug!("Solved, backtracking path");
                 return SolverOk::new(Some(backtrack_path(&prevs, &cur_node.state)), stats, method);
             }
@@ -300,8 +301,11 @@ fn find_distances(map: &GoalMap) -> Vec2d<Option<u16>> {
                     distances: fake_distances.clone(),
                     initial_state: fake_state,
                 };
+
+                // using manhattan dist here because the fake solver needs a heuristic
+                // that only reports 0 when the level is solved
                 let path_states = fake_solver
-                    .search(Method::Pushes, false, expand_push, heuristic_push)
+                    .search(Method::Pushes, false, expand_push, heuristic_push_manhattan)
                     .path_states;
                 if let Some(state_cnt) = path_states {
                     let new_dist = (state_cnt.len() - 1) as u16; // dist can't be larger than MAX_SIZE^2
@@ -319,22 +323,29 @@ fn find_distances(map: &GoalMap) -> Vec2d<Option<u16>> {
     distances
 }
 
-fn heuristic_push(_map: &GoalMap, distances: &Vec2d<Option<u16>>, state: &State) -> u16 {
+fn heuristic_push_manhattan(map: &GoalMap, _: &Vec2d<Option<u16>>, state: &State) -> u16 {
     // less is better
 
     let mut goal_dist_sum = 0;
 
-    // manhattan dist in case i wanna test it again
-    /*for box_pos in &state.boxes {
+    for box_pos in &state.boxes {
         let mut min = u16::max_value();
-        for goal in &_map.goals {
+        for goal in &map.goals {
             let dist = box_pos.dist(*goal);
             if dist < min {
                 min = dist;
             }
         }
         goal_dist_sum += min;
-    }*/
+    }
+
+    goal_dist_sum
+}
+
+fn heuristic_push(_: &GoalMap, distances: &Vec2d<Option<u16>>, state: &State) -> u16 {
+    // less is better
+
+    let mut goal_dist_sum = 0;
 
     for &box_pos in &state.boxes {
         goal_dist_sum += distances[box_pos].unwrap();
@@ -354,7 +365,9 @@ fn heuristic_move(map: &GoalMap, distances: &Vec2d<Option<u16>>, state: &State) 
         }
     }
 
-    closest_box + heuristic_push(map, distances, state)
+    // -1 because it should be the distance until being able to push the box
+    // and when all boxes are on goals, the heuristic should be 0
+    closest_box - 1 + heuristic_push(map, distances, state)
 }
 
 fn backtrack_path(prevs: &FnvHashMap<State, State>, final_state: &State) -> Vec<State> {
@@ -369,17 +382,6 @@ fn backtrack_path(prevs: &FnvHashMap<State, State>, final_state: &State) -> Vec<
         }
         state = prev;
     }
-}
-
-// TODO bench this against a counter in state
-fn solved(map: &GoalMap, state: &State) -> bool {
-    // for find_distances to work, this has to test all boxes are on a goal, not that all goals have a box
-    for pos in &state.boxes {
-        if map.grid[*pos] != MapCell::Goal {
-            return false;
-        }
-    }
-    true
 }
 
 fn expand_push(map: &GoalMap, state: &State, distances: &Vec2d<Option<u16>>) -> Vec<State> {
