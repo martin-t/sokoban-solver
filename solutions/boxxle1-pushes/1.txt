@@ -1,8 +1,8 @@
 Pushes: 31
-States created total: 1,143
-Unique visited total: 672
-Reached duplicates total: 448
-Created but not reached total: 23
+States created total: 962
+Unique visited total: 561
+Reached duplicates total: 343
+Created but not reached total: 58
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
@@ -11,29 +11,29 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 3:             3              3              0              0
 4:             7              7              0              0
 5:             9              9              0              0
-6:             13             12             1              0
-7:             17             15             2              0
-8:             22             19             3              0
+6:             13             11             1              1
+7:             16             14             2              0
+8:             21             18             3              0
 9:             26             21             5              0
 10:            34             26             8              0
 11:            39             29             10             0
 12:            51             33             18             0
-13:            72             42             30             0
-14:            93             51             42             0
-15:            113            57             56             0
-16:            123            60             63             0
-17:            114            54             60             0
-18:            85             45             40             0
-19:            63             35             28             0
-20:            47             27             20             0
-21:            35             21             14             0
-22:            28             19             9              0
-23:            26             18             8              0
-24:            28             18             9              1
-25:            31             18             10             3
-26:            26             12             8              6
-27:            18             9              2              7
-28:            10             3              1              6
+13:            72             41             30             1
+14:            91             46             41             4
+15:            103            46             50             7
+16:            101            42             48             11
+17:            80             33             33             14
+18:            50             30             20             0
+19:            40             26             14             0
+20:            36             24             12             0
+21:            32             21             11             0
+22:            28             18             7              3
+23:            25             16             8              1
+24:            25             12             7              6
+25:            21             11             6              4
+26:            15             7              5              3
+27:            10             5              2              3
+28:            4              3              1              0
 29:            2              2              0              0
 30:            1              1              0              0
 31:            1              1              0              0

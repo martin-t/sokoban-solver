@@ -65,12 +65,12 @@ mod tests {
             (Method::Pushes, "custom", "02-one-way.txt"),
             (Method::Pushes, "custom", "03-long-way.txt"),
             (Method::Pushes, "custom", "04-two-boxes-no-packing.txt"),
-            //(Method::Pushes, "custom", "04-two-boxes-remover.txt"),
+            //(Method::Pushes, "custom", "04-two-boxes-remover.txt"), // remover
             (Method::Pushes, "custom", "04-two-boxes.txt"),
             (Method::Pushes, "custom", "no-solution-parking.txt"),
-            //(Method::Pushes, "custom", "original-sokoban-01-remover.txt"),
-            //(Method::Pushes, "custom", "supaplex.txt"),
-            //(Method::Pushes, "custom", "supaplex-goals.txt"),
+            //(Method::Pushes, "custom", "original-sokoban-01-remover.txt"), // remover
+            //(Method::Pushes, "custom", "supaplex.txt"), // remover
+            //(Method::Pushes, "custom", "supaplex-goals.txt"), // never solved
             (Method::Pushes, "boxxle1", "1.txt"),
             (Method::Pushes, "boxxle1", "2.txt"),
             (Method::Pushes, "boxxle1", "3.txt"),
@@ -82,46 +82,46 @@ mod tests {
             (Method::Pushes, "boxxle1", "9.txt"),
             (Method::Pushes, "boxxle1", "10.txt"),
             (Method::Pushes, "boxxle1", "11.txt"),
-            //(Method::Pushes, "boxxle1", "12.txt"),
+            //(Method::Pushes, "boxxle1", "12.txt"), // never solved
             (Method::Pushes, "boxxle1", "13.txt"),
-            //(Method::Pushes, "boxxle1", "14.txt"),
+            //(Method::Pushes, "boxxle1", "14.txt"), // never solved
             (Method::Pushes, "boxxle1", "15.txt"),
-            //(Method::Pushes, "boxxle1", "16.txt"),
+            //(Method::Pushes, "boxxle1", "16.txt"), // never solved
             (Method::Pushes, "boxxle1", "17.txt"),
             (Method::Pushes, "boxxle1", "18.txt"),
             (Method::Pushes, "boxxle1", "19.txt"),
             (Method::Pushes, "boxxle1", "20.txt"),
             (Method::Pushes, "boxxle1", "21.txt"),
-            //(Method::Pushes, "boxxle1", "22.txt"),
+            //(Method::Pushes, "boxxle1", "22.txt"), // never solved
             (Method::Pushes, "boxxle1", "23.txt"),
-            //(Method::Pushes, "boxxle1", "24.txt"),
-            //(Method::Pushes, "boxxle1", "25.txt"),
-            //(Method::Pushes, "boxxle1", "26.txt"),
+            //(Method::Pushes, "boxxle1", "24.txt"), // never solved
+            //(Method::Pushes, "boxxle1", "25.txt"), // slow
+            //(Method::Pushes, "boxxle1", "26.txt"), // never solved
             (Method::Pushes, "boxxle1", "27.txt"),
             (Method::Pushes, "boxxle1", "28.txt"),
-            //(Method::Pushes, "boxxle1", "29.txt"),
-            //(Method::Pushes, "boxxle1", "30.txt"),
+            //(Method::Pushes, "boxxle1", "29.txt"), // slow
+            //(Method::Pushes, "boxxle1", "30.txt"), // never solved
             (Method::Moves, "custom", "01-simplest-custom.txt"),
             (Method::Moves, "custom", "01-simplest-xsb.txt"),
             (Method::Moves, "custom", "02-one-way-xsb.txt"),
             (Method::Moves, "custom", "02-one-way.txt"),
             (Method::Moves, "custom", "03-long-way.txt"),
             (Method::Moves, "custom", "04-two-boxes-no-packing.txt"),
-            //(Method::Moves, "custom", "04-two-boxes-remover.txt"),
+            //(Method::Moves, "custom", "04-two-boxes-remover.txt"), // remover
             (Method::Moves, "custom", "04-two-boxes.txt"),
             (Method::Moves, "custom", "no-solution-parking.txt"),
-            //(Method::Moves, "custom", "original-sokoban-01-remover.txt"),
-            //(Method::Moves, "custom", "supaplex.txt"),
-            //(Method::Moves, "custom", "supaplex-goals.txt"),
+            //(Method::Moves, "custom", "original-sokoban-01-remover.txt"), // remover
+            //(Method::Moves, "custom", "supaplex.txt"), // remover
+            //(Method::Moves, "custom", "supaplex-goals.txt"), // never solved
             (Method::Moves, "boxxle1", "1.txt"),
             (Method::Moves, "boxxle1", "2.txt"),
             (Method::Moves, "boxxle1", "3.txt"),
             (Method::Moves, "boxxle1", "4.txt"),
             (Method::Moves, "boxxle1", "5.txt"),
-            //(Method::Moves, "boxxle1", "6.txt"),
+            //(Method::Moves, "boxxle1", "6.txt"), // slow
             (Method::Moves, "boxxle1", "7.txt"),
             (Method::Moves, "boxxle1", "8.txt"),
-            //(Method::Moves, "boxxle1", "9.txt"),
+            //(Method::Moves, "boxxle1", "9.txt"), // slow
             (Method::Moves, "boxxle1", "10.txt"),
         ];
 

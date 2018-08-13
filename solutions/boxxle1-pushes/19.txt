@@ -1,8 +1,8 @@
 Pushes: 17
-States created total: 2,476
-Unique visited total: 820
-Reached duplicates total: 1,304
-Created but not reached total: 352
+States created total: 2,195
+Unique visited total: 674
+Reached duplicates total: 952
+Created but not reached total: 569
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
@@ -10,16 +10,16 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 2:             11             11             0              0
 3:             41             25             16             0
 4:             85             41             44             0
-5:             146            75             71             0
-6:             229            100            129            0
-7:             318            122            196            0
-8:             312            103            209            0
-9:             252            81             163            8
-10:            175            56             104            15
-11:            184            67             98             19
-12:            263            65             128            70
-13:            252            48             103            101
-14:            139            15             36             88
-15:            53             5              7              41
-16:            10             1              0              9
-17:            2              1              0              1
+5:             146            73             70             3
+6:             223            93             119            11
+7:             299            103            166            30
+8:             268            68             149            51
+9:             172            41             80             51
+10:            112            38             42             32
+11:            150            49             62             39
+12:            212            57             87             68
+13:            246            47             77             122
+14:            157            15             31             111
+15:            49             6              9              34
+16:            15             2              0              13
+17:            5              1              0              4

@@ -1,8 +1,8 @@
 Moves: 89
-States created total: 12,290
-Unique visited total: 4,938
-Reached duplicates total: 7,253
-Created but not reached total: 99
+States created total: 12,226
+Unique visited total: 4,912
+Reached duplicates total: 7,166
+Created but not reached total: 148
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
@@ -80,18 +80,18 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 72:            190            73             117            0
 73:            182            67             115            0
 74:            180            73             107            0
-75:            184            71             113            0
-76:            182            71             111            0
-77:            175            61             114            0
-78:            152            49             100            3
-79:            125            44             74             7
-80:            113            33             66             14
-81:            86             30             45             11
-82:            77             24             41             12
-83:            62             18             34             10
-84:            47             10             22             15
-85:            26             8              10             8
-86:            23             3              10             10
-87:            9              1              2              6
+75:            184            70             112            2
+76:            180            69             106            5
+77:            170            57             106            7
+78:            144            47             87             10
+79:            119            39             60             20
+80:            103            34             54             15
+81:            88             26             40             22
+82:            68             18             27             23
+83:            47             15             25             7
+84:            37             10             19             8
+85:            26             9              10             7
+86:            25             2              9              14
+87:            6              1              0              5
 88:            3              1              0              2
 89:            2              1              0              1

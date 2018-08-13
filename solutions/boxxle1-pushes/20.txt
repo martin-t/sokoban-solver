@@ -1,8 +1,8 @@
 Pushes: 15
-States created total: 3,734
-Unique visited total: 1,560
-Reached duplicates total: 1,797
-Created but not reached total: 377
+States created total: 3,468
+Unique visited total: 1,442
+Reached duplicates total: 1,521
+Created but not reached total: 505
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
@@ -14,10 +14,10 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 6:             339            196            143            0
 7:             528            238            290            0
 8:             476            182            294            0
-9:             456            218            238            0
-10:            506            195            304            7
-11:            454            153            254            47
-12:            333            86             114            133
-13:            177            41             26             110
-14:            82             3              5              74
-15:            7              1              0              6
+9:             456            214            235            7
+10:            500            170            242            88
+11:            405            111            121            173
+12:            224            63             53             108
+13:            123            18             12             93
+14:            37             2              2              33
+15:            4              1              0              3

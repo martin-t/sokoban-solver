@@ -202,7 +202,7 @@ impl Solver {
     ) -> SolverOk
     where
         Expand: Fn(&GoalMap, &State, &Vec2d<Option<u16>>) -> Vec<State>,
-        Heuristic: Fn(&GoalMap, &State) -> i16,
+        Heuristic: Fn(&GoalMap, &Vec2d<Option<u16>>, &State) -> u16,
     {
         // TODO get rid of all the cloning
 
@@ -217,7 +217,7 @@ impl Solver {
             self.initial_state.clone(),
             None,
             0,
-            heuristic(&self.map, &self.initial_state),
+            heuristic(&self.map, &self.distances, &self.initial_state),
         );
         stats.add_created(&start);
         to_visit.push(Reverse(start));
@@ -248,7 +248,7 @@ impl Solver {
 
             for neighbor_state in expand(&self.map, &cur_node.state, &self.distances) {
                 // insert and then ignore duplicates
-                let h = heuristic(&self.map, &neighbor_state);
+                let h = heuristic(&self.map, &self.distances, &neighbor_state);
                 let next_node = SearchNode::new(
                     neighbor_state,
                     Some(cur_node.state.clone()),
@@ -319,27 +319,34 @@ fn find_distances(map: &GoalMap) -> Vec2d<Option<u16>> {
     distances
 }
 
-fn heuristic_push(map: &GoalMap, state: &State) -> i16 {
+fn heuristic_push(_map: &GoalMap, distances: &Vec2d<Option<u16>>, state: &State) -> u16 {
     // less is better
 
     let mut goal_dist_sum = 0;
-    for box_pos in &state.boxes {
-        let mut min = i16::max_value();
-        for goal in &map.goals {
+
+    // manhattan dist in case i wanna test it again
+    /*for box_pos in &state.boxes {
+        let mut min = u16::max_value();
+        for goal in &_map.goals {
             let dist = box_pos.dist(*goal);
             if dist < min {
                 min = dist;
             }
         }
         goal_dist_sum += min;
+    }*/
+
+    for &box_pos in &state.boxes {
+        goal_dist_sum += distances[box_pos].unwrap();
     }
+
     goal_dist_sum
 }
 
-fn heuristic_move(map: &GoalMap, state: &State) -> i16 {
+fn heuristic_move(map: &GoalMap, distances: &Vec2d<Option<u16>>, state: &State) -> u16 {
     // less is better
 
-    let mut closest_box = i16::max_value();
+    let mut closest_box = u16::max_value();
     for box_pos in &state.boxes {
         let dist = state.player_pos.dist(*box_pos);
         if dist < closest_box {
@@ -347,19 +354,7 @@ fn heuristic_move(map: &GoalMap, state: &State) -> i16 {
         }
     }
 
-    let mut goal_dist_sum = 0;
-    for box_pos in &state.boxes {
-        let mut min = i16::max_value();
-        for goal in &map.goals {
-            let dist = box_pos.dist(*goal);
-            if dist < min {
-                min = dist;
-            }
-        }
-        goal_dist_sum += min;
-    }
-
-    closest_box + goal_dist_sum
+    closest_box + heuristic_push(map, distances, state)
 }
 
 fn backtrack_path(prevs: &FnvHashMap<State, State>, final_state: &State) -> Vec<State> {

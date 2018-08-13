@@ -126,12 +126,12 @@ impl Display for Stats {
 crate struct SearchNode {
     crate state: State,
     crate prev: Option<State>,
-    crate dist: i16,
-    crate cost: i16,
+    crate dist: u16,
+    crate cost: u16,
 }
 
 impl SearchNode {
-    crate fn new(state: State, prev: Option<State>, dist: i16, heuristic: i16) -> Self {
+    crate fn new(state: State, prev: Option<State>, dist: u16, heuristic: u16) -> Self {
         Self {
             state,
             prev,
