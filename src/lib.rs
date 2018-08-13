@@ -51,6 +51,9 @@ mod tests {
     use test::Bencher;
 
     use std::fs;
+    use std::path::Path;
+
+    use separator::Separatable;
 
     use crate::config::Method;
 
@@ -70,7 +73,7 @@ mod tests {
             (Method::Pushes, "custom", "no-solution-parking.txt"),
             //(Method::Pushes, "custom", "original-sokoban-01-remover.txt"), // remover
             //(Method::Pushes, "custom", "supaplex.txt"), // remover
-            //(Method::Pushes, "custom", "supaplex-goals.txt"), // never solved
+            //(Method::Pushes, "custom", "supaplex-goals.txt"), // very slow
             (Method::Pushes, "boxxle1", "1.txt"),
             (Method::Pushes, "boxxle1", "2.txt"),
             (Method::Pushes, "boxxle1", "3.txt"),
@@ -82,7 +85,7 @@ mod tests {
             (Method::Pushes, "boxxle1", "9.txt"),
             (Method::Pushes, "boxxle1", "10.txt"),
             (Method::Pushes, "boxxle1", "11.txt"),
-            //(Method::Pushes, "boxxle1", "12.txt"), // never solved
+            //(Method::Pushes, "boxxle1", "12.txt"), // very slow
             (Method::Pushes, "boxxle1", "13.txt"),
             //(Method::Pushes, "boxxle1", "14.txt"), // never solved
             (Method::Pushes, "boxxle1", "15.txt"),
@@ -159,14 +162,17 @@ mod tests {
             "Solved {} using {} in approximately {} ms",
             level_path,
             method_name,
-            started.elapsed().as_millis(),
+            (started.elapsed().as_millis() as u64).separated_string(), // separator doesn't support u128
         );
 
         let mut out = String::new();
         write!(out, "{:?}", solution).unwrap();
 
-        // uncomment to add new files, directory needs to exist, don't update this way - see below
-        //fs::write(&result_file, &out).unwrap();
+        if !Path::new(&result_file).exists() {
+            fs::write(&result_file, &out).unwrap();
+            print!("Solution:\n{}", out);
+            println!("         >>> SAVED NEW SOLUTION <<<");
+        }
 
         let expected = fs::read_to_string(&result_file).unwrap();
         if out != expected {
