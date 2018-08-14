@@ -222,7 +222,14 @@ impl Solver {
         stats.add_created(&start);
         to_visit.push(Reverse(start));
 
+        //let mut counter = 0;
         while let Some(Reverse(cur_node)) = to_visit.pop() {
+            /*counter += 1;
+            if counter % 100 == 0 {
+                use crate::map::Map;
+                println!("{}", self.map.xsb_with_state(&cur_node.state));
+            }*/
+
             if prevs.contains_key(&cur_node.state) {
                 stats.add_reached_duplicate(&cur_node);
                 continue;
@@ -395,8 +402,8 @@ fn expand_push(map: &GoalMap, state: &State, distances: &Vec2d<Option<u16>>) -> 
     // find each box and each direction from which it can be pushed
     let mut reachable = map.grid.scratchpad();
     reachable[state.player_pos] = true;
-    // TODO bench using a queue and having both options
-    // this produces really hard to read solutions
+
+    // Vec is noticeably faster than VecDeque on some levels
     let mut to_visit = vec![state.player_pos];
 
     while !to_visit.is_empty() {
