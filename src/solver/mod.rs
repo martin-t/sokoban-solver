@@ -94,9 +94,14 @@ fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, 
 }
 
 #[derive(Debug)]
-struct Solver {
+struct StaticData {
     map: GoalMap,
     distances: Vec2d<Option<u16>>,
+}
+
+#[derive(Debug)]
+struct Solver {
+    sd: StaticData,
     initial_state: State,
 }
 
@@ -187,8 +192,10 @@ impl Solver {
         let clean_state = State::new(level.state.player_pos, reachable_boxes);
         let distances = find_distances(&processed_map);
         Ok(Solver {
-            map: processed_map,
-            distances,
+            sd: StaticData {
+                map: processed_map,
+                distances,
+            },
             initial_state: clean_state,
         })
     }
@@ -201,8 +208,8 @@ impl Solver {
         heuristic: Heuristic,
     ) -> SolverOk
     where
-        Expand: Fn(&GoalMap, &State, &Vec2d<Option<u16>>) -> Vec<State>,
-        Heuristic: Fn(&GoalMap, &Vec2d<Option<u16>>, &State) -> u16,
+        Expand: Fn(&StaticData, &State) -> Vec<State>,
+        Heuristic: Fn(&StaticData, &State) -> u16,
     {
         // TODO get rid of all the cloning
 
@@ -217,7 +224,7 @@ impl Solver {
             self.initial_state.clone(),
             None,
             0,
-            heuristic(&self.map, &self.distances, &self.initial_state),
+            heuristic(&self.sd, &self.initial_state),
         );
         stats.add_created(&start);
         to_visit.push(Reverse(start));
@@ -255,9 +262,9 @@ impl Solver {
                 return SolverOk::new(Some(backtrack_path(&prevs, &cur_node.state)), stats, method);
             }
 
-            for neighbor_state in expand(&self.map, &cur_node.state, &self.distances) {
+            for neighbor_state in expand(&self.sd, &cur_node.state) {
                 // insert and then ignore duplicates
-                let h = heuristic(&self.map, &self.distances, &neighbor_state);
+                let h = heuristic(&self.sd, &neighbor_state);
                 let next_node = SearchNode::new(
                     neighbor_state,
                     Some(cur_node.state.clone()),
@@ -305,8 +312,10 @@ fn find_distances(map: &GoalMap) -> Vec2d<Option<u16>> {
                     boxes: vec![box_pos],
                 };
                 let fake_solver = Solver {
-                    map: map.clone(),
-                    distances: fake_distances.clone(),
+                    sd: StaticData {
+                        map: map.clone(),
+                        distances: fake_distances.clone(),
+                    },
                     initial_state: fake_state,
                 };
 
@@ -331,14 +340,14 @@ fn find_distances(map: &GoalMap) -> Vec2d<Option<u16>> {
     distances
 }
 
-fn heuristic_push_manhattan(map: &GoalMap, _: &Vec2d<Option<u16>>, state: &State) -> u16 {
+fn heuristic_push_manhattan(sd: &StaticData, state: &State) -> u16 {
     // less is better
 
     let mut goal_dist_sum = 0;
 
     for box_pos in &state.boxes {
         let mut min = u16::max_value();
-        for goal in &map.goals {
+        for goal in &sd.map.goals {
             let dist = box_pos.dist(*goal);
             if dist < min {
                 min = dist;
@@ -350,19 +359,19 @@ fn heuristic_push_manhattan(map: &GoalMap, _: &Vec2d<Option<u16>>, state: &State
     goal_dist_sum
 }
 
-fn heuristic_push(_: &GoalMap, distances: &Vec2d<Option<u16>>, state: &State) -> u16 {
+fn heuristic_push(sd: &StaticData, state: &State) -> u16 {
     // less is better
 
     let mut goal_dist_sum = 0;
 
     for &box_pos in &state.boxes {
-        goal_dist_sum += distances[box_pos].unwrap();
+        goal_dist_sum += sd.distances[box_pos].unwrap();
     }
 
     goal_dist_sum
 }
 
-fn heuristic_move(map: &GoalMap, distances: &Vec2d<Option<u16>>, state: &State) -> u16 {
+fn heuristic_move(sd: &StaticData, state: &State) -> u16 {
     // less is better
 
     let mut closest_box = u16::max_value();
@@ -375,7 +384,7 @@ fn heuristic_move(map: &GoalMap, distances: &Vec2d<Option<u16>>, state: &State) 
 
     // -1 because it should be the distance until being able to push the box
     // and when all boxes are on goals, the heuristic should be 0
-    closest_box - 1 + heuristic_push(map, distances, state)
+    closest_box - 1 + heuristic_push(sd, state)
 }
 
 fn backtrack_path(prevs: &FnvHashMap<State, State>, final_state: &State) -> Vec<State> {
@@ -392,16 +401,16 @@ fn backtrack_path(prevs: &FnvHashMap<State, State>, final_state: &State) -> Vec<
     }
 }
 
-fn expand_push(map: &GoalMap, state: &State, distances: &Vec2d<Option<u16>>) -> Vec<State> {
+fn expand_push(sd: &StaticData, state: &State) -> Vec<State> {
     let mut new_states = Vec::new();
 
-    let mut box_grid = map.grid.scratchpad_with_default(255u8);
+    let mut box_grid = sd.map.grid.scratchpad_with_default(255u8);
     for (i, b) in state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }
 
     // find each box and each direction from which it can be pushed
-    let mut reachable = map.grid.scratchpad();
+    let mut reachable = sd.map.grid.scratchpad();
     reachable[state.player_pos] = true;
 
     // Vec is noticeably faster than VecDeque on some levels
@@ -417,7 +426,7 @@ fn expand_push(map: &GoalMap, state: &State, distances: &Vec2d<Option<u16>>) -> 
                 let push_dest = new_player_pos + dir;
                 if box_grid[push_dest] == 255
                     // either wall or dead end
-                    && distances[push_dest].is_some()
+                    && sd.distances[push_dest].is_some()
                 {
                     // new state to explore
 
@@ -427,7 +436,7 @@ fn expand_push(map: &GoalMap, state: &State, distances: &Vec2d<Option<u16>>) -> 
                     // otherwise we'd have to generate reachable twice or save them as part of state
                     new_states.push(State::new(new_player_pos, new_boxes));
                 }
-            } else if map.grid[new_player_pos] != MapCell::Wall && !reachable[new_player_pos] {
+            } else if sd.map.grid[new_player_pos] != MapCell::Wall && !reachable[new_player_pos] {
                 // new_pos is empty and not yet visited
                 reachable[new_player_pos] = true;
                 to_visit.push(new_player_pos);
@@ -438,17 +447,17 @@ fn expand_push(map: &GoalMap, state: &State, distances: &Vec2d<Option<u16>>) -> 
     new_states
 }
 
-fn expand_move(map: &GoalMap, state: &State, distances: &Vec2d<Option<u16>>) -> Vec<State> {
+fn expand_move(sd: &StaticData, state: &State) -> Vec<State> {
     let mut new_states = Vec::new();
 
-    let mut box_grid = map.grid.scratchpad_with_default(255u8);
+    let mut box_grid = sd.map.grid.scratchpad_with_default(255u8);
     for (i, b) in state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }
 
     for &dir in &DIRECTIONS {
         let new_player_pos = state.player_pos + dir;
-        if map.grid[new_player_pos] != MapCell::Wall {
+        if sd.map.grid[new_player_pos] != MapCell::Wall {
             let box_index = box_grid[new_player_pos];
             let push_dest = new_player_pos + dir;
 
@@ -456,8 +465,8 @@ fn expand_move(map: &GoalMap, state: &State, distances: &Vec2d<Option<u16>>) -> 
                 // step
                 new_states.push(State::new(new_player_pos, state.boxes.clone()));
             } else if box_grid[push_dest] == 255
-                && map.grid[push_dest] != MapCell::Wall
-                && distances[push_dest].is_some()
+                && sd.map.grid[push_dest] != MapCell::Wall
+                && sd.distances[push_dest].is_some()
             {
                 // push
 
@@ -563,7 +572,7 @@ mod tests {
 #  .#
 #####";
         let level = level.parse().unwrap();
-        let solver_level = Solver::new(&level).unwrap();
+        let solver = Solver::new(&level).unwrap();
 
         let expected = Vec2d::new(&[
             vec![None, None, None, None, None],
@@ -572,7 +581,7 @@ mod tests {
             vec![None, None, Some(1), Some(0), None],
             vec![None, None, None, None, None],
         ]);
-        assert_eq!(solver_level.distances, expected);
+        assert_eq!(solver.sd.distances, expected);
     }
 
     #[test]
@@ -590,7 +599,7 @@ mod tests {
 ##  #.#####
 ###########";
         let level = level.parse().unwrap();
-        let solver_level = Solver::new(&level).unwrap();
+        let solver = Solver::new(&level).unwrap();
 
         let expected = r"
 None    None    None    None    None    None    None     None     None None None 
@@ -605,7 +614,7 @@ None    None Some(2) Some(3) Some(2) Some(1) Some(2)  Some(3)     None None None
 None    None    None    None    None Some(0)    None     None     None None None 
 None    None    None    None    None    None    None     None     None None None 
 ".trim_left_matches('\n');
-        assert_eq!(format!("{:?}", solver_level.distances), expected);
+        assert_eq!(format!("{:?}", solver.sd.distances), expected);
     }
 
     #[test]
@@ -623,7 +632,7 @@ None    None    None    None    None    None    None     None     None None None
 #  ..##
 #######
 ".trim_left_matches('\n');
-        assert_eq!(solver.map.to_string(), processed_empty_level);
+        assert_eq!(solver.sd.map.to_string(), processed_empty_level);
 
         assert_eq!(solver.initial_state.player_pos, Pos { r: 1, c: 1 });
         assert_eq!(
@@ -647,12 +656,8 @@ None    None    None    None    None    None    None     None     None None None
 <><><><><>
 ";
         let level = level.parse().unwrap();
-        let solver_level = Solver::new(&level).unwrap();
-        let neighbor_states = expand_push(
-            &solver_level.map,
-            &solver_level.initial_state,
-            &solver_level.distances,
-        );
+        let solver = Solver::new(&level).unwrap();
+        let neighbor_states = expand_push(&solver.sd, &solver.initial_state);
         assert_eq!(neighbor_states.len(), 2);
     }
 
@@ -667,12 +672,8 @@ None    None    None    None    None    None    None     None     None None None
  ####
 ";
         let level = level.parse().unwrap();
-        let solver_level = Solver::new(&level).unwrap();
-        let neighbor_states = expand_move(
-            &solver_level.map,
-            &solver_level.initial_state,
-            &solver_level.distances,
-        );
+        let solver = Solver::new(&level).unwrap();
+        let neighbor_states = expand_move(&solver.sd, &solver.initial_state);
         assert_eq!(neighbor_states.len(), 2);
     }
 
@@ -687,12 +688,8 @@ None    None    None    None    None    None    None     None     None None None
  ####
 ";
         let level = level.parse().unwrap();
-        let solver_level = Solver::new(&level).unwrap();
-        let neighbor_states = expand_move(
-            &solver_level.map,
-            &solver_level.initial_state,
-            &solver_level.distances,
-        );
+        let solver = Solver::new(&level).unwrap();
+        let neighbor_states = expand_move(&solver.sd, &solver.initial_state);
         assert_eq!(neighbor_states.len(), 4);
     }
 }
