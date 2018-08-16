@@ -6,7 +6,7 @@ use std::error::Error;
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
-use fnv::FnvHashMap;
+use fnv::FnvHashMap; // using rustc-hash gives the same results, maybe bench again when able to solve levels with many boxes
 use log::{debug, log};
 
 use crate::config::Method;
@@ -225,8 +225,9 @@ impl Solver {
         //let mut counter = 0;
         while let Some(Reverse(cur_node)) = to_visit.pop() {
             /*counter += 1;
-            if counter % 100 == 0 {
+            if counter % 10_000 == 0 {
                 use crate::map::Map;
+                println!("prevs: {}, to_visit: {}", prevs.len(), to_visit.len());
                 println!("{}", self.map.xsb_with_state(&cur_node.state));
             }*/
 
