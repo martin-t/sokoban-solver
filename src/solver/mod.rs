@@ -205,7 +205,7 @@ impl Solver {
         heuristic: Heuristic,
     ) -> SolverOk
     where
-        Expand: Fn(&StaticData, &State) -> Vec<State>,
+        Expand: for<'a> Fn(&StaticData, &State, &'a Arena<State>) -> Vec<&'a State>,
         Heuristic: Fn(&StaticData, &State) -> u16,
     {
         debug!("Search called");
@@ -258,11 +258,9 @@ impl Solver {
                 return SolverOk::new(Some(backtrack_path(&prevs, &cur_node.state)), stats, method);
             }
 
-            for neighbor_state in expand(&self.sd, &cur_node.state) {
-                let neighbor_state = states.alloc(neighbor_state);
-
+            for neighbor_state in expand(&self.sd, &cur_node.state, &states) {
                 // insert and then ignore duplicates
-                let h = heuristic(&self.sd, &neighbor_state);
+                let h = heuristic(&self.sd, neighbor_state);
                 let next_node =
                     SearchNode::new(neighbor_state, Some(&cur_node.state), cur_node.dist + 1, h);
                 stats.add_created(&next_node);
@@ -395,7 +393,7 @@ fn backtrack_path(prevs: &FnvHashMap<&State, &State>, final_state: &State) -> Ve
     }
 }
 
-fn expand_push(sd: &StaticData, state: &State) -> Vec<State> {
+fn expand_push<'a>(sd: &StaticData, state: &State, arena: &'a Arena<State>) -> Vec<&'a State> {
     let mut new_states = Vec::new();
 
     let mut box_grid = sd.map.grid.scratchpad_with_default(255u8);
@@ -428,7 +426,8 @@ fn expand_push(sd: &StaticData, state: &State) -> Vec<State> {
                     new_boxes[box_index as usize] = push_dest;
                     // TODO normalize player pos - detect duplicates during expansion?
                     // otherwise we'd have to generate reachable twice or save them as part of state
-                    new_states.push(State::new(new_player_pos, new_boxes));
+                    let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
+                    new_states.push(&*new_state);
                 }
             } else if sd.map.grid[new_player_pos] != MapCell::Wall && !reachable[new_player_pos] {
                 // new_pos is empty and not yet visited
@@ -441,7 +440,7 @@ fn expand_push(sd: &StaticData, state: &State) -> Vec<State> {
     new_states
 }
 
-fn expand_move(sd: &StaticData, state: &State) -> Vec<State> {
+fn expand_move<'a>(sd: &StaticData, state: &State, arena: &'a Arena<State>) -> Vec<&'a State> {
     let mut new_states = Vec::new();
 
     let mut box_grid = sd.map.grid.scratchpad_with_default(255u8);
@@ -457,7 +456,8 @@ fn expand_move(sd: &StaticData, state: &State) -> Vec<State> {
 
             if box_index == 255 {
                 // step
-                new_states.push(State::new(new_player_pos, state.boxes.clone()));
+                let new_state = arena.alloc(State::new(new_player_pos, state.boxes.clone()));
+                new_states.push(&*new_state);
             } else if box_grid[push_dest] == 255
                 && sd.map.grid[push_dest] != MapCell::Wall
                 && sd.distances[push_dest].is_some()
@@ -466,7 +466,8 @@ fn expand_move(sd: &StaticData, state: &State) -> Vec<State> {
 
                 let mut new_boxes = state.boxes.clone();
                 new_boxes[box_index as usize] = push_dest;
-                new_states.push(State::new(new_player_pos, new_boxes));
+                let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
+                new_states.push(&*new_state);
             }
         }
     }
