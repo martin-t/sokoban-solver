@@ -652,7 +652,8 @@ None    None    None    None    None    None    None     None     None None None
 ";
         let level = level.parse().unwrap();
         let solver = Solver::new(&level).unwrap();
-        let neighbor_states = expand_push(&solver.sd, &solver.initial_state);
+        let states = Arena::new();
+        let neighbor_states = expand_push(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 2);
     }
 
@@ -668,7 +669,8 @@ None    None    None    None    None    None    None     None     None None None
 ";
         let level = level.parse().unwrap();
         let solver = Solver::new(&level).unwrap();
-        let neighbor_states = expand_move(&solver.sd, &solver.initial_state);
+        let states = Arena::new();
+        let neighbor_states = expand_move(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 2);
     }
 
@@ -684,7 +686,8 @@ None    None    None    None    None    None    None     None     None None None
 ";
         let level = level.parse().unwrap();
         let solver = Solver::new(&level).unwrap();
-        let neighbor_states = expand_move(&solver.sd, &solver.initial_state);
+        let states = Arena::new();
+        let neighbor_states = expand_move(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 4);
     }
 }
