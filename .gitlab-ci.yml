@@ -1,6 +1,6 @@
 # Official language image. Look for the different tagged releases at:
 # https://hub.docker.com/r/library/rust/tags/
-image: "rust:latest"
+image: "rustlang/rust:nightly"
 
 # clippy doesn't play well with caching for some reason
 variables:
@@ -15,7 +15,6 @@ tests:
       - cargo/
       - target/
   script:
-    - rustup override add nightly
     - rustc --version && cargo --version  # Print version info for debugging
     - rustup component add rustfmt-preview
     - rustup component add clippy-preview
