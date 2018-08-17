@@ -1,5 +1,4 @@
-# Official language image. Look for the different tagged releases at:
-# https://hub.docker.com/r/library/rust/tags/
+# nightly image suggested at https://doc.rust-lang.org/cargo/guide/continuous-integration.html#gitlab-ci
 image: "rustlang/rust:nightly"
 
 variables:
