@@ -1,6 +1,5 @@
 use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter, Result};
-use std::rc::Rc;
 
 use separator::Separatable;
 
@@ -34,19 +33,19 @@ impl Stats {
         self.duplicate_states.iter().sum::<i32>()
     }
 
-    pub(super) fn add_created(&mut self, state: &SearchNode) -> bool {
+    pub(super) fn add_created(&mut self, state: &SearchNode<'_>) -> bool {
         Self::add(&mut self.created_states, state)
     }
 
-    pub(super) fn add_unique_visited(&mut self, state: &SearchNode) -> bool {
+    pub(super) fn add_unique_visited(&mut self, state: &SearchNode<'_>) -> bool {
         Self::add(&mut self.visited_states, state)
     }
 
-    pub(super) fn add_reached_duplicate(&mut self, state: &SearchNode) -> bool {
+    pub(super) fn add_reached_duplicate(&mut self, state: &SearchNode<'_>) -> bool {
         Self::add(&mut self.duplicate_states, state)
     }
 
-    fn add(counts: &mut Vec<i32>, state: &SearchNode) -> bool {
+    fn add(counts: &mut Vec<i32>, state: &SearchNode<'_>) -> bool {
         let mut ret = false;
 
         // `while` because some depths might be skipped - duplicates or tunnel optimizations (NYI)
@@ -124,15 +123,15 @@ impl Display for Stats {
 }
 
 #[derive(Debug)]
-crate struct SearchNode {
-    crate state: Rc<State>,
-    crate prev: Option<Rc<State>>,
+crate struct SearchNode<'a> {
+    crate state: &'a State,
+    crate prev: Option<&'a State>,
     crate dist: u16,
     crate cost: u16,
 }
 
-impl SearchNode {
-    crate fn new(state: Rc<State>, prev: Option<Rc<State>>, dist: u16, heuristic: u16) -> Self {
+impl<'a> SearchNode<'a> {
+    crate fn new(state: &'a State, prev: Option<&'a State>, dist: u16, heuristic: u16) -> Self {
         Self {
             state,
             prev,
@@ -142,13 +141,13 @@ impl SearchNode {
     }
 }
 
-impl PartialOrd for SearchNode {
+impl<'a> PartialOrd for SearchNode<'a> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Ord for SearchNode {
+impl<'a> Ord for SearchNode<'a> {
     fn cmp(&self, other: &Self) -> Ordering {
         // orders acording to cost lowest to highest
         // needs std::cmp::Reverse when using BinaryHeap (it's a max heap)
@@ -158,10 +157,10 @@ impl Ord for SearchNode {
     }
 }
 
-impl PartialEq for SearchNode {
+impl<'a> PartialEq for SearchNode<'a> {
     fn eq(&self, other: &Self) -> bool {
         self.state == other.state
     }
 }
 
-impl Eq for SearchNode {}
+impl<'a> Eq for SearchNode<'a> {}

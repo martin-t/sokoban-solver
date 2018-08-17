@@ -5,10 +5,10 @@ use std::collections::BinaryHeap;
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
-use std::rc::Rc;
 
 use fnv::FnvHashMap; // using rustc-hash gives the same results, maybe bench again when able to solve levels with many boxes
 use log::{debug, log};
+use typed_arena::Arena;
 
 use crate::config::Method;
 use crate::data::{MapCell, Pos, DIRECTIONS, MAX_BOXES};
@@ -211,12 +211,13 @@ impl Solver {
         debug!("Search called");
 
         let mut stats = Stats::new();
+        let states = Arena::new();
 
         let mut to_visit = BinaryHeap::new();
         let mut prevs = FnvHashMap::default();
 
         let start = SearchNode::new(
-            Rc::new(self.initial_state.clone()),
+            &self.initial_state,
             None,
             0,
             heuristic(&self.sd, &self.initial_state),
@@ -233,7 +234,7 @@ impl Solver {
                 println!("{}", self.map.xsb_with_state(&cur_node.state));
             }*/
 
-            if prevs.contains_key(&cur_node.state) {
+            if prevs.contains_key(cur_node.state) {
                 stats.add_reached_duplicate(&cur_node);
                 continue;
             }
@@ -245,31 +246,25 @@ impl Solver {
             // insert here and not as soon as we discover it
             // otherwise we overwrite the shortest path with longer ones
             if let Some(p) = cur_node.prev {
-                prevs.insert(cur_node.state.clone(), p.clone());
+                prevs.insert(cur_node.state, p);
             } else {
                 // initial state has no prev - hack to avoid Option
-                prevs.insert(cur_node.state.clone(), cur_node.state.clone());
+                prevs.insert(cur_node.state, cur_node.state);
             }
 
             if cur_node.cost == cur_node.dist {
                 // heuristic is 0 so level is solved
                 debug!("Solved, backtracking path");
-                return SolverOk::new(
-                    Some(backtrack_path(&prevs, cur_node.state.clone())),
-                    stats,
-                    method,
-                );
+                return SolverOk::new(Some(backtrack_path(&prevs, &cur_node.state)), stats, method);
             }
 
             for neighbor_state in expand(&self.sd, &cur_node.state) {
+                let neighbor_state = states.alloc(neighbor_state);
+
                 // insert and then ignore duplicates
                 let h = heuristic(&self.sd, &neighbor_state);
-                let next_node = SearchNode::new(
-                    Rc::new(neighbor_state),
-                    Some(cur_node.state.clone()),
-                    cur_node.dist + 1,
-                    h,
-                );
+                let next_node =
+                    SearchNode::new(neighbor_state, Some(&cur_node.state), cur_node.dist + 1, h);
                 stats.add_created(&next_node);
                 to_visit.push(Reverse(next_node));
             }
@@ -386,12 +381,12 @@ fn heuristic_move(sd: &StaticData, state: &State) -> u16 {
     closest_box - 1 + heuristic_push(sd, state)
 }
 
-fn backtrack_path(prevs: &FnvHashMap<Rc<State>, Rc<State>>, final_state: Rc<State>) -> Vec<State> {
+fn backtrack_path(prevs: &FnvHashMap<&State, &State>, final_state: &State) -> Vec<State> {
     let mut ret = Vec::new();
     let mut state = final_state;
     loop {
-        ret.push((*state).clone());
-        let prev = prevs[state.as_ref()].clone();
+        ret.push(state.clone());
+        let prev = prevs[state];
         if prev == state {
             ret.reverse();
             return ret;
