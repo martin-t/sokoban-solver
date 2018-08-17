@@ -20,8 +20,12 @@ tests:
     - rustup component add rustfmt-preview
     - rustup component add clippy-preview
     - cargo install cargo-audit
+
+    - cargo build --verbose --deny warnings
+    - cargo build --release --verbose --deny warnings
+
     - cargo fmt -- --check
     - cargo clippy -- --deny warnings
     - cargo audit
-    - cargo test --release --all --verbose
-    - cargo bench --verbose --no-run  # make sure benches compile
+    - cargo test --release --all --verbose --deny warnings
+    - cargo bench --verbose --no-run --deny warnings  # make sure benches compile
