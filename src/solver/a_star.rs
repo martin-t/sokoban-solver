@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter, Result};
+use std::rc::Rc;
 
 use separator::Separatable;
 
@@ -124,14 +125,14 @@ impl Display for Stats {
 
 #[derive(Debug)]
 crate struct SearchNode {
-    crate state: State,
-    crate prev: Option<State>,
+    crate state: Rc<State>,
+    crate prev: Option<Rc<State>>,
     crate dist: u16,
     crate cost: u16,
 }
 
 impl SearchNode {
-    crate fn new(state: State, prev: Option<State>, dist: u16, heuristic: u16) -> Self {
+    crate fn new(state: Rc<State>, prev: Option<Rc<State>>, dist: u16, heuristic: u16) -> Self {
         Self {
             state,
             prev,

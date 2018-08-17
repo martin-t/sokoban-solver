@@ -5,6 +5,7 @@ use std::collections::BinaryHeap;
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
+use std::rc::Rc;
 
 use fnv::FnvHashMap; // using rustc-hash gives the same results, maybe bench again when able to solve levels with many boxes
 use log::{debug, log};
@@ -211,8 +212,6 @@ impl Solver {
         Expand: Fn(&StaticData, &State) -> Vec<State>,
         Heuristic: Fn(&StaticData, &State) -> u16,
     {
-        // TODO get rid of all the cloning
-
         debug!("Search called");
 
         let mut stats = Stats::new();
@@ -221,7 +220,7 @@ impl Solver {
         let mut prevs = FnvHashMap::default();
 
         let start = SearchNode::new(
-            self.initial_state.clone(),
+            Rc::new(self.initial_state.clone()),
             None,
             0,
             heuristic(&self.sd, &self.initial_state),
@@ -259,14 +258,18 @@ impl Solver {
             if cur_node.cost == cur_node.dist {
                 // heuristic is 0 so level is solved
                 debug!("Solved, backtracking path");
-                return SolverOk::new(Some(backtrack_path(&prevs, &cur_node.state)), stats, method);
+                return SolverOk::new(
+                    Some(backtrack_path(&prevs, cur_node.state.clone())),
+                    stats,
+                    method,
+                );
             }
 
             for neighbor_state in expand(&self.sd, &cur_node.state) {
                 // insert and then ignore duplicates
                 let h = heuristic(&self.sd, &neighbor_state);
                 let next_node = SearchNode::new(
-                    neighbor_state,
+                    Rc::new(neighbor_state),
                     Some(cur_node.state.clone()),
                     cur_node.dist + 1,
                     h,
@@ -387,12 +390,12 @@ fn heuristic_move(sd: &StaticData, state: &State) -> u16 {
     closest_box - 1 + heuristic_push(sd, state)
 }
 
-fn backtrack_path(prevs: &FnvHashMap<State, State>, final_state: &State) -> Vec<State> {
+fn backtrack_path(prevs: &FnvHashMap<Rc<State>, Rc<State>>, final_state: Rc<State>) -> Vec<State> {
     let mut ret = Vec::new();
     let mut state = final_state;
     loop {
-        ret.push(state.clone());
-        let prev = &prevs[&state];
+        ret.push((*state).clone());
+        let prev = prevs[state.as_ref()].clone();
         if prev == state {
             ret.reverse();
             return ret;
