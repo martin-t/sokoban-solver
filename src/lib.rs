@@ -182,7 +182,7 @@ mod tests {
 
         if !Path::new(&result_file).exists() {
             if !Path::new(&result_dir).exists() {
-                fs::create_dir(&result_dir);
+                fs::create_dir(&result_dir).unwrap();
             }
             fs::write(&result_file, &out).unwrap();
             print!("Solution:\n{}", out);
