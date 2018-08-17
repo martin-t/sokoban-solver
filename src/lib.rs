@@ -104,6 +104,17 @@ mod tests {
             (Method::Pushes, "boxxle1", "28.txt"),
             //(Method::Pushes, "boxxle1", "29.txt"), // slow
             //(Method::Pushes, "boxxle1", "30.txt"), // never solved
+            (Method::Pushes, "boxxle2", "1.txt"),
+            (Method::Pushes, "boxxle2", "2.txt"),
+            (Method::Pushes, "boxxle2", "3.txt"),
+            (Method::Pushes, "boxxle2", "4.txt"),
+            //(Method::Pushes, "boxxle2", "5.txt"), // very slow
+            (Method::Pushes, "boxxle2", "6.txt"),
+            //(Method::Pushes, "boxxle2", "7.txt"), // never solved
+            //(Method::Pushes, "boxxle2", "8.txt"), // never solved
+            //(Method::Pushes, "boxxle2", "9.txt"), // never solved
+            //(Method::Pushes, "boxxle2", "10.txt"), // never solved
+            //(Method::Pushes, "original", "1.txt"), // very slow
             (Method::Moves, "custom", "01-simplest-custom.txt"),
             (Method::Moves, "custom", "01-simplest-xsb.txt"),
             (Method::Moves, "custom", "02-one-way-xsb.txt"),
@@ -146,7 +157,8 @@ mod tests {
 
         let method_name = method.to_string().to_lowercase();
         let level_path = format!("levels/{}/{}", level_pack, level_name);
-        let result_file = format!("solutions/{}-{}/{}", level_pack, method_name, level_name);
+        let result_dir = format!("solutions/{}-{}", level_pack, method_name);
+        let result_file = format!("{}/{}", result_dir, level_name);
 
         println!("Solving {} using {}", level_path, method_name);
         let started = Instant::now();
@@ -169,6 +181,9 @@ mod tests {
         write!(out, "{:?}", solution).unwrap();
 
         if !Path::new(&result_file).exists() {
+            if !Path::new(&result_dir).exists() {
+                fs::create_dir(&result_dir);
+            }
             fs::write(&result_file, &out).unwrap();
             print!("Solution:\n{}", out);
             println!("         >>> SAVED NEW SOLUTION <<<");

@@ -1,0 +1,20 @@
+Pushes: 12
+States created total: 3,254
+Unique visited total: 1,084
+Reached duplicates total: 1,246
+Created but not reached total: 924
+
+Depth          Created        Unique         Duplicates     Unknown (not reached)
+0:             1              1              0              0
+1:             7              7              0              0
+2:             25             25             0              0
+3:             91             65             26             0
+4:             222            122            100            0
+5:             346            165            181            0
+6:             514            212            284            18
+7:             655            214            307            134
+8:             674            160            226            288
+9:             449            78             103            268
+10:            204            27             19             158
+11:            54             7              0              47
+12:            12             1              0              11
