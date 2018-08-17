@@ -80,17 +80,13 @@ impl Debug for SolverOk {
 
 impl Solve for Level {
     fn solve(&self, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
-        solve(self, method, print_status)
-    }
-}
-
-fn solve(level: &Level, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
-    debug!("Processing level...");
-    let solver = Solver::new(level)?;
-    debug!("Processed level");
-    match method {
-        Method::Moves => Ok(solver.search(method, print_status, expand_move, heuristic_move)),
-        Method::Pushes => Ok(solver.search(method, print_status, expand_push, heuristic_push)),
+        debug!("Processing level...");
+        let solver = Solver::new(self)?;
+        debug!("Processed level");
+        match method {
+            Method::Moves => Ok(solver.search(method, print_status, expand_move, heuristic_move)),
+            Method::Pushes => Ok(solver.search(method, print_status, expand_push, heuristic_push)),
+        }
     }
 }
 
