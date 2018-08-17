@@ -19,7 +19,7 @@ tests:
     - rustc --version && cargo --version  # Print version info for debugging
     - rustup component add rustfmt-preview
     - rustup component add clippy-preview
-    - cargo install cargo-audit
+    - cargo install cargo-audit --force  # need force when using cache because there's no --update
 
     - cargo build --verbose --deny warnings
     - cargo build --release --verbose --deny warnings
