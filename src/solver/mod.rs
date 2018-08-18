@@ -259,7 +259,15 @@ impl Solver {
             }
 
             for neighbor_state in expand(&self.sd, &cur_node.state, &states) {
-                // insert and then ignore duplicates
+                // Insert everything and ignore duplicates when popping. This wastes memory
+                // but when I filter them out here using a HashMap, pushes/boxxle2/4 becomes 8x slower
+                // and generates much more states (although pushes/original/1 becomes about 2x faster).
+                // I might have done something wrong, might wanna try again when i have better debugging tools
+                // to look at the generated states.
+
+                // Also might wanna try https://crates.io/crates/priority-queue for changing priorities
+                // instead of adding duplicates.
+
                 let h = heuristic(&self.sd, neighbor_state);
                 let next_node =
                     SearchNode::new(neighbor_state, Some(&cur_node.state), cur_node.dist + 1, h);
