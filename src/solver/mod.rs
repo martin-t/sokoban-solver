@@ -214,6 +214,7 @@ impl Solver {
         let states = Arena::new();
 
         let mut to_visit = BinaryHeap::new();
+        let mut in_queue = FnvHashMap::default();
         let mut prevs = FnvHashMap::default();
 
         let start = SearchNode::new(
@@ -223,6 +224,7 @@ impl Solver {
             heuristic(&self.sd, &self.initial_state),
         );
         stats.add_created(&start);
+        in_queue.insert(&self.initial_state, start.cost);
         to_visit.push(Reverse(start));
 
         //let mut counter = 0;
@@ -259,12 +261,27 @@ impl Solver {
             }
 
             for neighbor_state in expand(&self.sd, &cur_node.state, &states) {
-                // insert and then ignore duplicates
+                // insert and then ignore duplicates TODO revise
                 let h = heuristic(&self.sd, neighbor_state);
                 let next_node =
                     SearchNode::new(neighbor_state, Some(&cur_node.state), cur_node.dist + 1, h);
-                stats.add_created(&next_node);
-                to_visit.push(Reverse(next_node));
+                stats.add_created(&next_node); // TODO created vs queued
+
+                use std::collections::hash_map::Entry;
+                match in_queue.entry(neighbor_state) {
+                    Entry::Occupied(o) => {
+                        let cost = *o.get();
+                        if cost <= next_node.cost {
+                            continue;
+                        } else {
+                            to_visit.push(Reverse(next_node));
+                        }
+                    }
+                    Entry::Vacant(v) => {
+                        v.insert(next_node.cost);
+                        to_visit.push(Reverse(next_node));
+                    }
+                }
             }
         }
 
