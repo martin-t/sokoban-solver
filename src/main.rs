@@ -1,5 +1,3 @@
-// Opt in to unstable features expected for Rust 2018
-#![feature(rust_2018_preview)]
 // Opt in to warnings about new 2018 idioms
 #![warn(rust_2018_idioms)]
 // Additional warnings that are allow by default (`rustc -W help`)
