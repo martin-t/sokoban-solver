@@ -10,6 +10,8 @@ use crate::vec2d::Vec2d;
 // TODO none of this should be pub probably
 
 pub trait Map {
+    //fn grid(&self) -> &Vec2d<MapCell>; //TODO can't do this without exposing more private types - fix that first
+
     fn xsb(&self) -> MapFormatter<'_>;
     fn custom(&self) -> MapFormatter<'_>;
     fn format(&self, format: Format) -> MapFormatter<'_>;
@@ -31,6 +33,10 @@ impl GoalMap {
 }
 
 impl Map for GoalMap {
+    /*fn grid(&self) -> &Vec2d<MapCell> {
+        &self.grid
+    }*/
+
     fn xsb(&self) -> MapFormatter<'_> {
         MapFormatter::new(&self.grid, None, Format::Xsb)
     }
