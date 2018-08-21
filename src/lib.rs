@@ -25,10 +25,10 @@ pub mod formatter;
 pub mod level;
 pub mod moves;
 pub mod solver;
-pub mod state;
 
 mod map;
 mod parser;
+mod state;
 mod vec2d;
 
 use std::error::Error;
