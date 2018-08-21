@@ -20,7 +20,6 @@ use env_logger;
 use log;
 
 use sokoban_solver::config::{Format, Method};
-use sokoban_solver::map::Map;
 use sokoban_solver::{LoadLevel, Solve};
 
 fn main() {
@@ -75,21 +74,20 @@ fn main() {
         });
 
         println!("Solving {}...", path.to_string_lossy());
-        // TODO use steps/moves/pushes/actions instead
         let solver_ok = level.solve(method, true).unwrap_or_else(|err| {
             eprintln!("Invalid level: {}", err);
             process::exit(1);
         });
         println!("{}", solver_ok.stats);
-        match solver_ok.path_states {
-            Some(path) => {
-                println!("Found solution:");
-                for state in &path {
-                    println!("{}", level.map.format_with_state(format, &state));
-                }
-                println!("{} steps", &path.len() - 1);
-            }
+        match solver_ok.moves {
             None => println!("No solution"),
+            Some(moves) => {
+                println!("Found solution:");
+                level.print_solution(&moves, format);
+                println!("{}", moves);
+                println!("Moves: {}", moves.move_cnt());
+                println!("Pushes: {}", moves.push_cnt());
+            }
         }
         println!();
     }

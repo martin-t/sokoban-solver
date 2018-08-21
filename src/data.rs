@@ -85,6 +85,24 @@ impl Pos {
             },
         ]
     }
+
+    crate fn dir_to(self, new_pos: Pos) -> Dir {
+        if self.r - 1 == new_pos.r {
+            assert_eq!(self.c, new_pos.c);
+            Dir::Up
+        } else if self.c + 1 == new_pos.c {
+            assert_eq!(self.r, new_pos.r);
+            Dir::Right
+        } else if self.r + 1 == new_pos.r {
+            assert_eq!(self.c, new_pos.c);
+            Dir::Down
+        } else if self.c - 1 == new_pos.c {
+            assert_eq!(self.r, new_pos.r);
+            Dir::Left
+        } else {
+            unreachable!();
+        }
+    }
 }
 
 impl Add<Dir> for Pos {
@@ -115,10 +133,32 @@ impl Add<Dir> for Pos {
 
 crate const DIRECTIONS: [Dir; 4] = [Dir::Up, Dir::Right, Dir::Down, Dir::Left];
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 crate enum Dir {
     Up,
     Right,
     Down,
     Left,
+}
+
+impl Dir {
+    crate fn inverse(self) -> Self {
+        match self {
+            Dir::Up => Dir::Down,
+            Dir::Right => Dir::Left,
+            Dir::Down => Dir::Up,
+            Dir::Left => Dir::Right,
+        }
+    }
+}
+
+impl Display for Dir {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Dir::Up => write!(f, "u"),
+            Dir::Right => write!(f, "r"),
+            Dir::Down => write!(f, "d"),
+            Dir::Left => write!(f, "l"),
+        }
+    }
 }

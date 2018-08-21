@@ -1,4 +1,5 @@
 crate mod a_star;
+mod backtracking;
 
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
@@ -14,6 +15,7 @@ use crate::config::Method;
 use crate::data::{MapCell, Pos, DIRECTIONS, MAX_BOXES};
 use crate::level::Level;
 use crate::map::GoalMap;
+use crate::moves::Moves;
 use crate::state::State;
 use crate::vec2d::Vec2d;
 use crate::Solve;
@@ -52,16 +54,15 @@ impl Display for SolverErr {
 impl Error for SolverErr {}
 
 pub struct SolverOk {
-    // TODO probably wanna use Dirs or Moves eventually
-    pub path_states: Option<Vec<State>>,
+    pub moves: Option<Moves>,
     pub stats: Stats,
     crate method: Method,
 }
 
 impl SolverOk {
-    fn new(path_states: Option<Vec<State>>, stats: Stats, method: Method) -> Self {
+    fn new(moves: Option<Moves>, stats: Stats, method: Method) -> Self {
         Self {
-            path_states,
+            moves,
             stats,
             method,
         }
@@ -70,9 +71,13 @@ impl SolverOk {
 
 impl Debug for SolverOk {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self.path_states {
+        match self.moves {
             None => writeln!(f, "No solution")?,
-            Some(ref states) => writeln!(f, "{}: {}", self.method, states.len() - 1)?,
+            Some(ref moves) => match self.method {
+                // TODO print both, update tests
+                Method::Moves => writeln!(f, "Moves: {}", moves.move_cnt())?,
+                Method::Pushes => writeln!(f, "Pushes: {}", moves.push_cnt())?,
+            },
         }
         write!(f, "{}", self.stats)
     }
@@ -98,6 +103,8 @@ struct StaticData {
 
 #[derive(Debug)]
 struct Solver {
+    // this should remain private given i might use unsafe to optimize things
+    // and some of the values must be correct to avoid out of bounds array access
     sd: StaticData,
     initial_state: State,
 }
@@ -243,8 +250,8 @@ impl Solver {
                 println!("{:?}", stats);
             }
 
-            // insert here and not as soon as we discover it
-            // otherwise we overwrite the shortest path with longer ones
+            // insert when expanding and not when generating
+            // otherwise we might overwrite the shortest path with longer ones
             if let Some(p) = cur_node.prev {
                 prevs.insert(cur_node.state, p);
             } else {
@@ -255,7 +262,15 @@ impl Solver {
             if cur_node.cost == cur_node.dist {
                 // heuristic is 0 so level is solved
                 debug!("Solved, backtracking path");
-                return SolverOk::new(Some(backtrack_path(&prevs, &cur_node.state)), stats, method);
+                return SolverOk::new(
+                    Some(backtracking::reconstruct_moves(
+                        &self.sd.map,
+                        &prevs,
+                        &cur_node.state,
+                    )),
+                    stats,
+                    method,
+                );
             }
 
             for neighbor_state in expand(&self.sd, &cur_node.state, &states) {
@@ -321,11 +336,11 @@ fn find_distances(map: &GoalMap) -> Vec2d<Option<u16>> {
 
                 // using manhattan dist here because the fake solver needs a heuristic
                 // that only reports 0 when the level is solved
-                let path_states = fake_solver
+                let moves = fake_solver
                     .search(Method::Pushes, false, expand_push, heuristic_push_manhattan)
-                    .path_states;
-                if let Some(state_cnt) = path_states {
-                    let new_dist = (state_cnt.len() - 1) as u16; // dist can't be larger than MAX_SIZE^2
+                    .moves;
+                if let Some(moves) = moves {
+                    let new_dist = moves.push_cnt() as u16; // dist can't be larger than MAX_SIZE^2
                     match distances[box_pos] {
                         None => distances[box_pos] = Some(new_dist),
                         Some(cur_min_dist) => if new_dist < cur_min_dist {
@@ -385,20 +400,6 @@ fn heuristic_move(sd: &StaticData, state: &State) -> u16 {
     // -1 because it should be the distance until being able to push the box
     // and when all boxes are on goals, the heuristic should be 0
     closest_box - 1 + heuristic_push(sd, state)
-}
-
-fn backtrack_path(prevs: &FnvHashMap<&State, &State>, final_state: &State) -> Vec<State> {
-    let mut ret = Vec::new();
-    let mut state = final_state;
-    loop {
-        ret.push(state.clone());
-        let prev = prevs[state];
-        if prev == state {
-            ret.reverse();
-            return ret;
-        }
-        state = prev;
-    }
 }
 
 fn expand_push<'a>(sd: &StaticData, state: &State, arena: &'a Arena<State>) -> Vec<&'a State> {
@@ -574,8 +575,7 @@ mod tests {
 ##$##
 #  .#
 #####";
-        let level = level.parse().unwrap();
-        let solver = Solver::new(&level).unwrap();
+        let level: Level = level.parse().unwrap();
 
         let expected = Vec2d::new(&[
             vec![None, None, None, None, None],
@@ -584,7 +584,7 @@ mod tests {
             vec![None, None, Some(1), Some(0), None],
             vec![None, None, None, None, None],
         ]);
-        assert_eq!(solver.sd.distances, expected);
+        assert_eq!(find_distances(&level.map), expected);
     }
 
     #[test]
@@ -601,8 +601,7 @@ mod tests {
 #        ##
 ##  #.#####
 ###########";
-        let level = level.parse().unwrap();
-        let solver = Solver::new(&level).unwrap();
+        let level: Level = level.parse().unwrap();
 
         let expected = r"
 None    None    None    None    None    None    None     None     None None None 
@@ -617,7 +616,7 @@ None    None Some(2) Some(3) Some(2) Some(1) Some(2)  Some(3)     None None None
 None    None    None    None    None Some(0)    None     None     None None None 
 None    None    None    None    None    None    None     None     None None None 
 ".trim_left_matches('\n');
-        assert_eq!(format!("{:?}", solver.sd.distances), expected);
+        assert_eq!(format!("{:?}", find_distances(&level.map)), expected);
     }
 
     #[test]

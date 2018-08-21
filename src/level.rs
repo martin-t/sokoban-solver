@@ -3,12 +3,13 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::config::Format;
 use crate::formatter::MapFormatter;
-use crate::map::GoalMap;
+use crate::map::{GoalMap, Map};
+use crate::moves::Moves;
 use crate::state::State;
 
 #[derive(Clone)]
 pub struct Level {
-    pub map: GoalMap,
+    crate map: GoalMap,
     crate state: State,
 }
 
@@ -17,19 +18,37 @@ impl Level {
         Level { map, state }
     }
 
-    #[allow(unused)]
-    crate fn xsb(&self) -> MapFormatter<'_> {
+    pub fn xsb(&self) -> MapFormatter<'_> {
         MapFormatter::new(&self.map.grid, Some(&self.state), Format::Xsb)
     }
 
-    #[allow(unused)]
-    crate fn custom(&self) -> MapFormatter<'_> {
+    pub fn custom(&self) -> MapFormatter<'_> {
         MapFormatter::new(&self.map.grid, Some(&self.state), Format::Custom)
     }
 
-    #[allow(unused)]
-    crate fn format(&self, format: Format) -> MapFormatter<'_> {
+    pub fn format(&self, format: Format) -> MapFormatter<'_> {
         MapFormatter::new(&self.map.grid, Some(&self.state), format)
+    }
+
+    pub fn print_solution(&self, moves: &Moves, format: Format) {
+        // TODO formating instead of printing
+        // TODO verify moves (somebody could pass moves from a different level)
+        // TODO unify arg order among other formatting fns
+
+        println!("{}", self.format(format));
+        let mut last_state = self.state.clone();
+        for &mov in moves {
+            let new_player_pos = last_state.player_pos + mov.dir;
+            let new_boxes = last_state
+                .boxes
+                .iter()
+                .cloned()
+                .map(|b| if b == new_player_pos { b + mov.dir } else { b })
+                .collect();
+            let new_state = State::new(new_player_pos, new_boxes);
+            println!("{}", self.map.format_with_state(format, &new_state));
+            last_state = new_state;
+        }
     }
 }
 

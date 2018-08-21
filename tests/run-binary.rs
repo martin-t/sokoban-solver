@@ -64,7 +64,9 @@ Found solution:
 # #
 ###
 
-3 steps
+UUU
+Moves: 3
+Pushes: 3
 
 ";
 
@@ -124,7 +126,9 @@ Found solution:
 <>        P B_  <>
 <><><><><><><><><>
 
-3 steps
+rRR
+Moves: 3
+Pushes: 2
 
 ";
 

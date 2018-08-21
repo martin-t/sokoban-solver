@@ -23,10 +23,11 @@ pub mod config;
 pub mod data;
 pub mod formatter;
 pub mod level;
-pub mod map;
+pub mod moves;
 pub mod solver;
 pub mod state;
 
+mod map;
 mod parser;
 mod vec2d;
 
@@ -59,6 +60,7 @@ mod tests {
 
     #[test]
     fn test_levels() {
+        // TODO add LURD
         let levels = [
             (Method::Pushes, "custom", "01-simplest-custom.txt"),
             (Method::Pushes, "custom", "01-simplest-xsb.txt"),

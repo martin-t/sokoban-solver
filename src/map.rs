@@ -7,9 +7,7 @@ use crate::formatter::MapFormatter;
 use crate::state::State;
 use crate::vec2d::Vec2d;
 
-// TODO none of this should be pub probably
-
-pub trait Map {
+crate trait Map {
     //fn grid(&self) -> &Vec2d<MapCell>; //TODO can't do this without exposing more private types - fix that first
 
     fn xsb(&self) -> MapFormatter<'_>;
@@ -21,7 +19,7 @@ pub trait Map {
 }
 
 #[derive(Clone)]
-pub struct GoalMap {
+crate struct GoalMap {
     crate grid: Vec2d<MapCell>,
     crate goals: Vec<Pos>,
 }
