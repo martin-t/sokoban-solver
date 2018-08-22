@@ -16,9 +16,6 @@
 #![cfg_attr(test, feature(duration_as_u128))]
 #![cfg_attr(test, feature(test))]
 
-#[cfg(test)]
-extern crate test;
-
 pub mod config;
 pub mod data;
 pub mod formatter;
@@ -47,7 +44,7 @@ pub trait Solve {
 
 #[cfg(test)]
 mod tests {
-    use test::Bencher;
+    use test::{self, Bencher};
 
     use std::fs;
     use std::path::Path;
