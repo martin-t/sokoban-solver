@@ -25,5 +25,6 @@ tests:
     - cargo fmt -- --check
     - cargo clippy -- --deny warnings  # clipy doesn't use RUSTFLAGS
     - cargo audit
+    - cargo test --all --verbose
     - cargo test --release --all --verbose
     - cargo bench --verbose --no-run  # make sure benches compile
