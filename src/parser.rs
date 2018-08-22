@@ -349,7 +349,6 @@ mod tests {
 
     #[test]
     fn xsb_corner_boxes() {
-        // TODO also test solution shows the corner boxes
         let level = r"
 *###*
 #@$.#

@@ -2,9 +2,10 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::config::Format;
-use crate::formatter::MapFormatter;
-use crate::map::{GoalMap, Map};
+use crate::map::GoalMap;
+use crate::map_formatter::MapFormatter;
 use crate::moves::Moves;
+use crate::solution_formatter::SolutionFormatter;
 use crate::state::State;
 
 #[derive(Clone)]
@@ -19,36 +20,40 @@ impl Level {
     }
 
     pub fn xsb(&self) -> MapFormatter<'_> {
-        MapFormatter::new(&self.map.grid, Some(&self.state), Format::Xsb)
+        self.format(Format::Xsb)
     }
 
     pub fn custom(&self) -> MapFormatter<'_> {
-        MapFormatter::new(&self.map.grid, Some(&self.state), Format::Custom)
+        self.format(Format::Custom)
     }
 
     pub fn format(&self, format: Format) -> MapFormatter<'_> {
         MapFormatter::new(&self.map.grid, Some(&self.state), format)
     }
 
-    pub fn print_solution(&self, moves: &Moves, format: Format) {
-        // TODO formating instead of printing
-        // TODO verify moves (somebody could pass moves from a different level)
-        // TODO unify arg order among other formatting fns
+    pub fn xsb_solution<'a>(
+        &'a self,
+        moves: &'a Moves,
+        include_steps: bool,
+    ) -> SolutionFormatter<'_> {
+        self.format_solution(Format::Xsb, moves, include_steps)
+    }
 
-        println!("{}", self.format(format));
-        let mut last_state = self.state.clone();
-        for &mov in moves {
-            let new_player_pos = last_state.player_pos + mov.dir;
-            let new_boxes = last_state
-                .boxes
-                .iter()
-                .cloned()
-                .map(|b| if b == new_player_pos { b + mov.dir } else { b })
-                .collect();
-            let new_state = State::new(new_player_pos, new_boxes);
-            println!("{}", self.map.format_with_state(format, &new_state));
-            last_state = new_state;
-        }
+    pub fn custom_solution<'a>(
+        &'a self,
+        moves: &'a Moves,
+        include_steps: bool,
+    ) -> SolutionFormatter<'_> {
+        self.format_solution(Format::Custom, moves, include_steps)
+    }
+
+    pub fn format_solution<'a>(
+        &'a self,
+        format: Format,
+        moves: &'a Moves,
+        include_steps: bool,
+    ) -> SolutionFormatter<'a> {
+        SolutionFormatter::new(&self.map, &self.state, moves, include_steps, format)
     }
 }
 
@@ -67,6 +72,9 @@ impl Debug for Level {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::data::Dir;
+    use crate::moves::Move;
 
     #[test]
     fn formatting_level() {
@@ -101,5 +109,52 @@ B_<><><><>B_<>
             assert_eq!(format!("{}", level.custom()), custom);
             assert_eq!(format!("{:?}", level.custom()), custom);
         }
+    }
+
+    #[test]
+    fn formatting_solution() {
+        let level = r"
+*####*
+#@ $.#
+*####*";
+        let expected_with_steps = r"
+*####*
+#@ $.#
+*####*
+
+*####*
+# @$.#
+*####*
+
+*####*
+#  @*#
+*####*
+
+".trim_left_matches('\n');
+        let expected_without_steps = r"
+*####*
+#@ $.#
+*####*
+
+*####*
+#  @*#
+*####*
+
+".trim_left_matches('\n');
+
+        let level: Level = level.parse().unwrap();
+        let moves = Moves::new(vec![
+            Move::new(Dir::Right, false),
+            Move::new(Dir::Right, true),
+        ]);
+
+        assert_eq!(
+            level.xsb_solution(&moves, true).to_string(),
+            expected_with_steps
+        );
+        assert_eq!(
+            level.xsb_solution(&moves, false).to_string(),
+            expected_without_steps
+        );
     }
 }

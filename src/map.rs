@@ -3,7 +3,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::config::Format;
 use crate::data::{MapCell, Pos};
-use crate::formatter::MapFormatter;
+use crate::map_formatter::MapFormatter;
 use crate::state::State;
 use crate::vec2d::Vec2d;
 
@@ -36,11 +36,11 @@ impl Map for GoalMap {
     }*/
 
     fn xsb(&self) -> MapFormatter<'_> {
-        MapFormatter::new(&self.grid, None, Format::Xsb)
+        self.format(Format::Xsb)
     }
 
     fn custom(&self) -> MapFormatter<'_> {
-        MapFormatter::new(&self.grid, None, Format::Custom)
+        self.format(Format::Custom)
     }
 
     fn format(&self, format: Format) -> MapFormatter<'_> {
@@ -48,11 +48,11 @@ impl Map for GoalMap {
     }
 
     fn xsb_with_state<'a>(&'a self, state: &'a State) -> MapFormatter<'a> {
-        MapFormatter::new(&self.grid, Some(state), Format::Xsb)
+        self.format_with_state(Format::Xsb, state)
     }
 
     fn custom_with_state<'a>(&'a self, state: &'a State) -> MapFormatter<'a> {
-        MapFormatter::new(&self.grid, Some(state), Format::Custom)
+        self.format_with_state(Format::Custom, state)
     }
 
     fn format_with_state<'a>(&'a self, format: Format, state: &'a State) -> MapFormatter<'a> {

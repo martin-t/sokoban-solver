@@ -17,12 +17,13 @@
 #![cfg_attr(test, feature(test))]
 
 pub mod config;
-pub mod data;
-pub mod formatter;
 pub mod level;
+pub mod map_formatter;
 pub mod moves;
+pub mod solution_formatter;
 pub mod solver;
 
+mod data;
 mod map;
 mod parser;
 mod state;

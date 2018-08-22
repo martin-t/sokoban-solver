@@ -24,6 +24,7 @@ use sokoban_solver::{LoadLevel, Solve};
 
 fn main() {
     // show all logs unless disabled in Cargo.toml
+    // TODO integration tests in debug mode fail because of logging
     env_logger::Builder::from_default_env()
         .filter_level(log::LevelFilter::Trace)
         .init();
@@ -82,8 +83,9 @@ fn main() {
         match solver_ok.moves {
             None => println!("No solution"),
             Some(moves) => {
+                let include_steps = method == Method::Moves;
                 println!("Found solution:");
-                level.print_solution(&moves, format);
+                print!("{}", level.format_solution(format, &moves, include_steps));
                 println!("{}", moves);
                 println!("Moves: {}", moves.move_cnt());
                 println!("Pushes: {}", moves.push_cnt());
