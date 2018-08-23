@@ -23,13 +23,7 @@ use sokoban_solver::config::{Format, Method};
 use sokoban_solver::{LoadLevel, Solve};
 
 fn main() {
-    // show all logs unless disabled in Cargo.toml
-    // TODO integration tests in debug mode fail because of logging
-    env_logger::Builder::from_default_env()
-        .filter_level(log::LevelFilter::Trace)
-        .init();
-
-    let matches = App::new("sokoban-solver")
+    let app = App::new("sokoban-solver")
         .author(crate_authors!())
         .version(crate_version!())
         .arg(
@@ -54,8 +48,17 @@ fn main() {
                 .long("--pushes")
                 .help("search for push-optimal solution (default)"),
         ).group(ArgGroup::with_name("method").args(&["moves", "pushes"]))
-        .arg(Arg::with_name("level-file").required(true).multiple(true))
-        .get_matches();
+        .arg(Arg::with_name("level-file").required(true).multiple(true));
+
+    #[cfg(debug_assertions)]
+    let app = app.arg(
+        Arg::with_name("verbose")
+            .short("-v")
+            .long("--verbose")
+            .help("Print all log levels (only in debug builds)"),
+    );
+
+    let matches = app.get_matches();
 
     let format = if matches.is_present("custom") {
         Format::Custom
@@ -67,6 +70,17 @@ fn main() {
     } else {
         Method::Pushes
     };
+
+    let verbose = matches.is_present("verbose");
+
+    let log_level = if verbose {
+        log::LevelFilter::Trace
+    } else {
+        log::LevelFilter::Info
+    };
+    env_logger::Builder::from_default_env()
+        .filter_level(log_level)
+        .init();
 
     for path in matches.values_of_os("level-file").unwrap() {
         let level = path.load_level().unwrap_or_else(|err| {

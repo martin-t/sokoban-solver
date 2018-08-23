@@ -10,11 +10,10 @@ edition = '2018'
 # abort on panic might be better when using threads
 # (https://vorner.github.io/2018/07/22/dont_panic.html)
 
-# criterion seems to be using release profile
-
 [profile.dev]
 panic = 'abort'
 
+# criterion seems to be using profile.release
 [profile.release]
 panic = 'abort'
 
@@ -36,7 +35,7 @@ harness = false
 [dependencies]
 clap = "2.32.0"
 separator = "0.3.1"
-log = { version = "0.4.3", features = ["release_max_level_off"] }
+log = { version = "0.4.3", features = ["release_max_level_info"] }
 env_logger = "0.5.12"
 fnv = "1.0.6"
 prettytable-rs = "0.7.0"
