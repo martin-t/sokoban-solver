@@ -23,6 +23,9 @@ panic = 'abort'
 # 5-10% speedup, doesn't seem to affect compile time for simple changes
 codegen-units = 1
 
+# for profiling
+#debug = true
+
 
 [dev-dependencies]
 criterion = { version = "0.2.4", features = ['real_blackbox'] }
