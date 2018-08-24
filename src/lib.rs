@@ -77,7 +77,7 @@ mod tests {
             (Method::Pushes, "boxxle1", "3.txt"),
             (Method::Pushes, "boxxle1", "4.txt"),
             (Method::Pushes, "boxxle1", "5.txt"),
-            #[cfg(not(debug_assertions))] // very slow un debug mode
+            #[cfg(not(debug_assertions))] // very slow in debug mode
             (Method::Pushes, "boxxle1", "6.txt"),
             (Method::Pushes, "boxxle1", "7.txt"),
             (Method::Pushes, "boxxle1", "8.txt"),
@@ -90,7 +90,7 @@ mod tests {
             //(Method::Pushes, "boxxle1", "14.txt"), // never solved
             (Method::Pushes, "boxxle1", "15.txt"),
             //(Method::Pushes, "boxxle1", "16.txt"), // never solved
-            #[cfg(not(debug_assertions))] // very slow un debug mode
+            #[cfg(not(debug_assertions))] // very slow in debug mode
             (Method::Pushes, "boxxle1", "17.txt"),
             #[cfg(not(debug_assertions))] // slow in debug mode
             (Method::Pushes, "boxxle1", "18.txt"),
@@ -114,7 +114,7 @@ mod tests {
             (Method::Pushes, "boxxle2", "3.txt"),
             (Method::Pushes, "boxxle2", "4.txt"),
             //(Method::Pushes, "boxxle2", "5.txt"), // very slow
-            #[cfg(not(debug_assertions))] // very slow un debug mode
+            #[cfg(not(debug_assertions))] // very slow in debug mode
             (Method::Pushes, "boxxle2", "6.txt"),
             //(Method::Pushes, "boxxle2", "7.txt"), // never solved
             //(Method::Pushes, "boxxle2", "8.txt"), // never solved
