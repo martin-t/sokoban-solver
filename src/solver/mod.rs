@@ -75,8 +75,8 @@ impl Debug for SolverOk {
             None => writeln!(f, "No solution")?,
             Some(ref moves) => match self.method {
                 // TODO print both, update tests
-                Method::Moves => writeln!(f, "Moves: {}", moves.move_cnt())?,
-                Method::Pushes => writeln!(f, "Pushes: {}", moves.push_cnt())?,
+                Method::MoveOptimal => writeln!(f, "Moves: {}", moves.move_cnt())?,
+                Method::PushOptimal => writeln!(f, "Pushes: {}", moves.push_cnt())?,
             },
         }
         write!(f, "{}", self.stats)
@@ -89,8 +89,12 @@ impl Solve for Level {
         let solver = Solver::new(self)?;
         debug!("Processed level");
         match method {
-            Method::Moves => Ok(solver.search(method, print_status, expand_move, heuristic_move)),
-            Method::Pushes => Ok(solver.search(method, print_status, expand_push, heuristic_push)),
+            Method::MoveOptimal => {
+                Ok(solver.search(method, print_status, expand_move, heuristic_move))
+            }
+            Method::PushOptimal => {
+                Ok(solver.search(method, print_status, expand_push, heuristic_push))
+            }
         }
     }
 }
@@ -275,8 +279,8 @@ impl Solver {
 
             for neighbor_state in expand(&self.sd, &cur_node.state, &states) {
                 // Insert everything and ignore duplicates when popping. This wastes memory
-                // but when I filter them out here using a HashMap, pushes/boxxle2/4 becomes 8x slower
-                // and generates much more states (although pushes/original/1 becomes about 2x faster).
+                // but when I filter them out here using a HashMap, push-optimal/boxxle2/4 becomes 8x slower
+                // and generates much more states (although push-optimal/original/1 becomes about 2x faster).
                 // I might have done something wrong, might wanna try again when i have better debugging tools
                 // to look at the generated states.
 
@@ -337,8 +341,12 @@ fn find_distances(map: &GoalMap) -> Vec2d<Option<u16>> {
                 // using manhattan dist here because the fake solver needs a heuristic
                 // that only reports 0 when the level is solved
                 let moves = fake_solver
-                    .search(Method::Pushes, false, expand_push, heuristic_push_manhattan)
-                    .moves;
+                    .search(
+                        Method::PushOptimal,
+                        false,
+                        expand_push,
+                        heuristic_push_manhattan,
+                    ).moves;
                 if let Some(moves) = moves {
                     let new_dist = moves.push_cnt() as u16; // dist can't be larger than MAX_SIZE^2
                     match distances[box_pos] {

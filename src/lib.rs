@@ -60,91 +60,91 @@ mod tests {
     fn test_levels() {
         // TODO add LURD
         let levels = [
-            (Method::Pushes, "custom", "01-simplest-custom.txt"),
-            (Method::Pushes, "custom", "01-simplest-xsb.txt"),
-            (Method::Pushes, "custom", "02-one-way-xsb.txt"),
-            (Method::Pushes, "custom", "02-one-way.txt"),
-            (Method::Pushes, "custom", "03-long-way.txt"),
-            (Method::Pushes, "custom", "04-two-boxes-no-packing.txt"),
+            (Method::PushOptimal, "custom", "01-simplest-custom.txt"),
+            (Method::PushOptimal, "custom", "01-simplest-xsb.txt"),
+            (Method::PushOptimal, "custom", "02-one-way-xsb.txt"),
+            (Method::PushOptimal, "custom", "02-one-way.txt"),
+            (Method::PushOptimal, "custom", "03-long-way.txt"),
+            (Method::PushOptimal, "custom", "04-two-boxes-no-packing.txt"),
             //(Method::Pushes, "custom", "04-two-boxes-remover.txt"), // remover
-            (Method::Pushes, "custom", "04-two-boxes.txt"),
-            (Method::Pushes, "custom", "no-solution-parking.txt"),
+            (Method::PushOptimal, "custom", "04-two-boxes.txt"),
+            (Method::PushOptimal, "custom", "no-solution-parking.txt"),
             //(Method::Pushes, "custom", "original-sokoban-01-remover.txt"), // remover
             //(Method::Pushes, "custom", "supaplex.txt"), // remover
             //(Method::Pushes, "custom", "supaplex-goals.txt"), // very slow
-            (Method::Pushes, "boxxle1", "1.txt"),
-            (Method::Pushes, "boxxle1", "2.txt"),
-            (Method::Pushes, "boxxle1", "3.txt"),
-            (Method::Pushes, "boxxle1", "4.txt"),
-            (Method::Pushes, "boxxle1", "5.txt"),
+            (Method::PushOptimal, "boxxle1", "1.txt"),
+            (Method::PushOptimal, "boxxle1", "2.txt"),
+            (Method::PushOptimal, "boxxle1", "3.txt"),
+            (Method::PushOptimal, "boxxle1", "4.txt"),
+            (Method::PushOptimal, "boxxle1", "5.txt"),
             #[cfg(not(debug_assertions))] // very slow in debug mode
-            (Method::Pushes, "boxxle1", "6.txt"),
-            (Method::Pushes, "boxxle1", "7.txt"),
-            (Method::Pushes, "boxxle1", "8.txt"),
+            (Method::PushOptimal, "boxxle1", "6.txt"),
+            (Method::PushOptimal, "boxxle1", "7.txt"),
+            (Method::PushOptimal, "boxxle1", "8.txt"),
             #[cfg(not(debug_assertions))] // slow in debug mode
-            (Method::Pushes, "boxxle1", "9.txt"),
-            (Method::Pushes, "boxxle1", "10.txt"),
-            (Method::Pushes, "boxxle1", "11.txt"),
+            (Method::PushOptimal, "boxxle1", "9.txt"),
+            (Method::PushOptimal, "boxxle1", "10.txt"),
+            (Method::PushOptimal, "boxxle1", "11.txt"),
             //(Method::Pushes, "boxxle1", "12.txt"), // very slow
-            (Method::Pushes, "boxxle1", "13.txt"),
+            (Method::PushOptimal, "boxxle1", "13.txt"),
             //(Method::Pushes, "boxxle1", "14.txt"), // never solved
-            (Method::Pushes, "boxxle1", "15.txt"),
+            (Method::PushOptimal, "boxxle1", "15.txt"),
             //(Method::Pushes, "boxxle1", "16.txt"), // never solved
             #[cfg(not(debug_assertions))] // very slow in debug mode
-            (Method::Pushes, "boxxle1", "17.txt"),
+            (Method::PushOptimal, "boxxle1", "17.txt"),
             #[cfg(not(debug_assertions))] // slow in debug mode
-            (Method::Pushes, "boxxle1", "18.txt"),
-            (Method::Pushes, "boxxle1", "19.txt"),
-            (Method::Pushes, "boxxle1", "20.txt"),
-            (Method::Pushes, "boxxle1", "21.txt"),
+            (Method::PushOptimal, "boxxle1", "18.txt"),
+            (Method::PushOptimal, "boxxle1", "19.txt"),
+            (Method::PushOptimal, "boxxle1", "20.txt"),
+            (Method::PushOptimal, "boxxle1", "21.txt"),
             //(Method::Pushes, "boxxle1", "22.txt"), // never solved
             #[cfg(not(debug_assertions))] // slow in debug mode
-            (Method::Pushes, "boxxle1", "23.txt"),
+            (Method::PushOptimal, "boxxle1", "23.txt"),
             //(Method::Pushes, "boxxle1", "24.txt"), // never solved
             //(Method::Pushes, "boxxle1", "25.txt"), // slow
             //(Method::Pushes, "boxxle1", "26.txt"), // never solved
-            (Method::Pushes, "boxxle1", "27.txt"),
+            (Method::PushOptimal, "boxxle1", "27.txt"),
             #[cfg(not(debug_assertions))] // slow in debug mode
-            (Method::Pushes, "boxxle1", "28.txt"),
+            (Method::PushOptimal, "boxxle1", "28.txt"),
             //(Method::Pushes, "boxxle1", "29.txt"), // slow
             //(Method::Pushes, "boxxle1", "30.txt"), // never solved
-            (Method::Pushes, "boxxle1", "108.txt"),
-            (Method::Pushes, "boxxle2", "1.txt"),
-            (Method::Pushes, "boxxle2", "2.txt"),
-            (Method::Pushes, "boxxle2", "3.txt"),
-            (Method::Pushes, "boxxle2", "4.txt"),
+            (Method::PushOptimal, "boxxle1", "108.txt"),
+            (Method::PushOptimal, "boxxle2", "1.txt"),
+            (Method::PushOptimal, "boxxle2", "2.txt"),
+            (Method::PushOptimal, "boxxle2", "3.txt"),
+            (Method::PushOptimal, "boxxle2", "4.txt"),
             //(Method::Pushes, "boxxle2", "5.txt"), // very slow
             #[cfg(not(debug_assertions))] // very slow in debug mode
-            (Method::Pushes, "boxxle2", "6.txt"),
+            (Method::PushOptimal, "boxxle2", "6.txt"),
             //(Method::Pushes, "boxxle2", "7.txt"), // never solved
             //(Method::Pushes, "boxxle2", "8.txt"), // never solved
             //(Method::Pushes, "boxxle2", "9.txt"), // never solved
             //(Method::Pushes, "boxxle2", "10.txt"), // never solved
             //(Method::Pushes, "original", "1.txt"), // very slow
-            (Method::Moves, "custom", "01-simplest-custom.txt"),
-            (Method::Moves, "custom", "01-simplest-xsb.txt"),
-            (Method::Moves, "custom", "02-one-way-xsb.txt"),
-            (Method::Moves, "custom", "02-one-way.txt"),
-            (Method::Moves, "custom", "03-long-way.txt"),
-            (Method::Moves, "custom", "04-two-boxes-no-packing.txt"),
+            (Method::MoveOptimal, "custom", "01-simplest-custom.txt"),
+            (Method::MoveOptimal, "custom", "01-simplest-xsb.txt"),
+            (Method::MoveOptimal, "custom", "02-one-way-xsb.txt"),
+            (Method::MoveOptimal, "custom", "02-one-way.txt"),
+            (Method::MoveOptimal, "custom", "03-long-way.txt"),
+            (Method::MoveOptimal, "custom", "04-two-boxes-no-packing.txt"),
             //(Method::Moves, "custom", "04-two-boxes-remover.txt"), // remover
-            (Method::Moves, "custom", "04-two-boxes.txt"),
-            (Method::Moves, "custom", "no-solution-parking.txt"),
+            (Method::MoveOptimal, "custom", "04-two-boxes.txt"),
+            (Method::MoveOptimal, "custom", "no-solution-parking.txt"),
             //(Method::Moves, "custom", "original-sokoban-01-remover.txt"), // remover
             //(Method::Moves, "custom", "supaplex.txt"), // remover
             //(Method::Moves, "custom", "supaplex-goals.txt"), // never solved
-            (Method::Moves, "boxxle1", "1.txt"),
+            (Method::MoveOptimal, "boxxle1", "1.txt"),
             #[cfg(not(debug_assertions))] // slow in debug mode
-            (Method::Moves, "boxxle1", "2.txt"),
-            (Method::Moves, "boxxle1", "3.txt"),
-            (Method::Moves, "boxxle1", "4.txt"),
-            (Method::Moves, "boxxle1", "5.txt"),
+            (Method::MoveOptimal, "boxxle1", "2.txt"),
+            (Method::MoveOptimal, "boxxle1", "3.txt"),
+            (Method::MoveOptimal, "boxxle1", "4.txt"),
+            (Method::MoveOptimal, "boxxle1", "5.txt"),
             //(Method::Moves, "boxxle1", "6.txt"), // slow
             #[cfg(not(debug_assertions))] // slow in debug mode
-            (Method::Moves, "boxxle1", "7.txt"),
-            (Method::Moves, "boxxle1", "8.txt"),
+            (Method::MoveOptimal, "boxxle1", "7.txt"),
+            (Method::MoveOptimal, "boxxle1", "8.txt"),
             //(Method::Moves, "boxxle1", "9.txt"), // slow
-            (Method::Moves, "boxxle1", "10.txt"),
+            (Method::MoveOptimal, "boxxle1", "10.txt"),
         ];
 
         // for some reason rayon makes this actually slower
@@ -163,9 +163,9 @@ mod tests {
         use std::fmt::Write;
         use std::time::Instant;
 
-        let method_name = method.to_string().to_lowercase();
+        let method_name = method.to_string();
         let level_path = format!("levels/{}/{}", level_pack, level_name);
-        let result_dir = format!("solutions/{}-{}", level_pack, method_name);
+        let result_dir = format!("solutions/{}/{}", method_name, level_pack);
         let result_file = format!("{}/{}", result_dir, level_name);
 
         println!("Solving {} using {}", level_path, method_name);
@@ -188,10 +188,11 @@ mod tests {
         let mut out = String::new();
         write!(out, "{:?}", solution).unwrap();
 
+        if !Path::new(&result_dir).exists() {
+            fs::create_dir_all(&result_dir).unwrap();
+        }
+
         if !Path::new(&result_file).exists() {
-            if !Path::new(&result_dir).exists() {
-                fs::create_dir(&result_dir).unwrap();
-            }
             fs::write(&result_file, &out).unwrap();
             print!("Solution:\n{}", out);
             println!("         >>> SAVED NEW SOLUTION <<<");
@@ -285,34 +286,34 @@ mod tests {
     #[ignore]
     fn bench_boxxle1_001(b: &mut Bencher) {
         // 3 goals in a row
-        bench_level("levels/boxxle1/1.txt", Method::Pushes, b);
+        bench_level("levels/boxxle1/1.txt", Method::PushOptimal, b);
     }
 
     #[bench]
     #[ignore]
     fn bench_boxxle1_005(b: &mut Bencher) {
         // 4 boxes goal room
-        bench_level("levels/boxxle1/5.txt", Method::Pushes, b);
+        bench_level("levels/boxxle1/5.txt", Method::PushOptimal, b);
     }
 
     #[bench]
     #[ignore]
     fn bench_boxxle1_018(b: &mut Bencher) {
         // 6 boxes - tiny goalroom
-        bench_level("levels/boxxle1/18.txt", Method::Pushes, b);
+        bench_level("levels/boxxle1/18.txt", Method::PushOptimal, b);
     }
 
     #[bench]
     #[ignore]
     fn bench_boxxle1_108(b: &mut Bencher) {
         // 6 boxes in the middle
-        bench_level("levels/boxxle1/108.txt", Method::Pushes, b);
+        bench_level("levels/boxxle1/108.txt", Method::PushOptimal, b);
     }
 
     #[bench]
     #[ignore]
     fn bench_boxxle1_001_moves(b: &mut Bencher) {
-        bench_level("levels/boxxle1/1.txt", Method::Moves, b);
+        bench_level("levels/boxxle1/1.txt", Method::MoveOptimal, b);
     }
 
     fn bench_level(level_path: &str, method: Method, b: &mut Bencher) {

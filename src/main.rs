@@ -38,16 +38,16 @@ fn main() {
                 .help("print as XSB format (default)"),
         ).group(ArgGroup::with_name("format").args(&["custom", "xsb"]))
         .arg(
-            Arg::with_name("moves")
+            Arg::with_name("move-optimal")
                 .short("-m")
-                .long("--moves")
+                .long("--move-optimal")
                 .help("search for move-optimal solution"),
         ).arg(
-            Arg::with_name("pushes")
+            Arg::with_name("push-optimal")
                 .short("-p")
-                .long("--pushes")
+                .long("--push-optimal")
                 .help("search for push-optimal solution (default)"),
-        ).group(ArgGroup::with_name("method").args(&["moves", "pushes"]))
+        ).group(ArgGroup::with_name("method").args(&["mov-optimal", "push-optimal"]))
         .arg(Arg::with_name("level-file").required(true).multiple(true));
 
     #[cfg(debug_assertions)]
@@ -65,10 +65,10 @@ fn main() {
     } else {
         Format::Xsb
     };
-    let method = if matches.is_present("moves") {
-        Method::Moves
+    let method = if matches.is_present("move-optimal") {
+        Method::MoveOptimal
     } else {
-        Method::Pushes
+        Method::PushOptimal
     };
 
     let verbose = matches.is_present("verbose");
@@ -97,7 +97,7 @@ fn main() {
         match solver_ok.moves {
             None => println!("No solution"),
             Some(moves) => {
-                let include_steps = method == Method::Moves;
+                let include_steps = method == Method::MoveOptimal;
                 println!("Found solution:");
                 print!("{}", level.format_solution(format, &moves, include_steps));
                 println!("{}", moves);

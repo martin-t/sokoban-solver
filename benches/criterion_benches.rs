@@ -14,49 +14,50 @@ use sokoban_solver::{LoadLevel, Solve};
 fn bench_pushes_boxxle1_1(c: &mut Criterion) {
     // 3 goals in a row
     // not very useful anymore - callgrind says about a third of the time is spent backtracking
-    bench_level(c, Method::Pushes, "levels/boxxle1/1.txt", 150);
+    bench_level(c, Method::PushOptimal, "levels/boxxle1/1.txt", 150);
 }
 
 #[allow(unused)]
 fn bench_pushes_boxxle1_5(c: &mut Criterion) {
     // 4 boxes goal room
     // not very useful anymore - callgrind says about a sixth of the time is spent backtracking
-    bench_level(c, Method::Pushes, "levels/boxxle1/5.txt", 75);
+    bench_level(c, Method::PushOptimal, "levels/boxxle1/5.txt", 75);
 }
 
 #[allow(unused)]
 fn bench_pushes_boxxle1_18(c: &mut Criterion) {
     // 6 boxes - tiny goalroom with 2 entrances
-    bench_level(c, Method::Pushes, "levels/boxxle1/18.txt", 10);
+    bench_level(c, Method::PushOptimal, "levels/boxxle1/18.txt", 10);
 }
 
 #[allow(unused)]
 fn bench_pushes_boxxle1_108(c: &mut Criterion) {
     // 6 boxes in the middle
-    bench_level(c, Method::Pushes, "levels/boxxle1/108.txt", 15);
+    bench_level(c, Method::PushOptimal, "levels/boxxle1/108.txt", 15);
 }
 
 #[allow(unused)]
 fn bench_pushes_boxxle2_3(c: &mut Criterion) {
     // 5 separate goals
-    bench_level(c, Method::Pushes, "levels/boxxle2/3.txt", 75);
+    bench_level(c, Method::PushOptimal, "levels/boxxle2/3.txt", 75);
 }
 
 #[allow(unused)]
 fn bench_pushes_boxxle2_4(c: &mut Criterion) {
     // 13 goals in a checkerboard
-    bench_level(c, Method::Pushes, "levels/boxxle2/4.txt", 25);
+    bench_level(c, Method::PushOptimal, "levels/boxxle2/4.txt", 25);
 }
 
 #[allow(unused)]
 fn bench_moves_boxxle1_1(c: &mut Criterion) {
     // 3 goals in a row
-    bench_level(c, Method::Moves, "levels/boxxle1/1.txt", 75);
+    bench_level(c, Method::MoveOptimal, "levels/boxxle1/1.txt", 75);
 }
 
 fn bench_level(c: &mut Criterion, method: Method, level_path: &str, samples: usize) {
     let level = level_path.load_level().unwrap();
 
+    // TODO blackbox the level too? (Solve::solve(...))
     c.bench(
         &format!("{}", method),
         Benchmark::new(level_path, move |b| {
