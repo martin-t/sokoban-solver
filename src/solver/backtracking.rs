@@ -19,8 +19,6 @@ crate fn reconstruct_moves<H: BuildHasher>(
 ) -> Moves {
     let states = backtrack_prevs(prevs, final_state);
 
-    // TODO this should work but test what happens when we give solver an already solved level
-
     let mut moves = Moves::default();
     let mut iter = states.iter();
     let mut cur_state = iter.next().unwrap();
