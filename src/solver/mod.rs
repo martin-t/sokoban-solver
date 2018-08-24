@@ -29,7 +29,8 @@ pub enum SolverErr {
     UnreachableGoals,
     //UnreachableRemover,
     TooMany,
-    BoxesGoals,
+    NoBoxesGoals,
+    DiffBoxesGoals,
 }
 
 impl Display for SolverErr {
@@ -46,7 +47,8 @@ impl Display for SolverErr {
             ),
             //SolverErr::UnreachableRemover => write!(f, "Remover is not reachable"),
             SolverErr::TooMany => write!(f, "More than {} reachable boxes or goals", MAX_BOXES),
-            SolverErr::BoxesGoals => write!(f, "Different number of reachable boxes and goals"),
+            SolverErr::NoBoxesGoals => write!(f, "No reachable boxes or goals"),
+            SolverErr::DiffBoxesGoals => write!(f, "Different number of reachable boxes and goals"),
         }
     }
 }
@@ -174,8 +176,14 @@ impl Solver {
             }
         }
 
+        // technically, one could argue such a level is solved
+        // but it creates an annyoing edge case for some heuristics
+        if reachable_boxes.is_empty() || reachable_goals.is_empty() {
+            return Err(SolverErr::NoBoxesGoals);
+        }
+
         if reachable_boxes.len() != reachable_goals.len() {
-            return Err(SolverErr::BoxesGoals);
+            return Err(SolverErr::DiffBoxesGoals);
         }
 
         // only 255 boxes max because 255 (index of the 256th box) is used to represent empty in expand_{move,push}
@@ -560,6 +568,28 @@ mod tests {
         let err = Solver::new(&level).unwrap_err();
         assert_eq!(err, SolverErr::TooMany);
         assert_eq!(err.to_string(), "More than 255 reachable boxes or goals");
+    }
+
+    #[test]
+    fn no_boxes_or_goals() {
+        let level = r"
+###
+#@#
+###
+";
+        let level = level.parse().unwrap();
+        assert_eq!(Solver::new(&level).unwrap_err(), SolverErr::NoBoxesGoals);
+    }
+
+    #[test]
+    fn diff_boxes_or_goals() {
+        let level = r"
+####
+#@.*#
+####
+";
+        let level = level.parse().unwrap();
+        assert_eq!(Solver::new(&level).unwrap_err(), SolverErr::DiffBoxesGoals);
     }
 
     #[test]
