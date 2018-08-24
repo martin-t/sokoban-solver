@@ -108,6 +108,7 @@ mod tests {
             (Method::Pushes, "boxxle1", "28.txt"),
             //(Method::Pushes, "boxxle1", "29.txt"), // slow
             //(Method::Pushes, "boxxle1", "30.txt"), // never solved
+            (Method::Pushes, "boxxle1", "108.txt"),
             (Method::Pushes, "boxxle2", "1.txt"),
             (Method::Pushes, "boxxle2", "2.txt"),
             (Method::Pushes, "boxxle2", "3.txt"),
