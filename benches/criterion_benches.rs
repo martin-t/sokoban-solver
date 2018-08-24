@@ -57,14 +57,15 @@ fn bench_moves_boxxle1_1(c: &mut Criterion) {
 fn bench_level(c: &mut Criterion, method: Method, level_path: &str, samples: usize) {
     let level = level_path.load_level().unwrap();
 
-    // TODO blackbox the level too? (Solve::solve(...))
     c.bench(
         &format!("{}", method),
         Benchmark::new(level_path, move |b| {
             b.iter(|| {
-                criterion::black_box(
-                    level.solve(criterion::black_box(method), criterion::black_box(false)),
-                )
+                criterion::black_box(Solve::solve(
+                    criterion::black_box(&level),
+                    criterion::black_box(method),
+                    criterion::black_box(false),
+                ))
             })
         }).sample_size(samples),
     );
