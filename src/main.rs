@@ -30,23 +30,23 @@ fn main() {
             Arg::with_name("custom")
                 .short("-c")
                 .long("--custom")
-                .help("print as custom format"),
+                .help("Print as custom format"),
         ).arg(
             Arg::with_name("xsb")
                 .short("-x")
                 .long("--xsb")
-                .help("print as XSB format (default)"),
+                .help("Print as XSB format (default)"),
         ).group(ArgGroup::with_name("format").args(&["custom", "xsb"]))
         .arg(
             Arg::with_name("move-optimal")
                 .short("-m")
                 .long("--move-optimal")
-                .help("search for move-optimal solution"),
+                .help("Search for move-optimal solution"),
         ).arg(
             Arg::with_name("push-optimal")
                 .short("-p")
                 .long("--push-optimal")
-                .help("search for push-optimal solution (default)"),
+                .help("Search for push-optimal solution (default)"),
         ).group(ArgGroup::with_name("method").args(&["move-optimal", "push-optimal"]))
         .arg(Arg::with_name("level-file").required(true).multiple(true));
 
@@ -55,7 +55,7 @@ fn main() {
         Arg::with_name("verbose")
             .short("-v")
             .long("--verbose")
-            .help("Print all log levels (only in debug builds)"),
+            .help("Print all log levels (only available in debug builds)"),
     );
 
     let matches = app.get_matches();
