@@ -5,7 +5,7 @@ use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::error::Error;
 use std::fmt;
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::{Display, Formatter};
 
 use fnv::FnvHashMap; // using rustc-hash gives the same results, maybe bench again when able to solve levels with many boxes
 use log::{debug, log};
@@ -53,6 +53,7 @@ impl Display for SolverErr {
 
 impl Error for SolverErr {}
 
+#[derive(Debug)]
 pub struct SolverOk {
     pub moves: Option<Moves>,
     pub stats: Stats,
@@ -66,20 +67,6 @@ impl SolverOk {
             stats,
             method,
         }
-    }
-}
-
-impl Debug for SolverOk {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self.moves {
-            None => writeln!(f, "No solution")?,
-            Some(ref moves) => match self.method {
-                // TODO print both, update tests
-                Method::MoveOptimal => writeln!(f, "Moves: {}", moves.move_cnt())?,
-                Method::PushOptimal => writeln!(f, "Pushes: {}", moves.push_cnt())?,
-            },
-        }
-        write!(f, "{}", self.stats)
     }
 }
 

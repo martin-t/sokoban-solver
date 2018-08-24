@@ -93,6 +93,7 @@ fn main() {
             eprintln!("Invalid level: {}", err);
             process::exit(1);
         });
+
         println!("{}", solver_ok.stats);
         match solver_ok.moves {
             None => println!("No solution"),
@@ -105,6 +106,5 @@ fn main() {
                 println!("Pushes: {}", moves.push_cnt());
             }
         }
-        println!();
     }
 }

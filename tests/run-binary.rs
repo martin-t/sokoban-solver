@@ -67,7 +67,6 @@ Found solution:
 UUU
 Moves: 3
 Pushes: 3
-
 ";
 
     Command::main_binary()
@@ -129,7 +128,6 @@ Found solution:
 rRR
 Moves: 3
 Pushes: 2
-
 ";
 
     Command::main_binary()

@@ -1,4 +1,6 @@
+UUU
 Moves: 3
+Pushes: 3
 States created total: 6
 Unique visited total: 4
 Reached duplicates total: 0
@@ -9,3 +11,36 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 1:             1              1              0              0
 2:             2              1              0              1
 3:             2              1              0              1
+
+###
+#.#
+# #
+# #
+#$#
+#@#
+###
+
+###
+#.#
+# #
+#$#
+#@#
+# #
+###
+
+###
+#.#
+#$#
+#@#
+# #
+# #
+###
+
+###
+#*#
+#@#
+# #
+# #
+# #
+###
+

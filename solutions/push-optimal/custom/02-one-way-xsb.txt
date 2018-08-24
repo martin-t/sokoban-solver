@@ -1,3 +1,5 @@
+rRR
+Moves: 3
 Pushes: 2
 States created total: 3
 Unique visited total: 3
@@ -8,3 +10,16 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 0:             1              1              0              0
 1:             1              1              0              0
 2:             1              1              0              0
+
+#########
+# @ $ . #
+#########
+
+#########
+#   @$. #
+#########
+
+#########
+#    @* #
+#########
+
