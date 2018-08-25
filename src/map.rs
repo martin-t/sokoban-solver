@@ -53,7 +53,8 @@ impl Map for GoalMap {
     }
 }
 
-// can't impl it for the trait: https://github.com/rust-lang/rust/issues/48869
+// can't impl it for Map to share it even though Map is crate visible only:
+// https://github.com/rust-lang/rust/issues/48869
 impl Display for GoalMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mf = MapFormatter::new(&self.grid(), None, Format::Xsb);
@@ -86,7 +87,6 @@ impl Map for RemoverMap {
     }
 }
 
-// can't impl it for the trait: https://github.com/rust-lang/rust/issues/48869
 impl Display for RemoverMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mf = MapFormatter::new(&self.grid(), None, Format::Xsb);
