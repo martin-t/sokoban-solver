@@ -1,12 +1,12 @@
 use std::fmt::{self, Debug, Display, Formatter};
 
 use crate::config::Format;
-use crate::map::{GoalMap, Map};
+use crate::map::Map;
 use crate::moves::Moves;
 use crate::state::State;
 
 pub struct SolutionFormatter<'a> {
-    map: &'a GoalMap,
+    map: &'a dyn Map,
     initial_state: &'a State,
     moves: &'a Moves,
     include_steps: bool,
@@ -15,7 +15,7 @@ pub struct SolutionFormatter<'a> {
 
 impl<'a> SolutionFormatter<'a> {
     crate fn new(
-        map: &'a GoalMap,
+        map: &'a dyn Map,
         initial_state: &'a State,
         moves: &'a Moves,
         include_steps: bool,

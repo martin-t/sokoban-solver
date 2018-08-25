@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet, VecDeque};
 use std::hash::{BuildHasher, Hash};
 
 use crate::data::{MapCell, Pos};
-use crate::map::GoalMap;
+use crate::map::Map;
 use crate::moves::{Move, Moves};
 use crate::state::State;
 
@@ -13,7 +13,7 @@ use crate::state::State;
 // step = a move that doesn't change a box position
 
 crate fn reconstruct_moves<H: BuildHasher>(
-    map: &GoalMap,
+    map: &dyn Map,
     prevs: &HashMap<&State, &State, H>,
     final_state: &State,
 ) -> Moves {
@@ -31,7 +31,7 @@ crate fn reconstruct_moves<H: BuildHasher>(
 }
 
 /// The difference between them must be any number of steps and zero or one push
-fn moves_between_states(map: &GoalMap, old: &State, new: &State) -> Moves {
+fn moves_between_states(map: &dyn Map, old: &State, new: &State) -> Moves {
     let old_boxes: HashSet<_> = old.boxes.iter().collect();
     let new_boxes: HashSet<_> = new.boxes.iter().collect();
 
@@ -56,13 +56,13 @@ fn moves_between_states(map: &GoalMap, old: &State, new: &State) -> Moves {
     moves
 }
 
-fn player_steps(map: &GoalMap, state: &State, src_pos: Pos, dest_pos: Pos) -> Moves {
+fn player_steps(map: &dyn Map, state: &State, src_pos: Pos, dest_pos: Pos) -> Moves {
     if src_pos == dest_pos {
         // because it's not a proper BFS with an open set
         return Moves::default();
     }
 
-    let mut box_grid = map.grid.scratchpad();
+    let mut box_grid = map.grid().scratchpad();
     for &b in &state.boxes {
         box_grid[b] = true;
     }
@@ -79,7 +79,7 @@ fn player_steps(map: &GoalMap, state: &State, src_pos: Pos, dest_pos: Pos) -> Mo
             .expect("Couldn't find a path to dest_pos");
 
         for &new_player_pos in &player_pos.neighbors() {
-            if map.grid[new_player_pos] == MapCell::Wall
+            if map.grid()[new_player_pos] == MapCell::Wall
                 || box_grid[new_player_pos]
                 || prevs.contains_key(&new_player_pos)
             {

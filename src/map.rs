@@ -8,14 +8,31 @@ use crate::state::State;
 use crate::vec2d::Vec2d;
 
 crate trait Map {
-    //fn grid(&self) -> &Vec2d<MapCell>; //TODO can't do this without exposing more private types - fix that first
+    fn grid(&self) -> &Vec2d<MapCell>;
 
-    fn xsb(&self) -> MapFormatter<'_>;
-    fn custom(&self) -> MapFormatter<'_>;
-    fn format(&self, format: Format) -> MapFormatter<'_>;
-    fn xsb_with_state<'a>(&'a self, state: &'a State) -> MapFormatter<'a>;
-    fn custom_with_state<'a>(&'a self, state: &'a State) -> MapFormatter<'a>;
-    fn format_with_state<'a>(&'a self, format: Format, state: &'a State) -> MapFormatter<'a>;
+    fn xsb(&self) -> MapFormatter<'_> {
+        self.format(Format::Xsb)
+    }
+
+    fn custom(&self) -> MapFormatter<'_> {
+        self.format(Format::Custom)
+    }
+
+    fn format(&self, format: Format) -> MapFormatter<'_> {
+        MapFormatter::new(&self.grid(), None, format)
+    }
+
+    fn xsb_with_state<'a>(&'a self, state: &'a State) -> MapFormatter<'a> {
+        self.format_with_state(Format::Xsb, state)
+    }
+
+    fn custom_with_state<'a>(&'a self, state: &'a State) -> MapFormatter<'a> {
+        self.format_with_state(Format::Custom, state)
+    }
+
+    fn format_with_state<'a>(&'a self, format: Format, state: &'a State) -> MapFormatter<'a> {
+        MapFormatter::new(&self.grid(), Some(state), format)
+    }
 }
 
 #[derive(Clone)]
@@ -31,38 +48,15 @@ impl GoalMap {
 }
 
 impl Map for GoalMap {
-    /*fn grid(&self) -> &Vec2d<MapCell> {
+    fn grid(&self) -> &Vec2d<MapCell> {
         &self.grid
-    }*/
-
-    fn xsb(&self) -> MapFormatter<'_> {
-        self.format(Format::Xsb)
-    }
-
-    fn custom(&self) -> MapFormatter<'_> {
-        self.format(Format::Custom)
-    }
-
-    fn format(&self, format: Format) -> MapFormatter<'_> {
-        MapFormatter::new(&self.grid, None, format)
-    }
-
-    fn xsb_with_state<'a>(&'a self, state: &'a State) -> MapFormatter<'a> {
-        self.format_with_state(Format::Xsb, state)
-    }
-
-    fn custom_with_state<'a>(&'a self, state: &'a State) -> MapFormatter<'a> {
-        self.format_with_state(Format::Custom, state)
-    }
-
-    fn format_with_state<'a>(&'a self, format: Format, state: &'a State) -> MapFormatter<'a> {
-        MapFormatter::new(&self.grid, Some(state), format)
     }
 }
 
+// can't impl it for the trait: https://github.com/rust-lang/rust/issues/48869
 impl Display for GoalMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let mf = MapFormatter::new(&self.grid, None, Format::Xsb);
+        let mf = MapFormatter::new(&self.grid(), None, Format::Xsb);
         write!(f, "{}", mf)
     }
 }
@@ -83,6 +77,26 @@ crate struct RemoverMap {
 impl RemoverMap {
     crate fn new(grid: Vec2d<MapCell>, remover: Pos) -> Self {
         Self { grid, remover }
+    }
+}
+
+impl Map for RemoverMap {
+    fn grid(&self) -> &Vec2d<MapCell> {
+        &self.grid
+    }
+}
+
+// can't impl it for the trait: https://github.com/rust-lang/rust/issues/48869
+impl Display for RemoverMap {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let mf = MapFormatter::new(&self.grid(), None, Format::Xsb);
+        write!(f, "{}", mf)
+    }
+}
+
+impl Debug for RemoverMap {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self)
     }
 }
 
