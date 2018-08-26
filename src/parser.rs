@@ -8,7 +8,7 @@ use std::str::FromStr;
 use crate::config::Format;
 use crate::data::{MapCell, Pos, MAX_SIZE};
 use crate::level::Level;
-use crate::map::GoalMap;
+use crate::map::{GoalMap, MapType, RemoverMap};
 use crate::state::State;
 use crate::vec2d::Vec2d;
 use crate::LoadLevel;
@@ -87,18 +87,19 @@ fn parse_format(level: &str, format: Format) -> Result<Level, ParserErr> {
     let player_pos = player_pos.ok_or(ParserErr::NoPlayer)?;
     let grid = Vec2d::new(&grid);
 
-    if let Some(_remover) = remover {
+    // TODO handle all 4 cases here
+    if let Some(remover) = remover {
         if !goals.is_empty() {
             Err(ParserErr::RemoverAndGoals)
         } else {
-            unimplemented!()
-            /*Ok(Level::new(
-                RemoverMap::new(grid, remover),
-                State::new(player_pos, boxes)))*/
+            Ok(Level::new(
+                MapType::Remover(RemoverMap::new(grid, remover)),
+                State::new(player_pos, boxes),
+            ))
         }
     } else {
         Ok(Level::new(
-            GoalMap::new(grid, goals),
+            MapType::Goals(GoalMap::new(grid, goals)),
             State::new(player_pos, boxes),
         ))
     }

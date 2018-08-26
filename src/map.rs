@@ -35,6 +35,40 @@ crate trait Map {
     }
 }
 
+impl Display for &dyn Map {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let mf = MapFormatter::new(&self.grid(), None, Format::Xsb);
+        write!(f, "{}", mf)
+    }
+}
+
+impl Debug for &dyn Map {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
+#[derive(Debug, Clone)]
+crate enum MapType {
+    Goals(GoalMap),
+    Remover(RemoverMap),
+}
+
+impl MapType {
+    crate fn map(&self) -> &dyn Map {
+        match self {
+            MapType::Goals(ref goals_map) => goals_map,
+            MapType::Remover(ref remover_map) => remover_map,
+        }
+    }
+}
+
+impl Map for MapType {
+    fn grid(&self) -> &Vec2d<MapCell> {
+        self.map().grid()
+    }
+}
+
 #[derive(Clone)]
 crate struct GoalMap {
     crate grid: Vec2d<MapCell>,
@@ -53,7 +87,7 @@ impl Map for GoalMap {
     }
 }
 
-// can't impl it for Map to share it even though Map is crate visible only:
+// can't impl it for M: Map to share it even though Map is crate visible only:
 // https://github.com/rust-lang/rust/issues/48869
 impl Display for GoalMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
@@ -68,13 +102,12 @@ impl Debug for GoalMap {
     }
 }
 
-#[allow(unused)]
+#[derive(Clone)]
 crate struct RemoverMap {
     crate grid: Vec2d<MapCell>,
     crate remover: Pos,
 }
 
-#[allow(unused)]
 impl RemoverMap {
     crate fn new(grid: Vec2d<MapCell>, remover: Pos) -> Self {
         Self { grid, remover }
@@ -129,7 +162,7 @@ B_<><><><>B_<>
 ".trim_left_matches('\n');
 
         let level: Level = xsb_level.parse().unwrap();
-        let map = level.map;
+        let map = level.map();
 
         // default
         assert_eq!(map.to_string(), xsb_map);

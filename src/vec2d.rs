@@ -171,7 +171,7 @@ mod tests {
 ".trim_left_matches('\n');
         let level: Level = xsb_level.parse().unwrap();
 
-        assert_eq!(format!("{}", level.map.grid), xsb_grid);
-        assert_eq!(format!("{:?}", level.map.grid), xsb_grid);
+        assert_eq!(format!("{}", level.map().grid()), xsb_grid);
+        assert_eq!(format!("{:?}", level.map().grid()), xsb_grid);
     }
 }

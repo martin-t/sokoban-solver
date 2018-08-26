@@ -2,7 +2,7 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::config::Format;
-use crate::map::GoalMap;
+use crate::map::{Map, MapType};
 use crate::map_formatter::MapFormatter;
 use crate::moves::Moves;
 use crate::solution_formatter::SolutionFormatter;
@@ -10,13 +10,17 @@ use crate::state::State;
 
 #[derive(Clone)]
 pub struct Level {
-    crate map: GoalMap,
+    crate map: MapType,
     crate state: State,
 }
 
 impl Level {
-    crate fn new(map: GoalMap, state: State) -> Self {
+    crate fn new(map: MapType, state: State) -> Self {
         Level { map, state }
+    }
+
+    crate fn map(&self) -> &dyn Map {
+        self.map.map()
     }
 
     pub fn xsb(&self) -> MapFormatter<'_> {
@@ -28,7 +32,7 @@ impl Level {
     }
 
     pub fn format(&self, format: Format) -> MapFormatter<'_> {
-        MapFormatter::new(&self.map.grid, Some(&self.state), format)
+        MapFormatter::new(&self.map().grid(), Some(&self.state), format)
     }
 
     pub fn xsb_solution<'a>(
@@ -53,7 +57,7 @@ impl Level {
         moves: &'a Moves,
         include_steps: bool,
     ) -> SolutionFormatter<'a> {
-        SolutionFormatter::new(&self.map, &self.state, moves, include_steps, format)
+        SolutionFormatter::new(self.map(), &self.state, moves, include_steps, format)
     }
 }
 

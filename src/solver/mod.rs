@@ -14,7 +14,7 @@ use typed_arena::Arena;
 use crate::config::Method;
 use crate::data::{MapCell, Pos, DIRECTIONS, MAX_BOXES};
 use crate::level::Level;
-use crate::map::GoalMap;
+use crate::map::{GoalMap, Map, MapType, RemoverMap};
 use crate::moves::Moves;
 use crate::state::State;
 use crate::vec2d::Vec2d;
@@ -75,8 +75,20 @@ impl SolverOk {
 impl Solve for Level {
     fn solve(&self, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
         debug!("Processing level...");
-        let solver = Solver::new(self)?;
+
+        // FIXME this is not gonna work
+        let solver = match self.map {
+            MapType::Goals(ref goals_map) => {
+                Solver::<GoalMap>::new_with_goals(goals_map, &self.state)?
+            }
+            MapType::Remover(ref remover_map) => {
+                unimplemented!()
+                //Solver::<RemoverMap>::new_with_remover(remover_map, &self.state)?
+            }
+        };
+
         debug!("Processed level");
+
         match method {
             Method::MoveOptimal => {
                 Ok(solver.search(method, print_status, expand_move, heuristic_move))
@@ -89,29 +101,33 @@ impl Solve for Level {
 }
 
 #[derive(Debug)]
-struct StaticData {
-    map: GoalMap,
+struct StaticData<M: Map> {
+    map: M,
     distances: Vec2d<Option<u16>>,
 }
 
 #[derive(Debug)]
-struct Solver {
+struct Solver<M: Map> {
     // this should remain private given i might use unsafe to optimize things
     // and some of the values must be correct to avoid out of bounds array access
-    sd: StaticData,
+    sd: StaticData<M>,
     initial_state: State,
 }
 
-impl Solver {
-    fn new(level: &Level) -> Result<Solver, SolverErr> {
+impl<M: Map> Solver<M> {
+    fn new_with_remover(map: &RemoverMap, state: &State) -> Result<Solver<RemoverMap>, SolverErr> {
+        unimplemented!()
+    }
+
+    fn new_with_goals(map: &GoalMap, state: &State) -> Result<Solver<GoalMap>, SolverErr> {
         // Guarantees we have here:
         // - the player exists and therefore map is at least 1x1.
         // - rows and cols is <= 255
         // Do some more low level checking so we can omit some checks later.
 
         // make sure the level is surrounded by wall
-        let mut to_visit = vec![level.state.player_pos];
-        let mut visited = level.map.grid.scratchpad();
+        let mut to_visit = vec![state.player_pos];
+        let mut visited = map.grid().scratchpad();
 
         while !to_visit.is_empty() {
             let cur = to_visit.pop().unwrap();
@@ -124,15 +140,15 @@ impl Solver {
                 // everything after that will be surrounded by walls
                 if nr < 0
                     || nc < 0
-                    || nr >= i32::from(level.map.grid.rows())
-                    || nc >= i32::from(level.map.grid.cols())
+                    || nr >= i32::from(map.grid().rows())
+                    || nc >= i32::from(map.grid().cols())
                 {
                     // we got out of bounds without hitting a wall
                     return Err(SolverErr::IncompleteBorder);
                 }
 
                 let new_pos = Pos::new(nr as u8, nc as u8);
-                if !visited[new_pos] && level.map.grid[new_pos] != MapCell::Wall {
+                if !visited[new_pos] && map.grid()[new_pos] != MapCell::Wall {
                     to_visit.push(new_pos);
                 }
             }
@@ -148,17 +164,17 @@ impl Solver {
         // make sure all relevant game elements are reachable
         let mut reachable_goals = Vec::new();
         let mut reachable_boxes = Vec::new();
-        for &pos in &level.state.boxes {
+        for &pos in &state.boxes {
             if visited[pos] {
                 reachable_boxes.push(pos);
-            } else if !level.map.goals.contains(&pos) {
+            } else if !map.goals.contains(&pos) {
                 return Err(SolverErr::UnreachableBoxes);
             }
         }
-        for &pos in &level.map.goals {
+        for &pos in &map.goals {
             if visited[pos] {
                 reachable_goals.push(pos);
-            } else if !level.state.boxes.contains(&pos) {
+            } else if !state.boxes.contains(&pos) {
                 return Err(SolverErr::UnreachableGoals);
             }
         }
@@ -166,7 +182,7 @@ impl Solver {
         // TODO maybe do this first and use it instead of visited when detecting reachability in specialized fns?
         // make sure all non-reachable cells are walls
         // to avoid errors with some code that iterates through all non-walls
-        let mut processed_grid = level.map.grid.clone();
+        let mut processed_grid = map.grid().clone();
         for r in 0..processed_grid.rows() {
             for c in 0..processed_grid.cols() {
                 let pos = Pos::new(r, c);
@@ -192,7 +208,7 @@ impl Solver {
         }
 
         let processed_map = GoalMap::new(processed_grid, reachable_goals);
-        let clean_state = State::new(level.state.player_pos, reachable_boxes);
+        let clean_state = State::new(state.player_pos, reachable_boxes);
         let distances = find_distances(&processed_map);
         Ok(Solver {
             sd: StaticData {
@@ -211,8 +227,8 @@ impl Solver {
         heuristic: Heuristic,
     ) -> SolverOk
     where
-        Expand: for<'a> Fn(&StaticData, &State, &'a Arena<State>) -> Vec<&'a State>,
-        Heuristic: Fn(&StaticData, &State) -> u16,
+        Expand: for<'a> Fn(&StaticData<M>, &State, &'a Arena<State>) -> Vec<&'a State>,
+        Heuristic: Fn(&StaticData<M>, &State) -> u16,
     {
         debug!("Search called");
 
@@ -358,7 +374,7 @@ fn find_distances(map: &GoalMap) -> Vec2d<Option<u16>> {
     distances
 }
 
-fn heuristic_push_manhattan(sd: &StaticData, state: &State) -> u16 {
+fn heuristic_push_manhattan(sd: &StaticData<GoalMap>, state: &State) -> u16 {
     // less is better
 
     let mut goal_dist_sum = 0;
@@ -377,7 +393,7 @@ fn heuristic_push_manhattan(sd: &StaticData, state: &State) -> u16 {
     goal_dist_sum
 }
 
-fn heuristic_push(sd: &StaticData, state: &State) -> u16 {
+fn heuristic_push(sd: &StaticData<GoalMap>, state: &State) -> u16 {
     // less is better
 
     let mut goal_dist_sum = 0;
@@ -389,7 +405,7 @@ fn heuristic_push(sd: &StaticData, state: &State) -> u16 {
     goal_dist_sum
 }
 
-fn heuristic_move(sd: &StaticData, state: &State) -> u16 {
+fn heuristic_move(sd: &StaticData<GoalMap>, state: &State) -> u16 {
     // less is better
 
     let mut closest_box = u16::max_value();
@@ -405,7 +421,11 @@ fn heuristic_move(sd: &StaticData, state: &State) -> u16 {
     closest_box - 1 + heuristic_push(sd, state)
 }
 
-fn expand_push<'a>(sd: &StaticData, state: &State, arena: &'a Arena<State>) -> Vec<&'a State> {
+fn expand_push<'a>(
+    sd: &StaticData<GoalMap>,
+    state: &State,
+    arena: &'a Arena<State>,
+) -> Vec<&'a State> {
     let mut new_states = Vec::new();
 
     let mut box_grid = sd.map.grid.scratchpad_with_default(255u8);
@@ -452,7 +472,11 @@ fn expand_push<'a>(sd: &StaticData, state: &State, arena: &'a Arena<State>) -> V
     new_states
 }
 
-fn expand_move<'a>(sd: &StaticData, state: &State, arena: &'a Arena<State>) -> Vec<&'a State> {
+fn expand_move<'a>(
+    sd: &StaticData<GoalMap>,
+    state: &State,
+    arena: &'a Arena<State>,
+) -> Vec<&'a State> {
     let mut new_states = Vec::new();
 
     let mut box_grid = sd.map.grid.scratchpad_with_default(255u8);
