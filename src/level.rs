@@ -2,7 +2,7 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::config::Format;
-use crate::map::{Map, MapType};
+use crate::map::{GoalMap, Map, MapType, RemoverMap};
 use crate::map_formatter::MapFormatter;
 use crate::moves::Moves;
 use crate::solution_formatter::SolutionFormatter;
@@ -21,6 +21,22 @@ impl Level {
 
     crate fn map(&self) -> &dyn Map {
         self.map.map()
+    }
+
+    #[allow(unused)] // for testing
+    crate fn goal_map(&self) -> &GoalMap {
+        match self.map {
+            MapType::Goals(ref goal_map) => goal_map,
+            MapType::Remover(_) => panic!(),
+        }
+    }
+
+    #[allow(unused)] // for testing
+    crate fn remover_map(&self) -> &RemoverMap {
+        match self.map {
+            MapType::Goals(_) => panic!(),
+            MapType::Remover(ref remover_map) => remover_map,
+        }
     }
 
     pub fn xsb(&self) -> MapFormatter<'_> {

@@ -306,7 +306,6 @@ mod tests {
     }
 
     #[test]
-    #[should_panic] // TODO remove when remover is implemented
     fn custom_remover() {
         let level = r"
 <><><><><>

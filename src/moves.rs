@@ -35,7 +35,7 @@ impl Debug for Move {
 pub struct Moves(Vec<Move>);
 
 impl Moves {
-    #[allow(unused)]
+    #[allow(unused)] // for testing
     crate fn new(moves: Vec<Move>) -> Self {
         Moves(moves)
     }

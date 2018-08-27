@@ -76,25 +76,40 @@ impl Solve for Level {
     fn solve(&self, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
         debug!("Processing level...");
 
-        // FIXME this is not gonna work
-        let solver = match self.map {
+        match self.map {
             MapType::Goals(ref goals_map) => {
-                Solver::<GoalMap>::new_with_goals(goals_map, &self.state)?
+                let solver = Solver::<GoalMap>::new_with_goals(goals_map, &self.state)?;
+
+                debug!("Processed level");
+
+                match method {
+                    Method::MoveOptimal => {
+                        Ok(solver.search(method, print_status, expand_move, heuristic_move))
+                    }
+                    Method::PushOptimal => {
+                        Ok(solver.search(method, print_status, expand_push, heuristic_push))
+                    }
+                }
             }
             MapType::Remover(ref remover_map) => {
-                unimplemented!()
-                //Solver::<RemoverMap>::new_with_remover(remover_map, &self.state)?
-            }
-        };
+                let solver = Solver::<GoalMap>::new_with_remover(remover_map, &self.state)?;
 
-        debug!("Processed level");
+                debug!("Processed level");
 
-        match method {
-            Method::MoveOptimal => {
-                Ok(solver.search(method, print_status, expand_move, heuristic_move))
-            }
-            Method::PushOptimal => {
-                Ok(solver.search(method, print_status, expand_push, heuristic_push))
+                match method {
+                    Method::MoveOptimal => Ok(solver.search(
+                        method,
+                        print_status,
+                        expand_move_remover,
+                        heuristic_move_remover,
+                    )),
+                    Method::PushOptimal => Ok(solver.search(
+                        method,
+                        print_status,
+                        expand_push_remover,
+                        heuristic_push_remover,
+                    )),
+                }
             }
         }
     }
@@ -393,6 +408,10 @@ fn heuristic_push_manhattan(sd: &StaticData<GoalMap>, state: &State) -> u16 {
     goal_dist_sum
 }
 
+fn heuristic_push_manhattan_remover(sd: &StaticData<RemoverMap>, state: &State) -> u16 {
+    unimplemented!()
+}
+
 fn heuristic_push(sd: &StaticData<GoalMap>, state: &State) -> u16 {
     // less is better
 
@@ -403,6 +422,10 @@ fn heuristic_push(sd: &StaticData<GoalMap>, state: &State) -> u16 {
     }
 
     goal_dist_sum
+}
+
+fn heuristic_push_remover(sd: &StaticData<RemoverMap>, state: &State) -> u16 {
+    unimplemented!()
 }
 
 fn heuristic_move(sd: &StaticData<GoalMap>, state: &State) -> u16 {
@@ -419,6 +442,10 @@ fn heuristic_move(sd: &StaticData<GoalMap>, state: &State) -> u16 {
     // -1 because it should be the distance until being able to push the box
     // and when all boxes are on goals, the heuristic should be 0
     closest_box - 1 + heuristic_push(sd, state)
+}
+
+fn heuristic_move_remover(sd: &StaticData<RemoverMap>, state: &State) -> u16 {
+    unimplemented!()
 }
 
 fn expand_push<'a>(
@@ -472,6 +499,14 @@ fn expand_push<'a>(
     new_states
 }
 
+fn expand_push_remover<'a>(
+    sd: &StaticData<RemoverMap>,
+    state: &State,
+    arena: &'a Arena<State>,
+) -> Vec<&'a State> {
+    unimplemented!()
+}
+
 fn expand_move<'a>(
     sd: &StaticData<GoalMap>,
     state: &State,
@@ -511,6 +546,14 @@ fn expand_move<'a>(
     new_states
 }
 
+fn expand_move_remover<'a>(
+    sd: &StaticData<RemoverMap>,
+    state: &State,
+    arena: &'a Arena<State>,
+) -> Vec<&'a State> {
+    unimplemented!()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -522,9 +565,10 @@ mod tests {
 #@$.#$.#
 ########
 ";
-        let level = level.parse().unwrap();
+        let level: Level = level.parse().unwrap();
         assert_eq!(
-            Solver::new(&level).unwrap_err(),
+            //Solver::new(&level).unwrap_err(),
+            Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
             SolverErr::UnreachableBoxes
         );
     }
@@ -557,9 +601,10 @@ mod tests {
 ####
         ";
         for level in &[level0, level1, level2, level3, level4] {
-            let level = level.parse().unwrap();
+            let level: Level = level.parse().unwrap();
             assert_eq!(
-                Solver::new(&level).unwrap_err(),
+                //Solver::new(&level).unwrap_err(),
+                Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
                 SolverErr::IncompleteBorder
             );
         }
@@ -588,8 +633,9 @@ mod tests {
 #@################
 ###
 ";
-        let level = level.parse().unwrap();
-        let err = Solver::new(&level).unwrap_err();
+        let level: Level = level.parse().unwrap();
+        //let err = Solver::new(&level).unwrap_err();
+        let err = Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err();
         assert_eq!(err, SolverErr::TooMany);
         assert_eq!(err.to_string(), "More than 255 reachable boxes or goals");
     }
@@ -601,8 +647,12 @@ mod tests {
 #@#
 ###
 ";
-        let level = level.parse().unwrap();
-        assert_eq!(Solver::new(&level).unwrap_err(), SolverErr::NoBoxesGoals);
+        let level: Level = level.parse().unwrap();
+        //assert_eq!(Solver::new(&level).unwrap_err(), SolverErr::NoBoxesGoals);
+        assert_eq!(
+            Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
+            SolverErr::NoBoxesGoals
+        );
     }
 
     #[test]
@@ -612,8 +662,12 @@ mod tests {
 #@.*#
 ####
 ";
-        let level = level.parse().unwrap();
-        assert_eq!(Solver::new(&level).unwrap_err(), SolverErr::DiffBoxesGoals);
+        let level: Level = level.parse().unwrap();
+        //assert_eq!(Solver::new(&level).unwrap_err(), SolverErr::DiffBoxesGoals);
+        assert_eq!(
+            Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
+            SolverErr::DiffBoxesGoals
+        );
     }
 
     #[test]
@@ -633,7 +687,8 @@ mod tests {
             vec![None, None, Some(1), Some(0), None],
             vec![None, None, None, None, None],
         ]);
-        assert_eq!(find_distances(&level.map), expected);
+        //assert_eq!(find_distances(&level.map), expected);
+        assert_eq!(find_distances(level.goal_map()), expected);
     }
 
     #[test]
@@ -665,7 +720,8 @@ None    None Some(2) Some(3) Some(2) Some(1) Some(2)  Some(3)     None None None
 None    None    None    None    None Some(0)    None     None     None None None 
 None    None    None    None    None    None    None     None     None None None 
 ".trim_left_matches('\n');
-        assert_eq!(format!("{:?}", find_distances(&level.map)), expected);
+        //assert_eq!(format!("{:?}", find_distances(&level.map)), expected);
+        assert_eq!(format!("{:?}", find_distances(level.goal_map())), expected);
     }
 
     #[test]
@@ -676,7 +732,9 @@ None    None    None    None    None    None    None     None     None None None
 *####*#
 ".trim_left_matches('\n');
 
-        let solver = Solver::new(&level.parse().unwrap()).unwrap();
+        //let solver = Solver::new(&level.parse().unwrap()).unwrap();
+        let level: Level = level.parse().unwrap();
+        let solver = Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap();
 
         let processed_empty_level: &str = r"
 #######
@@ -706,8 +764,9 @@ None    None    None    None    None    None    None     None     None None None
 <><>    <>
 <><><><><>
 ";
-        let level = level.parse().unwrap();
-        let solver = Solver::new(&level).unwrap();
+        let level: Level = level.parse().unwrap();
+        //let solver = Solver::new(&level).unwrap();
+        let solver = Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
         let neighbor_states = expand_push(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 2);
@@ -723,8 +782,9 @@ None    None    None    None    None    None    None     None     None None None
 # ...#
  ####
 ";
-        let level = level.parse().unwrap();
-        let solver = Solver::new(&level).unwrap();
+        let level: Level = level.parse().unwrap();
+        //let solver = Solver::new(&level).unwrap();
+        let solver = Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
         let neighbor_states = expand_move(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 2);
@@ -740,8 +800,9 @@ None    None    None    None    None    None    None     None     None None None
 #   .#
  ####
 ";
-        let level = level.parse().unwrap();
-        let solver = Solver::new(&level).unwrap();
+        let level: Level = level.parse().unwrap();
+        //let solver = Solver::new(&level).unwrap();
+        let solver = Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
         let neighbor_states = expand_move(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 4);
