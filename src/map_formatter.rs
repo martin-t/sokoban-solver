@@ -39,7 +39,7 @@ impl<'a> MapFormatter<'a> {
                 }
             }
 
-            for c in 0..last_non_empty + 1 {
+            for c in 0..=last_non_empty {
                 let pos = Pos::new(r, c);
                 let cell = self.grid[pos];
 
