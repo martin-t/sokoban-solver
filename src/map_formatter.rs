@@ -66,7 +66,7 @@ impl<'a> MapFormatter<'a> {
                 MapCell::Empty => write!(f, " ")?,
                 MapCell::Goal => write!(f, "_")?,
                 MapCell::Remover => write!(f, "R")?,
-                _ => unreachable!(),
+                _ => unreachable!("Wall again"),
             };
         }
         Ok(())
@@ -78,12 +78,12 @@ impl<'a> MapFormatter<'a> {
             (MapCell::Empty, Contents::Box) => write!(f, "$"),
             (MapCell::Empty, Contents::Player) => write!(f, "@"),
             (MapCell::Wall, Contents::Empty) => write!(f, "#"),
-            (MapCell::Wall, _) => unreachable!(),
+            (MapCell::Wall, _) => unreachable!("Wall with non-empty contents"),
             (MapCell::Goal, Contents::Empty) => write!(f, "."),
             (MapCell::Goal, Contents::Box) => write!(f, "*"),
             (MapCell::Goal, Contents::Player) => write!(f, "+"),
             (MapCell::Remover, Contents::Empty) => write!(f, "r"),
-            (MapCell::Remover, Contents::Box) => unreachable!(),
+            (MapCell::Remover, Contents::Box) => unreachable!("Remover with box"),
             (MapCell::Remover, Contents::Player) => write!(f, "R"),
         }
     }

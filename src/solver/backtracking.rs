@@ -45,7 +45,10 @@ fn moves_between_states(map: &dyn Map, old: &State, new: &State) -> Moves {
     assert!(old_iter.next().is_none());
 
     let mut new_iter = new_boxes.difference(&old_boxes);
-    let new_box_pos = **new_iter.next().unwrap();
+    let new_box_pos = match new_iter.next() {
+        Some(pos) => **pos,
+        None => map.remover().unwrap(),
+    };
     assert!(new_iter.next().is_none());
 
     let push_dir = old_box_pos.dir_to(new_box_pos);

@@ -16,6 +16,8 @@
 #![cfg_attr(test, feature(duration_as_u128))]
 #![cfg_attr(test, feature(test))]
 
+// TODO convert unwraps in non-test code to expects, add messages to unreachable/panic
+
 pub mod config;
 pub mod level;
 pub mod map_formatter;
@@ -59,7 +61,7 @@ mod tests {
     #[test]
     fn test_levels() {
         const UNSOLVED: i32 = 5;
-        const REMOVER: i32 = 5;
+        const REMOVER: i32 = 5; // TODO remove
         const VERY_SLOW: i32 = 4;
         const SLOW: i32 = 3;
         const VERY_SLOW_IN_DEBUG: i32 = 2;
@@ -80,11 +82,11 @@ mod tests {
             (PushOptimal, "custom", "02-one-way.txt", OK),
             (PushOptimal, "custom", "03-long-way.txt", OK),
             (PushOptimal, "custom", "04-two-boxes-no-packing.txt", OK),
-            (PushOptimal, "custom", "04-two-boxes-remover.txt", REMOVER),
+            (PushOptimal, "custom", "04-two-boxes-remover.txt", OK),
             (PushOptimal, "custom", "04-two-boxes.txt", OK),
             (PushOptimal, "custom", "no-solution-parking.txt", OK),
-            (PushOptimal, "custom", "original-01-remover.txt", REMOVER),
-            (PushOptimal, "custom", "supaplex.txt", REMOVER),
+            (PushOptimal, "custom", "original-01-remover.txt", OK),
+            (PushOptimal, "custom", "supaplex.txt", VERY_SLOW_IN_DEBUG),
             (PushOptimal, "custom", "supaplex-goals.txt", VERY_SLOW),
             (PushOptimal, "boxxle1", "1.txt", OK),
             (PushOptimal, "boxxle1", "2.txt", OK),
@@ -135,11 +137,11 @@ mod tests {
             (MoveOptimal, "custom", "02-one-way.txt", OK),
             (MoveOptimal, "custom", "03-long-way.txt", OK),
             (MoveOptimal, "custom", "04-two-boxes-no-packing.txt", OK),
-            (MoveOptimal, "custom", "04-two-boxes-remover.txt", REMOVER),
+            (MoveOptimal, "custom", "04-two-boxes-remover.txt", REMOVER), // FIXME prints no solution - BUG
             (MoveOptimal, "custom", "04-two-boxes.txt", OK),
             (MoveOptimal, "custom", "no-solution-parking.txt", OK),
-            (MoveOptimal, "custom", "original-01-remover.txt", REMOVER),
-            (MoveOptimal, "custom", "supaplex.txt", REMOVER),
+            (MoveOptimal, "custom", "original-01-remover.txt", REMOVER), // FIXME prints no solution - BUG
+            (MoveOptimal, "custom", "supaplex.txt", REMOVER), // FIXME prints no solution - BUG
             (MoveOptimal, "custom", "supaplex-goals.txt", UNSOLVED),
             (MoveOptimal, "boxxle1", "1.txt", OK),
             (MoveOptimal, "boxxle1", "2.txt", SLOW_IN_DEBUG),
@@ -162,6 +164,7 @@ mod tests {
             .filter(|&(method, level_pack, level_name, _)| {
                 test_level(*method, level_pack, level_name)
             }).count();
+        println!("Tested {} levels", levels.len());
         assert_eq!(succeeded, levels.len());
     }
 

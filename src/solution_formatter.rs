@@ -48,6 +48,7 @@ impl Display for SolutionFormatter<'_> {
                 .iter()
                 .cloned()
                 .map(|b| if b == new_player_pos { b + mov.dir } else { b })
+                .filter(|&b| Some(b) != self.map.remover())
                 .collect();
             let new_state = State::new(new_player_pos, new_boxes);
             if mov.is_push || self.include_steps {

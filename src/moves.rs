@@ -67,6 +67,7 @@ impl Moves {
     }
 }
 
+// TODO are both necessary? maybe better deref into slice?
 impl IntoIterator for Moves {
     type Item = Move;
     type IntoIter = ::std::vec::IntoIter<Move>;

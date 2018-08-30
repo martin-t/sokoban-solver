@@ -5,6 +5,8 @@ use std::ops::Add;
 crate const MAX_SIZE: usize = 255;
 crate const MAX_BOXES: usize = 255;
 
+// TODO considering i made a mistake once already it might be worth
+// trying to split this into two types - one for remover and one for goals
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 crate enum MapCell {
     Empty,

@@ -10,6 +10,9 @@ use crate::vec2d::Vec2d;
 crate trait Map {
     fn grid(&self) -> &Vec2d<MapCell>;
 
+    // HACK for backtracking and replaying moves during formatting
+    fn remover(&self) -> Option<Pos>;
+
     fn xsb(&self) -> MapFormatter<'_> {
         self.format(Format::Xsb)
     }
@@ -67,6 +70,13 @@ impl Map for MapType {
     fn grid(&self) -> &Vec2d<MapCell> {
         self.map().grid()
     }
+
+    fn remover(&self) -> Option<Pos> {
+        match self {
+            MapType::Goals(gm) => gm.remover(),
+            MapType::Remover(rm) => rm.remover(),
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -84,6 +94,10 @@ impl GoalMap {
 impl Map for GoalMap {
     fn grid(&self) -> &Vec2d<MapCell> {
         &self.grid
+    }
+
+    fn remover(&self) -> Option<Pos> {
+        None
     }
 }
 
@@ -117,6 +131,10 @@ impl RemoverMap {
 impl Map for RemoverMap {
     fn grid(&self) -> &Vec2d<MapCell> {
         &self.grid
+    }
+
+    fn remover(&self) -> Option<Pos> {
+        Some(self.remover)
     }
 }
 
