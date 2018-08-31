@@ -127,7 +127,7 @@ mod tests {
             (PushOptimal, "boxxle2", "8.txt", UNSOLVED),
             (PushOptimal, "boxxle2", "9.txt", UNSOLVED),
             (PushOptimal, "boxxle2", "10.txt", UNSOLVED),
-            (PushOptimal, "original", "1.txt", VERY_SLOW),
+            (PushOptimal, "original-and-extra", "1.txt", VERY_SLOW),
             (MoveOptimal, "custom", "00-solved.txt", OK),
             (MoveOptimal, "custom", "01-simplest-custom.txt", OK),
             (MoveOptimal, "custom", "01-simplest-xsb.txt", OK),
