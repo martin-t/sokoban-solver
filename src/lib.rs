@@ -61,7 +61,6 @@ mod tests {
     #[test]
     fn test_levels() {
         const UNSOLVED: i32 = 5;
-        const REMOVER: i32 = 5; // TODO remove
         const VERY_SLOW: i32 = 4;
         const SLOW: i32 = 3;
         const VERY_SLOW_IN_DEBUG: i32 = 2;
@@ -137,11 +136,11 @@ mod tests {
             (MoveOptimal, "custom", "02-one-way.txt", OK),
             (MoveOptimal, "custom", "03-long-way.txt", OK),
             (MoveOptimal, "custom", "04-two-boxes-no-packing.txt", OK),
-            (MoveOptimal, "custom", "04-two-boxes-remover.txt", REMOVER), // FIXME prints no solution - BUG
+            (MoveOptimal, "custom", "04-two-boxes-remover.txt", OK),
             (MoveOptimal, "custom", "04-two-boxes.txt", OK),
             (MoveOptimal, "custom", "no-solution-parking.txt", OK),
-            (MoveOptimal, "custom", "original-01-remover.txt", REMOVER), // FIXME prints no solution - BUG
-            (MoveOptimal, "custom", "supaplex.txt", REMOVER), // FIXME prints no solution - BUG
+            (MoveOptimal, "custom", "original-01-remover.txt", VERY_SLOW),
+            (MoveOptimal, "custom", "supaplex.txt", VERY_SLOW),
             (MoveOptimal, "custom", "supaplex-goals.txt", UNSOLVED),
             (MoveOptimal, "boxxle1", "1.txt", OK),
             (MoveOptimal, "boxxle1", "2.txt", SLOW_IN_DEBUG),

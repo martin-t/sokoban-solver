@@ -632,8 +632,11 @@ fn heuristic_move(sd: &StaticData<GoalMap>, state: &State) -> u16 {
     closest_box - 1 + heuristic_push(sd, state)
 }
 
-// FIXME i bet this returns something else than 0 with no boxes
 fn heuristic_move_remover(sd: &StaticData<RemoverMap>, state: &State) -> u16 {
+    if state.boxes.is_empty() {
+        return 0;
+    }
+
     let mut closest_box = u16::max_value();
     for box_pos in &state.boxes {
         let dist = state.player_pos.dist(*box_pos);
