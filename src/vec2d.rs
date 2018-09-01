@@ -65,6 +65,41 @@ impl<T> Vec2d<T> {
     {
         self.scratchpad_with_default(U::default())
     }
+
+    crate fn positions(&self) -> Positions {
+        Positions {
+            rows: self.rows,
+            cols: self.cols,
+            cur_r: 0,
+            cur_c: 0,
+        }
+    }
+}
+
+crate struct Positions {
+    rows: u8,
+    cols: u8,
+    cur_r: u8,
+    cur_c: u8,
+}
+
+impl Iterator for Positions {
+    type Item = Pos;
+
+    fn next(&mut self) -> Option<Pos> {
+        let ret = Pos::new(self.cur_r, self.cur_c);
+
+        self.cur_c += 1;
+        if self.cur_c == self.cols {
+            self.cur_c = 0;
+            self.cur_r += 1;
+            if self.cur_r == self.rows {
+                return None;
+            }
+        }
+
+        Some(ret)
+    }
 }
 
 impl<T: Display> Display for Vec2d<T> {

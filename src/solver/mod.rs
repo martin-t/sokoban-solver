@@ -259,12 +259,9 @@ impl<M: Map> Solver<M> {
         // make sure all non-reachable cells are walls
         // to avoid errors with some code that iterates through all non-walls
         let mut processed_grid = map.grid().clone();
-        for r in 0..processed_grid.rows() {
-            for c in 0..processed_grid.cols() {
-                let pos = Pos::new(r, c);
-                if !visited[pos] {
-                    processed_grid[pos] = MapCell::Wall;
-                }
+        for pos in processed_grid.positions() {
+            if !visited[pos] {
+                processed_grid[pos] = MapCell::Wall;
             }
         }
 
@@ -372,57 +369,51 @@ fn find_distances_goals(map: &GoalMap) -> Vec2d<Option<u16>> {
 
     // some functions don't check walls but only dead ends
     let mut fake_distances = map.grid().scratchpad();
-    for r in 0..map.grid().rows() {
-        for c in 0..map.grid().cols() {
-            let pos = Pos::new(r, c);
-            if map.grid()[pos] != MapCell::Wall {
-                fake_distances[pos] = Some(0);
-            }
+    for pos in map.grid().positions() {
+        if map.grid()[pos] != MapCell::Wall {
+            fake_distances[pos] = Some(0);
         }
     }
 
     // put box on every position and try to get it to the nearest goal
-    for r in 0..map.grid().rows() {
-        for c in 0..map.grid().cols() {
-            let box_pos = Pos::new(r, c);
-            if map.grid()[box_pos] == MapCell::Wall {
+    for box_pos in map.grid().positions() {
+        if map.grid()[box_pos] == MapCell::Wall {
+            continue;
+        }
+
+        for &player_pos in &box_pos.neighbors() {
+            if map.grid()[player_pos] == MapCell::Wall {
                 continue;
             }
 
-            for &player_pos in &box_pos.neighbors() {
-                if map.grid()[player_pos] == MapCell::Wall {
-                    continue;
-                }
+            let fake_state = State {
+                player_pos,
+                boxes: vec![box_pos],
+            };
+            let fake_solver = Solver {
+                sd: StaticData {
+                    map: map.clone(),
+                    distances: fake_distances.clone(),
+                },
+                initial_state: fake_state,
+            };
 
-                let fake_state = State {
-                    player_pos,
-                    boxes: vec![box_pos],
-                };
-                let fake_solver = Solver {
-                    sd: StaticData {
-                        map: map.clone(),
-                        distances: fake_distances.clone(),
+            // using manhattan dist here because the fake solver needs a heuristic
+            // that only reports 0 when the level is solved
+            let moves = fake_solver
+                .search(
+                    Method::PushOptimal,
+                    false,
+                    expand_push,
+                    heuristic_push_manhattan,
+                ).moves;
+            if let Some(moves) = moves {
+                let new_dist = moves.push_cnt() as u16; // dist can't be larger than MAX_SIZE^2
+                match distances[box_pos] {
+                    None => distances[box_pos] = Some(new_dist),
+                    Some(cur_min_dist) => if new_dist < cur_min_dist {
+                        distances[box_pos] = Some(new_dist);
                     },
-                    initial_state: fake_state,
-                };
-
-                // using manhattan dist here because the fake solver needs a heuristic
-                // that only reports 0 when the level is solved
-                let moves = fake_solver
-                    .search(
-                        Method::PushOptimal,
-                        false,
-                        expand_push,
-                        heuristic_push_manhattan,
-                    ).moves;
-                if let Some(moves) = moves {
-                    let new_dist = moves.push_cnt() as u16; // dist can't be larger than MAX_SIZE^2
-                    match distances[box_pos] {
-                        None => distances[box_pos] = Some(new_dist),
-                        Some(cur_min_dist) => if new_dist < cur_min_dist {
-                            distances[box_pos] = Some(new_dist);
-                        },
-                    }
                 }
             }
         }
@@ -438,57 +429,51 @@ fn find_distances_remover(map: &RemoverMap) -> Vec2d<Option<u16>> {
 
     // some functions don't check walls but only dead ends
     let mut fake_distances = map.grid().scratchpad();
-    for r in 0..map.grid().rows() {
-        for c in 0..map.grid().cols() {
-            let pos = Pos::new(r, c);
-            if map.grid()[pos] != MapCell::Wall {
-                fake_distances[pos] = Some(0);
-            }
+    for pos in map.grid().positions() {
+        if map.grid()[pos] != MapCell::Wall {
+            fake_distances[pos] = Some(0);
         }
     }
 
     // put box on every position and try to get it to the nearest goal
-    for r in 0..map.grid().rows() {
-        for c in 0..map.grid().cols() {
-            let box_pos = Pos::new(r, c);
-            if box_pos == map.remover || map.grid()[box_pos] == MapCell::Wall {
+    for box_pos in map.grid().positions() {
+        if box_pos == map.remover || map.grid()[box_pos] == MapCell::Wall {
+            continue;
+        }
+
+        for &player_pos in &box_pos.neighbors() {
+            if map.grid()[player_pos] == MapCell::Wall {
                 continue;
             }
 
-            for &player_pos in &box_pos.neighbors() {
-                if map.grid()[player_pos] == MapCell::Wall {
-                    continue;
-                }
+            let fake_state = State {
+                player_pos,
+                boxes: vec![box_pos],
+            };
+            let fake_solver = Solver {
+                sd: StaticData {
+                    map: map.clone(),
+                    distances: fake_distances.clone(),
+                },
+                initial_state: fake_state,
+            };
 
-                let fake_state = State {
-                    player_pos,
-                    boxes: vec![box_pos],
-                };
-                let fake_solver = Solver {
-                    sd: StaticData {
-                        map: map.clone(),
-                        distances: fake_distances.clone(),
+            // using manhattan dist here because the fake solver needs a heuristic
+            // that only reports 0 when the level is solved
+            let moves = fake_solver
+                .search(
+                    Method::PushOptimal,
+                    false,
+                    expand_push_remover,
+                    heuristic_push_manhattan_remover,
+                ).moves;
+            if let Some(moves) = moves {
+                let new_dist = moves.push_cnt() as u16; // dist can't be larger than MAX_SIZE^2
+                match distances[box_pos] {
+                    None => distances[box_pos] = Some(new_dist),
+                    Some(cur_min_dist) => if new_dist < cur_min_dist {
+                        distances[box_pos] = Some(new_dist);
                     },
-                    initial_state: fake_state,
-                };
-
-                // using manhattan dist here because the fake solver needs a heuristic
-                // that only reports 0 when the level is solved
-                let moves = fake_solver
-                    .search(
-                        Method::PushOptimal,
-                        false,
-                        expand_push_remover,
-                        heuristic_push_manhattan_remover,
-                    ).moves;
-                if let Some(moves) = moves {
-                    let new_dist = moves.push_cnt() as u16; // dist can't be larger than MAX_SIZE^2
-                    match distances[box_pos] {
-                        None => distances[box_pos] = Some(new_dist),
-                        Some(cur_min_dist) => if new_dist < cur_min_dist {
-                            distances[box_pos] = Some(new_dist);
-                        },
-                    }
                 }
             }
         }
