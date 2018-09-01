@@ -2,11 +2,14 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::config::Format;
-use crate::map::{GoalMap, Map, MapType, RemoverMap};
+use crate::map::{Map, MapType};
 use crate::map_formatter::MapFormatter;
 use crate::moves::Moves;
 use crate::solution_formatter::SolutionFormatter;
 use crate::state::State;
+
+#[cfg(test)]
+use crate::map::{GoalMap, RemoverMap};
 
 #[derive(Clone)]
 pub struct Level {
@@ -23,7 +26,7 @@ impl Level {
         self.map.map()
     }
 
-    #[allow(unused)] // for testing
+    #[cfg(test)]
     crate fn goal_map(&self) -> &GoalMap {
         match self.map {
             MapType::Goals(ref goal_map) => goal_map,
@@ -31,7 +34,7 @@ impl Level {
         }
     }
 
-    #[allow(unused)] // for testing
+    #[cfg(test)]
     crate fn remover_map(&self) -> &RemoverMap {
         match self.map {
             MapType::Goals(_) => panic!(),
