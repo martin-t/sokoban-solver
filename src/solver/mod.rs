@@ -132,16 +132,11 @@ struct Solver<M: Map> {
 }
 
 impl<M: Map> Solver<M> {
-    fn new_with_remover(map: &RemoverMap, state: &State) -> Result<Solver<RemoverMap>, SolverErr> {
-        // Guarantees we have here:
-        // - the player exists and therefore map is at least 1x1.
-        // - rows and cols is <= 255
-        // Do some more low level checking so we can omit some checks later.
-
+    fn check_reachability(map: &dyn Map, state: &State) -> Result<Vec2d<bool>, SolverErr> {
         // make sure the level is surrounded by wall
-        let mut to_visit = vec![state.player_pos];
         let mut visited = map.grid().scratchpad();
 
+        let mut to_visit = vec![state.player_pos];
         while !to_visit.is_empty() {
             let cur = to_visit.pop().unwrap();
             visited[cur] = true;
@@ -167,33 +162,26 @@ impl<M: Map> Solver<M> {
             }
         }
 
-        // TODO move into specialized function when removers work
+        Ok(visited)
+    }
+
+    fn new_with_remover(map: &RemoverMap, state: &State) -> Result<Solver<RemoverMap>, SolverErr> {
+        // Guarantees we have here:
+        // - the player exists and therefore map is at least 1x1.
+        // - rows and cols is <= 255
+        // Do some more low level checking so we can omit some checks later.
+
+        let visited = Self::check_reachability(map, state)?;
+
         if !visited[map.remover] {
             return Err(SolverErr::UnreachableRemover);
         }
 
-        // make sure all relevant game elements are reachable
-        //let mut reachable_goals = Vec::new();
-        /*let mut reachable_boxes = Vec::new();
-        for &pos in &state.boxes {
-            if visited[pos] {
-                reachable_boxes.push(pos);
-            } else if !map.goals.contains(&pos) {
-                return Err(SolverErr::UnreachableBoxes);
-            }
-        }*/
         for &pos in &state.boxes {
             if !visited[pos] {
                 return Err(SolverErr::UnreachableBoxes);
             }
         }
-        /*for &pos in &map.goals {
-            if visited[pos] {
-                reachable_goals.push(pos);
-            } else if !state.boxes.contains(&pos) {
-                return Err(SolverErr::UnreachableGoals);
-            }
-        }*/
 
         // TODO maybe do this first and use it instead of visited when detecting reachability in specialized fns?
         // make sure all non-reachable cells are walls
@@ -208,30 +196,17 @@ impl<M: Map> Solver<M> {
             }
         }
 
-        // technically, one could argue such a level is solved
-        // but it creates an annyoing edge case for some heuristics
-        /*if reachable_boxes.is_empty() || reachable_goals.is_empty() {
-            return Err(SolverErr::NoBoxesGoals);
-        }*/
-
-        /*if reachable_boxes.len() != reachable_goals.len() {
-            return Err(SolverErr::DiffBoxesGoals);
-        }*/
+        // TODO technically, this is solver and not an edge case since the heuristics have to handle it anyway
         if state.boxes.is_empty() {
             return Err(SolverErr::NoBoxes);
         }
 
         // only 255 boxes max because 255 (index of the 256th box) is used to represent empty in expand_{move,push}
-        /*if reachable_boxes.len() > MAX_BOXES {
-            return Err(SolverErr::TooMany);
-        }*/
         if state.boxes.len() > MAX_BOXES {
             return Err(SolverErr::TooMany);
         }
 
-        //let processed_map = RemoverMap::new(processed_grid, reachable_goals);
         let processed_map = RemoverMap::new(processed_grid, map.remover);
-        //let clean_state = State::new(state.player_pos, reachable_boxes);
         let distances = find_distances_remover(&processed_map);
         Ok(Solver {
             sd: StaticData {
@@ -248,41 +223,7 @@ impl<M: Map> Solver<M> {
         // - rows and cols is <= 255
         // Do some more low level checking so we can omit some checks later.
 
-        // make sure the level is surrounded by wall
-        let mut to_visit = vec![state.player_pos];
-        let mut visited = map.grid().scratchpad();
-
-        while !to_visit.is_empty() {
-            let cur = to_visit.pop().unwrap();
-            visited[cur] = true;
-
-            let (r, c) = (i32::from(cur.r), i32::from(cur.c));
-            let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
-            for &(nr, nc) in &neighbors {
-                // this is the only place we need to check bounds (using signed types)
-                // everything after that will be surrounded by walls
-                if nr < 0
-                    || nc < 0
-                    || nr >= i32::from(map.grid().rows())
-                    || nc >= i32::from(map.grid().cols())
-                {
-                    // we got out of bounds without hitting a wall
-                    return Err(SolverErr::IncompleteBorder);
-                }
-
-                let new_pos = Pos::new(nr as u8, nc as u8);
-                if !visited[new_pos] && map.grid()[new_pos] != MapCell::Wall {
-                    to_visit.push(new_pos);
-                }
-            }
-        }
-
-        // TODO move into specialized function when removers work
-        /*if let Some(pos) = remover {
-            if !visited.0[pos.r as usize][pos.c as usize] {
-                return Err(SolverErr::UnreachableRemover);
-            }
-        }*/
+        let visited = Self::check_reachability(map, state)?;
 
         // make sure all relevant game elements are reachable
         let mut reachable_goals = Vec::new();
