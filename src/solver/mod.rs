@@ -364,29 +364,29 @@ impl<M: Map> Solver<M> {
 // oh, and the distance depends on from which direction*s* the box is pushable
 // use an array for all combinations - directions as bitflags?
 fn find_distances(map: &GoalMap) -> Vec2d<Option<u16>> {
-    let mut distances = map.grid.scratchpad();
+    let mut distances = map.grid().scratchpad();
 
     // some functions don't check walls but only dead ends
-    let mut fake_distances = map.grid.scratchpad();
-    for r in 0..map.grid.rows() {
-        for c in 0..map.grid.cols() {
+    let mut fake_distances = map.grid().scratchpad();
+    for r in 0..map.grid().rows() {
+        for c in 0..map.grid().cols() {
             let pos = Pos::new(r, c);
-            if map.grid[pos] != MapCell::Wall {
+            if map.grid()[pos] != MapCell::Wall {
                 fake_distances[pos] = Some(0);
             }
         }
     }
 
     // put box on every position and try to get it to the nearest goal
-    for r in 0..map.grid.rows() {
-        for c in 0..map.grid.cols() {
+    for r in 0..map.grid().rows() {
+        for c in 0..map.grid().cols() {
             let box_pos = Pos::new(r, c);
-            if map.grid[box_pos] == MapCell::Wall {
+            if map.grid()[box_pos] == MapCell::Wall {
                 continue;
             }
 
             for &player_pos in &box_pos.neighbors() {
-                if map.grid[player_pos] == MapCell::Wall {
+                if map.grid()[player_pos] == MapCell::Wall {
                     continue;
                 }
 
@@ -429,30 +429,30 @@ fn find_distances(map: &GoalMap) -> Vec2d<Option<u16>> {
 
 // FIXME well, this is just lazy - give it a generic map?
 fn find_distances_remover(map: &RemoverMap) -> Vec2d<Option<u16>> {
-    let mut distances = map.grid.scratchpad();
+    let mut distances = map.grid().scratchpad();
     distances[map.remover] = Some(0);
 
     // some functions don't check walls but only dead ends
-    let mut fake_distances = map.grid.scratchpad();
-    for r in 0..map.grid.rows() {
-        for c in 0..map.grid.cols() {
+    let mut fake_distances = map.grid().scratchpad();
+    for r in 0..map.grid().rows() {
+        for c in 0..map.grid().cols() {
             let pos = Pos::new(r, c);
-            if map.grid[pos] != MapCell::Wall {
+            if map.grid()[pos] != MapCell::Wall {
                 fake_distances[pos] = Some(0);
             }
         }
     }
 
     // put box on every position and try to get it to the nearest goal
-    for r in 0..map.grid.rows() {
-        for c in 0..map.grid.cols() {
+    for r in 0..map.grid().rows() {
+        for c in 0..map.grid().cols() {
             let box_pos = Pos::new(r, c);
-            if box_pos == map.remover || map.grid[box_pos] == MapCell::Wall {
+            if box_pos == map.remover || map.grid()[box_pos] == MapCell::Wall {
                 continue;
             }
 
             for &player_pos in &box_pos.neighbors() {
-                if map.grid[player_pos] == MapCell::Wall {
+                if map.grid()[player_pos] == MapCell::Wall {
                     continue;
                 }
 
@@ -582,13 +582,13 @@ fn expand_push<'a>(
 ) -> Vec<&'a State> {
     let mut new_states = Vec::new();
 
-    let mut box_grid = sd.map.grid.scratchpad_with_default(255u8);
+    let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
     for (i, b) in state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }
 
     // find each box and each direction from which it can be pushed
-    let mut reachable = sd.map.grid.scratchpad();
+    let mut reachable = sd.map.grid().scratchpad();
     reachable[state.player_pos] = true;
 
     // Vec is noticeably faster than VecDeque on some levels
@@ -615,7 +615,7 @@ fn expand_push<'a>(
                     let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
                     new_states.push(&*new_state);
                 }
-            } else if sd.map.grid[new_player_pos] != MapCell::Wall && !reachable[new_player_pos] {
+            } else if sd.map.grid()[new_player_pos] != MapCell::Wall && !reachable[new_player_pos] {
                 // new_pos is empty and not yet visited
                 reachable[new_player_pos] = true;
                 to_visit.push(new_player_pos);
@@ -633,13 +633,13 @@ fn expand_push_remover<'a>(
 ) -> Vec<&'a State> {
     let mut new_states = Vec::new();
 
-    let mut box_grid = sd.map.grid.scratchpad_with_default(255u8);
+    let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
     for (i, b) in state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }
 
     // find each box and each direction from which it can be pushed
-    let mut reachable = sd.map.grid.scratchpad();
+    let mut reachable = sd.map.grid().scratchpad();
     reachable[state.player_pos] = true;
 
     // Vec is noticeably faster than VecDeque on some levels
@@ -670,7 +670,7 @@ fn expand_push_remover<'a>(
                     let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
                     new_states.push(&*new_state);
                 }
-            } else if sd.map.grid[new_player_pos] != MapCell::Wall && !reachable[new_player_pos] {
+            } else if sd.map.grid()[new_player_pos] != MapCell::Wall && !reachable[new_player_pos] {
                 // new_pos is empty and not yet visited
                 reachable[new_player_pos] = true;
                 to_visit.push(new_player_pos);
@@ -688,14 +688,14 @@ fn expand_move<'a>(
 ) -> Vec<&'a State> {
     let mut new_states = Vec::new();
 
-    let mut box_grid = sd.map.grid.scratchpad_with_default(255u8);
+    let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
     for (i, b) in state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }
 
     for &dir in &DIRECTIONS {
         let new_player_pos = state.player_pos + dir;
-        if sd.map.grid[new_player_pos] != MapCell::Wall {
+        if sd.map.grid()[new_player_pos] != MapCell::Wall {
             let box_index = box_grid[new_player_pos];
             let push_dest = new_player_pos + dir;
 
@@ -704,7 +704,7 @@ fn expand_move<'a>(
                 let new_state = arena.alloc(State::new(new_player_pos, state.boxes.clone()));
                 new_states.push(&*new_state);
             } else if box_grid[push_dest] == 255
-                && sd.map.grid[push_dest] != MapCell::Wall
+                && sd.map.grid()[push_dest] != MapCell::Wall
                 && sd.distances[push_dest].is_some()
             {
                 // push
@@ -727,14 +727,14 @@ fn expand_move_remover<'a>(
 ) -> Vec<&'a State> {
     let mut new_states = Vec::new();
 
-    let mut box_grid = sd.map.grid.scratchpad_with_default(255u8);
+    let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
     for (i, b) in state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }
 
     for &dir in &DIRECTIONS {
         let new_player_pos = state.player_pos + dir;
-        if sd.map.grid[new_player_pos] != MapCell::Wall {
+        if sd.map.grid()[new_player_pos] != MapCell::Wall {
             let box_index = box_grid[new_player_pos];
             let push_dest = new_player_pos + dir;
 
@@ -743,7 +743,7 @@ fn expand_move_remover<'a>(
                 let new_state = arena.alloc(State::new(new_player_pos, state.boxes.clone()));
                 new_states.push(&*new_state);
             } else if box_grid[push_dest] == 255
-                && sd.map.grid[push_dest] != MapCell::Wall
+                && sd.map.grid()[push_dest] != MapCell::Wall
                 && sd.distances[push_dest].is_some()
             {
                 // push
