@@ -165,58 +165,6 @@ impl<M: Map> Solver<M> {
         Ok(visited)
     }
 
-    fn new_with_remover(map: &RemoverMap, state: &State) -> Result<Solver<RemoverMap>, SolverErr> {
-        // Guarantees we have here:
-        // - the player exists and therefore map is at least 1x1.
-        // - rows and cols is <= 255
-        // Do some more low level checking so we can omit some checks later.
-
-        let visited = Self::check_reachability(map, state)?;
-
-        if !visited[map.remover] {
-            return Err(SolverErr::UnreachableRemover);
-        }
-
-        for &pos in &state.boxes {
-            if !visited[pos] {
-                return Err(SolverErr::UnreachableBoxes);
-            }
-        }
-
-        // TODO maybe do this first and use it instead of visited when detecting reachability in specialized fns?
-        // make sure all non-reachable cells are walls
-        // to avoid errors with some code that iterates through all non-walls
-        let mut processed_grid = map.grid().clone();
-        for r in 0..processed_grid.rows() {
-            for c in 0..processed_grid.cols() {
-                let pos = Pos::new(r, c);
-                if !visited[pos] {
-                    processed_grid[pos] = MapCell::Wall;
-                }
-            }
-        }
-
-        // TODO technically, this is solver and not an edge case since the heuristics have to handle it anyway
-        if state.boxes.is_empty() {
-            return Err(SolverErr::NoBoxes);
-        }
-
-        // only 255 boxes max because 255 (index of the 256th box) is used to represent empty in expand_{move,push}
-        if state.boxes.len() > MAX_BOXES {
-            return Err(SolverErr::TooMany);
-        }
-
-        let processed_map = RemoverMap::new(processed_grid, map.remover);
-        let distances = find_distances_remover(&processed_map);
-        Ok(Solver {
-            sd: StaticData {
-                map: processed_map,
-                distances,
-            },
-            initial_state: state.clone(),
-        })
-    }
-
     fn new_with_goals(map: &GoalMap, state: &State) -> Result<Solver<GoalMap>, SolverErr> {
         // Guarantees we have here:
         // - the player exists and therefore map is at least 1x1.
@@ -280,6 +228,58 @@ impl<M: Map> Solver<M> {
                 distances,
             },
             initial_state: clean_state,
+        })
+    }
+
+    fn new_with_remover(map: &RemoverMap, state: &State) -> Result<Solver<RemoverMap>, SolverErr> {
+        // Guarantees we have here:
+        // - the player exists and therefore map is at least 1x1.
+        // - rows and cols is <= 255
+        // Do some more low level checking so we can omit some checks later.
+
+        let visited = Self::check_reachability(map, state)?;
+
+        if !visited[map.remover] {
+            return Err(SolverErr::UnreachableRemover);
+        }
+
+        for &pos in &state.boxes {
+            if !visited[pos] {
+                return Err(SolverErr::UnreachableBoxes);
+            }
+        }
+
+        // TODO maybe do this first and use it instead of visited when detecting reachability in specialized fns?
+        // make sure all non-reachable cells are walls
+        // to avoid errors with some code that iterates through all non-walls
+        let mut processed_grid = map.grid().clone();
+        for r in 0..processed_grid.rows() {
+            for c in 0..processed_grid.cols() {
+                let pos = Pos::new(r, c);
+                if !visited[pos] {
+                    processed_grid[pos] = MapCell::Wall;
+                }
+            }
+        }
+
+        // TODO technically, this is solver and not an edge case since the heuristics have to handle it anyway
+        if state.boxes.is_empty() {
+            return Err(SolverErr::NoBoxes);
+        }
+
+        // only 255 boxes max because 255 (index of the 256th box) is used to represent empty in expand_{move,push}
+        if state.boxes.len() > MAX_BOXES {
+            return Err(SolverErr::TooMany);
+        }
+
+        let processed_map = RemoverMap::new(processed_grid, map.remover);
+        let distances = find_distances_remover(&processed_map);
+        Ok(Solver {
+            sd: StaticData {
+                map: processed_map,
+                distances,
+            },
+            initial_state: state.clone(),
         })
     }
 
