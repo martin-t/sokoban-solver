@@ -73,8 +73,8 @@ fn bench_level(c: &mut Criterion, method: Method, level_path: &str, samples: usi
 
 criterion_group!(
     benches,
-    //bench_pushes_boxxle1_1,
-    //bench_pushes_boxxle1_5,
+    bench_pushes_boxxle1_1,
+    bench_pushes_boxxle1_5,
     bench_pushes_boxxle1_18,
     bench_pushes_boxxle1_108,
     bench_pushes_boxxle2_3,

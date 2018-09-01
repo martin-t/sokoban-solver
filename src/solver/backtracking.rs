@@ -12,6 +12,7 @@ use crate::state::State;
 // push = a move that changes a box position
 // step = a move that doesn't change a box position
 
+// dynamic dispatch has no perf impact here
 crate fn reconstruct_moves<H: BuildHasher>(
     map: &dyn Map,
     prevs: &HashMap<&State, &State, H>,

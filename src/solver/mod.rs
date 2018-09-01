@@ -226,7 +226,7 @@ impl Solver<RemoverMap> {
 }
 
 impl<M: Map> Solver<M> {
-    fn check_reachability(map: &dyn Map, state: &State) -> Result<Vec2d<MapCell>, SolverErr> {
+    fn check_reachability(map: &M, state: &State) -> Result<Vec2d<MapCell>, SolverErr> {
         // make sure the level is surrounded by wall
         let mut visited = map.grid().scratchpad();
 
