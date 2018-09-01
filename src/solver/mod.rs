@@ -174,7 +174,7 @@ impl Solver<GoalMap> {
 
         let processed_map = GoalMap::new(processed_grid, reachable_goals);
         let clean_state = State::new(state.player_pos, reachable_boxes);
-        let distances = find_distances(&processed_map);
+        let distances = find_distances_goals(&processed_map);
         Ok(Solver {
             sd: StaticData {
                 map: processed_map,
@@ -367,7 +367,7 @@ impl<M: Map> Solver<M> {
 // just use BFS
 // oh, and the distance depends on from which direction*s* the box is pushable
 // use an array for all combinations - directions as bitflags?
-fn find_distances(map: &GoalMap) -> Vec2d<Option<u16>> {
+fn find_distances_goals(map: &GoalMap) -> Vec2d<Option<u16>> {
     let mut distances = map.grid().scratchpad();
 
     // some functions don't check walls but only dead ends
@@ -931,7 +931,7 @@ mod tests {
     }
 
     #[test]
-    fn distances1() {
+    fn distances_goals_1() {
         let level = r"
 #####
 ##@##
@@ -948,11 +948,11 @@ mod tests {
             vec![None, None, None, None, None],
         ]);
         //assert_eq!(find_distances(&level.map), expected);
-        assert_eq!(find_distances(level.goal_map()), expected);
+        assert_eq!(find_distances_goals(level.goal_map()), expected);
     }
 
     #[test]
-    fn distances2() {
+    fn distances_goals_2() {
         let level = r"
 ###########
 #@$$$$$$ ##
@@ -981,7 +981,10 @@ None    None    None    None    None Some(0)    None     None     None None None
 None    None    None    None    None    None    None     None     None None None 
 ".trim_left_matches('\n');
         //assert_eq!(format!("{:?}", find_distances(&level.map)), expected);
-        assert_eq!(format!("{:?}", find_distances(level.goal_map())), expected);
+        assert_eq!(
+            format!("{:?}", find_distances_goals(level.goal_map())),
+            expected
+        );
     }
 
     #[test]
