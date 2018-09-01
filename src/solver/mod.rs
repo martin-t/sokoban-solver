@@ -78,7 +78,7 @@ impl Solve for Level {
 
         match self.map {
             MapType::Goals(ref goals_map) => {
-                let solver = Solver::<GoalMap>::new_with_goals(goals_map, &self.state)?;
+                let solver = Solver::new_with_goals(goals_map, &self.state)?;
 
                 debug!("Processed level");
 
@@ -92,7 +92,7 @@ impl Solve for Level {
                 }
             }
             MapType::Remover(ref remover_map) => {
-                let solver = Solver::<GoalMap>::new_with_remover(remover_map, &self.state)?;
+                let solver = Solver::new_with_remover(remover_map, &self.state)?;
 
                 debug!("Processed level");
 
@@ -129,52 +129,7 @@ struct Solver<M: Map> {
     initial_state: State,
 }
 
-impl<M: Map> Solver<M> {
-    fn check_reachability(map: &dyn Map, state: &State) -> Result<Vec2d<MapCell>, SolverErr> {
-        // make sure the level is surrounded by wall
-        let mut visited = map.grid().scratchpad();
-
-        let mut to_visit = vec![state.player_pos];
-        while !to_visit.is_empty() {
-            let cur = to_visit.pop().unwrap();
-            visited[cur] = true;
-
-            let (r, c) = (i32::from(cur.r), i32::from(cur.c));
-            let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
-            for &(nr, nc) in &neighbors {
-                // this is the only place in the solver where we need to check bounds (using signed types)
-                // everything after that will be surrounded by walls
-                if nr < 0
-                    || nc < 0
-                    || nr >= i32::from(map.grid().rows())
-                    || nc >= i32::from(map.grid().cols())
-                {
-                    // we got out of bounds without hitting a wall
-                    return Err(SolverErr::IncompleteBorder);
-                }
-
-                let new_pos = Pos::new(nr as u8, nc as u8);
-                if !visited[new_pos] && map.grid()[new_pos] != MapCell::Wall {
-                    to_visit.push(new_pos);
-                }
-            }
-        }
-
-        // make sure all non-reachable cells are walls
-        // to avoid errors with some code that iterates through all non-walls
-        let mut processed_grid = map.grid().clone();
-        for r in 0..processed_grid.rows() {
-            for c in 0..processed_grid.cols() {
-                let pos = Pos::new(r, c);
-                if !visited[pos] {
-                    processed_grid[pos] = MapCell::Wall;
-                }
-            }
-        }
-
-        Ok(processed_grid)
-    }
-
+impl Solver<GoalMap> {
     fn new_with_goals(map: &GoalMap, state: &State) -> Result<Solver<GoalMap>, SolverErr> {
         // Guarantees we have here:
         // - the player exists and therefore map is at least 1x1.
@@ -228,7 +183,9 @@ impl<M: Map> Solver<M> {
             initial_state: clean_state,
         })
     }
+}
 
+impl Solver<RemoverMap> {
     fn new_with_remover(map: &RemoverMap, state: &State) -> Result<Solver<RemoverMap>, SolverErr> {
         // Guarantees we have here:
         // - the player exists and therefore map is at least 1x1.
@@ -265,6 +222,53 @@ impl<M: Map> Solver<M> {
             },
             initial_state: state.clone(),
         })
+    }
+}
+
+impl<M: Map> Solver<M> {
+    fn check_reachability(map: &dyn Map, state: &State) -> Result<Vec2d<MapCell>, SolverErr> {
+        // make sure the level is surrounded by wall
+        let mut visited = map.grid().scratchpad();
+
+        let mut to_visit = vec![state.player_pos];
+        while !to_visit.is_empty() {
+            let cur = to_visit.pop().unwrap();
+            visited[cur] = true;
+
+            let (r, c) = (i32::from(cur.r), i32::from(cur.c));
+            let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
+            for &(nr, nc) in &neighbors {
+                // this is the only place in the solver where we need to check bounds (using signed types)
+                // everything after that will be surrounded by walls
+                if nr < 0
+                    || nc < 0
+                    || nr >= i32::from(map.grid().rows())
+                    || nc >= i32::from(map.grid().cols())
+                {
+                    // we got out of bounds without hitting a wall
+                    return Err(SolverErr::IncompleteBorder);
+                }
+
+                let new_pos = Pos::new(nr as u8, nc as u8);
+                if !visited[new_pos] && map.grid()[new_pos] != MapCell::Wall {
+                    to_visit.push(new_pos);
+                }
+            }
+        }
+
+        // make sure all non-reachable cells are walls
+        // to avoid errors with some code that iterates through all non-walls
+        let mut processed_grid = map.grid().clone();
+        for r in 0..processed_grid.rows() {
+            for c in 0..processed_grid.cols() {
+                let pos = Pos::new(r, c);
+                if !visited[pos] {
+                    processed_grid[pos] = MapCell::Wall;
+                }
+            }
+        }
+
+        Ok(processed_grid)
     }
 
     fn search<Expand, Heuristic>(
@@ -800,7 +804,7 @@ mod tests {
             let level: Level = level.parse().unwrap();
             assert_eq!(
                 //Solver::new(&level).unwrap_err(),
-                Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
+                Solver::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
                 SolverErr::IncompleteBorder
             );
         }
@@ -816,7 +820,7 @@ mod tests {
         let level: Level = level.parse().unwrap();
         assert_eq!(
             //Solver::new(&level).unwrap_err(),
-            Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
+            Solver::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
             SolverErr::UnreachableBoxes
         );
     }
@@ -831,7 +835,7 @@ mod tests {
         let level: Level = level.parse().unwrap();
         assert_eq!(
             //Solver::new(&level).unwrap_err(),
-            Solver::<RemoverMap>::new_with_remover(level.remover_map(), &level.state).unwrap_err(),
+            Solver::new_with_remover(level.remover_map(), &level.state).unwrap_err(),
             SolverErr::UnreachableBoxes
         );
     }
@@ -846,7 +850,7 @@ mod tests {
         let level: Level = level.parse().unwrap();
         assert_eq!(
             //Solver::new(&level).unwrap_err(),
-            Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
+            Solver::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
             SolverErr::UnreachableGoals
         );
     }
@@ -861,7 +865,7 @@ mod tests {
         let level: Level = level.parse().unwrap();
         assert_eq!(
             //Solver::new(&level).unwrap_err(),
-            Solver::<RemoverMap>::new_with_remover(level.remover_map(), &level.state).unwrap_err(),
+            Solver::new_with_remover(level.remover_map(), &level.state).unwrap_err(),
             SolverErr::UnreachableRemover
         );
     }
@@ -891,7 +895,7 @@ mod tests {
 ";
         let level: Level = level.parse().unwrap();
         //let err = Solver::new(&level).unwrap_err();
-        let err = Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err();
+        let err = Solver::new_with_goals(level.goal_map(), &level.state).unwrap_err();
         assert_eq!(err, SolverErr::TooMany);
         assert_eq!(err.to_string(), "More than 255 reachable boxes or goals");
     }
@@ -906,7 +910,7 @@ mod tests {
         let level: Level = level.parse().unwrap();
         //assert_eq!(Solver::new(&level).unwrap_err(), SolverErr::NoBoxesGoals);
         assert_eq!(
-            Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
+            Solver::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
             SolverErr::NoBoxesGoals
         );
     }
@@ -921,7 +925,7 @@ mod tests {
         let level: Level = level.parse().unwrap();
         //assert_eq!(Solver::new(&level).unwrap_err(), SolverErr::DiffBoxesGoals);
         assert_eq!(
-            Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
+            Solver::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
             SolverErr::DiffBoxesGoals
         );
     }
@@ -990,7 +994,7 @@ None    None    None    None    None    None    None     None     None None None
 
         //let solver = Solver::new(&level.parse().unwrap()).unwrap();
         let level: Level = level.parse().unwrap();
-        let solver = Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap();
+        let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
 
         let processed_empty_level: &str = r"
 #######
@@ -1022,7 +1026,7 @@ None    None    None    None    None    None    None     None     None None None
 ";
         let level: Level = level.parse().unwrap();
         //let solver = Solver::new(&level).unwrap();
-        let solver = Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap();
+        let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
         let neighbor_states = expand_push(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 2);
@@ -1040,7 +1044,7 @@ None    None    None    None    None    None    None     None     None None None
 ";
         let level: Level = level.parse().unwrap();
         //let solver = Solver::new(&level).unwrap();
-        let solver = Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap();
+        let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
         let neighbor_states = expand_move(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 2);
@@ -1058,7 +1062,7 @@ None    None    None    None    None    None    None     None     None None None
 ";
         let level: Level = level.parse().unwrap();
         //let solver = Solver::new(&level).unwrap();
-        let solver = Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap();
+        let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
         let neighbor_states = expand_move(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 4);
