@@ -27,7 +27,7 @@ pub enum SolverErr {
     IncompleteBorder,
     UnreachableBoxes,
     UnreachableGoals,
-    UnreachableRemover, // TODO test
+    UnreachableRemover,
     TooMany,
     NoBoxesGoals,
     DiffBoxesGoals,
@@ -770,21 +770,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn unreachable_boxes() {
-        let level = r"
-########
-#@$.#$.#
-########
-";
-        let level: Level = level.parse().unwrap();
-        assert_eq!(
-            //Solver::new(&level).unwrap_err(),
-            Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
-            SolverErr::UnreachableBoxes
-        );
-    }
-
-    #[test]
     fn incomplete_border() {
         let level0 = r"
 ####
@@ -819,6 +804,66 @@ mod tests {
                 SolverErr::IncompleteBorder
             );
         }
+    }
+
+    #[test]
+    fn unreachable_boxes_goals() {
+        let level = r"
+########
+#@$.#$.#
+########
+";
+        let level: Level = level.parse().unwrap();
+        assert_eq!(
+            //Solver::new(&level).unwrap_err(),
+            Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
+            SolverErr::UnreachableBoxes
+        );
+    }
+
+    #[test]
+    fn unreachable_boxes_remover() {
+        let level = r"
+########
+# $ #$R#
+########
+";
+        let level: Level = level.parse().unwrap();
+        assert_eq!(
+            //Solver::new(&level).unwrap_err(),
+            Solver::<RemoverMap>::new_with_remover(level.remover_map(), &level.state).unwrap_err(),
+            SolverErr::UnreachableBoxes
+        );
+    }
+
+    #[test]
+    fn unreachable_goals() {
+        let level = r"
+########
+#@$ # .#
+########
+";
+        let level: Level = level.parse().unwrap();
+        assert_eq!(
+            //Solver::new(&level).unwrap_err(),
+            Solver::<GoalMap>::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
+            SolverErr::UnreachableGoals
+        );
+    }
+
+    #[test]
+    fn unreachable_remover() {
+        let level = r"
+########
+#@$$# r#
+########
+";
+        let level: Level = level.parse().unwrap();
+        assert_eq!(
+            //Solver::new(&level).unwrap_err(),
+            Solver::<RemoverMap>::new_with_remover(level.remover_map(), &level.state).unwrap_err(),
+            SolverErr::UnreachableRemover
+        );
     }
 
     #[test]
@@ -1019,3 +1064,5 @@ None    None    None    None    None    None    None     None     None None None
         assert_eq!(neighbor_states.len(), 4);
     }
 }
+
+// TODO when the interface is stable, remove all the commented out code in tests
