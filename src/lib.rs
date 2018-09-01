@@ -291,7 +291,7 @@ mod tests {
         let result_dir = format!("solutions/{}/{}", method_name, level_pack);
         let result_file = format!("{}/{}", result_dir, level_name);
 
-        println!("Solving {} using {}", level_path, method_name);
+        println!("Solving: method {}, level {}", method_name, level_path);
         let started = Instant::now();
 
         let level = level_path.load_level().unwrap();
@@ -299,9 +299,7 @@ mod tests {
 
         // innacurate, only useful to quickly see which levels are difficult
         println!(
-            "Solved {} using {} in approximately {} ms",
-            level_path,
-            method_name,
+            "Finished in approximately {} ms",
             (started.elapsed().as_millis() as u64).separated_string(), // separator doesn't support u128
         );
 
