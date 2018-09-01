@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# splits the format used by levels from http://www.sourcecode.se/sokoban/levels
+# which is basically levels separated by one line starting with `;` and blank lines otherwise
+
 import os
 from os import path
 import re
