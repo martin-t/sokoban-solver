@@ -31,7 +31,6 @@ pub enum SolverErr {
     TooMany,
     NoBoxesGoals,
     DiffBoxesGoals,
-    NoBoxes, // TODO test
 }
 
 impl Display for SolverErr {
@@ -50,7 +49,6 @@ impl Display for SolverErr {
             SolverErr::TooMany => write!(f, "More than {} reachable boxes or goals", MAX_BOXES),
             SolverErr::NoBoxesGoals => write!(f, "No reachable boxes or goals"),
             SolverErr::DiffBoxesGoals => write!(f, "Different number of reachable boxes and goals"),
-            SolverErr::NoBoxes => write!(f, "No reachable boxes"),
         }
     }
 }
@@ -249,10 +247,9 @@ impl<M: Map> Solver<M> {
             }
         }
 
-        // TODO technically, this is solved and not an edge case since the heuristics have to handle it anyway
-        if state.boxes.is_empty() {
-            return Err(SolverErr::NoBoxes);
-        }
+        // Note that a level with 0 boxes is valid (and already solved).
+        // This should not upset the heuristics (since they already have to handle that case)
+        // or backtracking (since there are no moves).
 
         // only 255 boxes max because 255 (index of the 256th box) is used to represent empty in expand_{move,push}
         if state.boxes.len() > MAX_BOXES {
