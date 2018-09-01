@@ -132,7 +132,7 @@ struct Solver<M: Map> {
 }
 
 impl<M: Map> Solver<M> {
-    fn check_reachability(map: &dyn Map, state: &State) -> Result<Vec2d<bool>, SolverErr> {
+    fn check_reachability(map: &dyn Map, state: &State) -> Result<Vec2d<MapCell>, SolverErr> {
         // make sure the level is surrounded by wall
         let mut visited = map.grid().scratchpad();
 
@@ -144,7 +144,7 @@ impl<M: Map> Solver<M> {
             let (r, c) = (i32::from(cur.r), i32::from(cur.c));
             let neighbors = [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)];
             for &(nr, nc) in &neighbors {
-                // this is the only place we need to check bounds (using signed types)
+                // this is the only place in the solver where we need to check bounds (using signed types)
                 // everything after that will be surrounded by walls
                 if nr < 0
                     || nc < 0
@@ -162,36 +162,6 @@ impl<M: Map> Solver<M> {
             }
         }
 
-        Ok(visited)
-    }
-
-    fn new_with_goals(map: &GoalMap, state: &State) -> Result<Solver<GoalMap>, SolverErr> {
-        // Guarantees we have here:
-        // - the player exists and therefore map is at least 1x1.
-        // - rows and cols is <= 255
-        // Do some more low level checking so we can omit some checks later.
-
-        let visited = Self::check_reachability(map, state)?;
-
-        // make sure all relevant game elements are reachable
-        let mut reachable_goals = Vec::new();
-        let mut reachable_boxes = Vec::new();
-        for &pos in &state.boxes {
-            if visited[pos] {
-                reachable_boxes.push(pos);
-            } else if !map.goals.contains(&pos) {
-                return Err(SolverErr::UnreachableBoxes);
-            }
-        }
-        for &pos in &map.goals {
-            if visited[pos] {
-                reachable_goals.push(pos);
-            } else if !state.boxes.contains(&pos) {
-                return Err(SolverErr::UnreachableGoals);
-            }
-        }
-
-        // TODO maybe do this first and use it instead of visited when detecting reachability in specialized fns?
         // make sure all non-reachable cells are walls
         // to avoid errors with some code that iterates through all non-walls
         let mut processed_grid = map.grid().clone();
@@ -201,6 +171,36 @@ impl<M: Map> Solver<M> {
                 if !visited[pos] {
                     processed_grid[pos] = MapCell::Wall;
                 }
+            }
+        }
+
+        Ok(processed_grid)
+    }
+
+    fn new_with_goals(map: &GoalMap, state: &State) -> Result<Solver<GoalMap>, SolverErr> {
+        // Guarantees we have here:
+        // - the player exists and therefore map is at least 1x1.
+        // - rows and cols is <= 255
+        // Do some more low level checking so we can omit some checks later.
+
+        let processed_grid = Self::check_reachability(map, state)?;
+
+        // make sure all relevant game elements are reachable
+        let mut reachable_boxes = Vec::new();
+        for &pos in &state.boxes {
+            if processed_grid[pos] != MapCell::Wall {
+                reachable_boxes.push(pos);
+            } else if !map.goals.contains(&pos) {
+                return Err(SolverErr::UnreachableBoxes);
+            }
+        }
+
+        let mut reachable_goals = Vec::new();
+        for &pos in &map.goals {
+            if processed_grid[pos] != MapCell::Wall {
+                reachable_goals.push(pos);
+            } else if !state.boxes.contains(&pos) {
+                return Err(SolverErr::UnreachableGoals);
             }
         }
 
@@ -237,32 +237,19 @@ impl<M: Map> Solver<M> {
         // - rows and cols is <= 255
         // Do some more low level checking so we can omit some checks later.
 
-        let visited = Self::check_reachability(map, state)?;
+        let processed_grid = Self::check_reachability(map, state)?;
 
-        if !visited[map.remover] {
+        if processed_grid[map.remover] == MapCell::Wall {
             return Err(SolverErr::UnreachableRemover);
         }
 
         for &pos in &state.boxes {
-            if !visited[pos] {
+            if processed_grid[pos] == MapCell::Wall {
                 return Err(SolverErr::UnreachableBoxes);
             }
         }
 
-        // TODO maybe do this first and use it instead of visited when detecting reachability in specialized fns?
-        // make sure all non-reachable cells are walls
-        // to avoid errors with some code that iterates through all non-walls
-        let mut processed_grid = map.grid().clone();
-        for r in 0..processed_grid.rows() {
-            for c in 0..processed_grid.cols() {
-                let pos = Pos::new(r, c);
-                if !visited[pos] {
-                    processed_grid[pos] = MapCell::Wall;
-                }
-            }
-        }
-
-        // TODO technically, this is solver and not an edge case since the heuristics have to handle it anyway
+        // TODO technically, this is solved and not an edge case since the heuristics have to handle it anyway
         if state.boxes.is_empty() {
             return Err(SolverErr::NoBoxes);
         }
