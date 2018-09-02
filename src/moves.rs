@@ -67,7 +67,6 @@ impl Moves {
     }
 }
 
-// TODO are both necessary? maybe better deref into slice?
 impl IntoIterator for Moves {
     type Item = Move;
     type IntoIter = ::std::vec::IntoIter<Move>;
@@ -151,5 +150,39 @@ mod tests {
 
         assert_eq!(moves1.move_cnt(), 8);
         assert_eq!(moves1.push_cnt(), 4);
+    }
+
+    #[test]
+    fn iterating() {
+        let v = vec![
+            Move::new(Dir::Up, false),
+            Move::new(Dir::Right, false),
+            Move::new(Dir::Down, false),
+            Move::new(Dir::Left, false),
+            Move::new(Dir::Up, true),
+            Move::new(Dir::Right, true),
+            Move::new(Dir::Down, true),
+            Move::new(Dir::Left, true),
+        ];
+        let moves = Moves::new(v.clone());
+
+        let mut v2 = Vec::new();
+        for &m in &moves {
+            v2.push(m);
+        }
+        for &m in moves.iter() {
+            v2.push(m);
+        }
+        for m in moves.clone() {
+            v2.push(m);
+        }
+        for m in moves.into_iter() {
+            v2.push(m);
+        }
+
+        assert_eq!(v2.len(), 32);
+        for chunk in v2.chunks(8) {
+            assert_eq!(chunk, &v[..]);
+        }
     }
 }
