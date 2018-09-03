@@ -359,8 +359,34 @@ impl<M: Map> Solver<M> {
     }
 }
 
+/*fn find_push_distances(grid: Vec2d<MapCell>, targets: &[Pos]) -> Vec2d<Option<u16>> {
+    // run bfs from all possible positions, then pick src/dest pairs
+    unimplemented!()
+}
+
+fn bfs_push(grid: &Vec2d<MapCell>, box_pos: Pos) -> Vec2d<Option<u16>> {
+    // at first, just use the minimum, later return all 16 combinations
+    unimplemented!()
+}*/
+
+// #######
+// ### ###
+// ### ###
+// #    .#
+// ###$###
+// ###@###
+// #######
+
+// #######
+// ### ###
+// ### ###
+// #    .#
+// # #$###
+// #  @###
+// #######
+
 // TODO get rid of this recursive fake solver nonsense
-// every time i change something i make a mistake and spend on hour debugging it
+// every time i change something i make a mistake and spend an hour debugging it
 // just use BFS
 // oh, and the distance depends on from which direction*s* the box is pushable
 // use an array for all combinations - directions as bitflags?
