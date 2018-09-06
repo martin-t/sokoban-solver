@@ -83,11 +83,14 @@ impl Solve for Level {
                 debug!("Processed level");
 
                 match method {
-                    Method::MoveOptimal => {
-                        Ok(solver.search(method, print_status, expand_move, heuristic_move))
-                    }
+                    Method::MoveOptimal => Ok(solver.search(
+                        method,
+                        print_status,
+                        expand_move_goals,
+                        heuristic_move_goals,
+                    )),
                     Method::PushOptimal => {
-                        Ok(solver.search(method, print_status, expand_push, heuristic_push))
+                        Ok(solver.search(method, print_status, expand_push_goals, heuristic_push))
                     }
                 }
             }
@@ -107,7 +110,7 @@ impl Solve for Level {
                         method,
                         print_status,
                         expand_push_remover,
-                        heuristic_push_remover,
+                        heuristic_push,
                     )),
                 }
             }
@@ -119,6 +122,252 @@ impl Solve for Level {
 struct StaticData<M: Map> {
     map: M,
     distances: Vec2d<Option<u16>>,
+}
+
+trait SolverTrait {
+    type M: Map + Clone;
+
+    fn initial_state(&self) -> &State;
+
+    fn sd(&self) -> &StaticData<Self::M>;
+
+    fn preprocessing_expand<'a>(
+        sd: &StaticData<Self::M>,
+        state: &State,
+        arena: &'a Arena<State>,
+    ) -> Vec<&'a State>;
+
+    fn preprocessing_heuristic(sd: &StaticData<Self::M>, state: &State) -> u16;
+
+    // #######
+    // ### ###
+    // ### ###
+    // #    .#
+    // ###$###
+    // ###@###
+    // #######
+
+    // #######
+    // ### ###
+    // ### ###
+    // #    .#
+    // # #$###
+    // #  @###
+    // #######
+
+    // TODO get rid of this recursive fake solver nonsense
+    // every time i change something i make a mistake and spend an hour debugging it
+    // just use BFS (testcases above)
+    // oh, and the distance depends on from which direction*s* the box is pushable
+    // use an array for all combinations - directions as bitflags?
+    fn find_distances(map: &Self::M) -> Vec2d<Option<u16>>
+    where
+        Solver<Self::M>: SolverTrait<M = Self::M>,
+    {
+        let mut distances = map.grid().scratchpad();
+
+        if let Some(remover) = map.remover() {
+            distances[remover] = Some(0);
+        }
+
+        // some functions don't check walls but only dead ends
+        let mut fake_distances = map.grid().scratchpad();
+        for pos in map.grid().positions() {
+            if map.grid()[pos] != MapCell::Wall {
+                fake_distances[pos] = Some(0);
+            }
+        }
+
+        // put box on every position and try to get it to the nearest goal
+        for box_pos in map.grid().positions() {
+            if map.grid()[box_pos] == MapCell::Wall {
+                continue;
+            }
+            if let Some(remover) = map.remover() {
+                if box_pos == remover {
+                    continue;
+                }
+            }
+
+            for &player_pos in &box_pos.neighbors() {
+                if map.grid()[player_pos] == MapCell::Wall {
+                    continue;
+                }
+
+                let fake_state = State {
+                    player_pos,
+                    boxes: vec![box_pos],
+                };
+                let fake_solver = Solver {
+                    sd: StaticData {
+                        map: map.clone(),
+                        distances: fake_distances.clone(),
+                    },
+                    initial_state: fake_state,
+                };
+
+                // using manhattan dist here because the fake solver needs a heuristic
+                // that only reports 0 when the level is solved
+                let moves = fake_solver
+                    .search(
+                        Method::PushOptimal,
+                        false,
+                        Self::preprocessing_expand,
+                        Self::preprocessing_heuristic,
+                    ).moves;
+                if let Some(moves) = moves {
+                    let new_dist = moves.push_cnt() as u16; // dist can't be larger than MAX_SIZE^2
+                    match distances[box_pos] {
+                        None => distances[box_pos] = Some(new_dist),
+                        Some(cur_min_dist) => if new_dist < cur_min_dist {
+                            distances[box_pos] = Some(new_dist);
+                        },
+                    }
+                }
+            }
+        }
+
+        distances
+    }
+
+    fn search<Expand, Heuristic>(
+        &self,
+        method: Method,
+        print_status: bool,
+        expand: Expand,
+        heuristic: Heuristic,
+    ) -> SolverOk
+    where
+        Expand: for<'a> Fn(&StaticData<Self::M>, &State, &'a Arena<State>) -> Vec<&'a State>,
+        Heuristic: Fn(&StaticData<Self::M>, &State) -> u16,
+        Solver<Self::M>: SolverTrait,
+    {
+        debug!("Search called");
+
+        let mut stats = Stats::new();
+        let states = Arena::new();
+
+        let mut to_visit = BinaryHeap::new();
+        let mut prevs = FnvHashMap::default();
+
+        let start = SearchNode::new(
+            self.initial_state(),
+            None,
+            0,
+            heuristic(self.sd(), self.initial_state()),
+        );
+        stats.add_created(&start);
+        to_visit.push(Reverse(start));
+
+        //let mut counter = 0;
+        while let Some(Reverse(cur_node)) = to_visit.pop() {
+            /*counter += 1;
+            if counter % 10_000 == 0 {
+                use crate::map::Map;
+                println!("prevs: {}, to_visit: {}", prevs.len(), to_visit.len());
+                println!("{}", self.map.xsb_with_state(&cur_node.state));
+            }*/
+
+            if prevs.contains_key(cur_node.state) {
+                stats.add_reached_duplicate(&cur_node);
+                continue;
+            }
+            if stats.add_unique_visited(&cur_node) && print_status {
+                println!("Visited new depth: {}", cur_node.dist);
+                println!("{:?}", stats);
+            }
+
+            // insert when expanding and not when generating
+            // otherwise we might overwrite the shortest path with longer ones
+            if let Some(p) = cur_node.prev {
+                prevs.insert(cur_node.state, p);
+            } else {
+                // initial state has no prev - hack to avoid Option
+                prevs.insert(cur_node.state, cur_node.state);
+            }
+
+            if cur_node.cost == cur_node.dist {
+                // heuristic is 0 so level is solved
+                debug!("Solved, backtracking path");
+                return SolverOk::new(
+                    Some(backtracking::reconstruct_moves(
+                        &self.sd().map,
+                        &prevs,
+                        &cur_node.state,
+                    )),
+                    stats,
+                    method,
+                );
+            }
+
+            for neighbor_state in expand(self.sd(), &cur_node.state, &states) {
+                // Insert everything and ignore duplicates when popping. This wastes memory
+                // but when I filter them out here using a HashMap, push-optimal/boxxle2/4 becomes 8x slower
+                // and generates much more states (although push-optimal/original/1 becomes about 2x faster).
+                // I might have done something wrong, might wanna try again when i have better debugging tools
+                // to look at the generated states.
+
+                // Also might wanna try https://crates.io/crates/priority-queue for changing priorities
+                // instead of adding duplicates.
+
+                let h = heuristic(self.sd(), neighbor_state);
+                let next_node =
+                    SearchNode::new(neighbor_state, Some(&cur_node.state), cur_node.dist + 1, h);
+                stats.add_created(&next_node);
+                to_visit.push(Reverse(next_node));
+            }
+        }
+
+        SolverOk::new(None, stats, method)
+    }
+}
+
+impl SolverTrait for Solver<GoalMap> {
+    type M = GoalMap;
+
+    fn initial_state(&self) -> &State {
+        &self.initial_state
+    }
+
+    fn sd(&self) -> &StaticData<Self::M> {
+        &self.sd
+    }
+
+    fn preprocessing_expand<'a>(
+        sd: &StaticData<Self::M>,
+        state: &State,
+        arena: &'a Arena<State>,
+    ) -> Vec<&'a State> {
+        expand_push_goals(sd, state, arena)
+    }
+
+    fn preprocessing_heuristic(sd: &StaticData<Self::M>, state: &State) -> u16 {
+        heuristic_push_manhattan_goals(sd, state)
+    }
+}
+
+impl SolverTrait for Solver<RemoverMap> {
+    type M = RemoverMap;
+
+    fn initial_state(&self) -> &State {
+        &self.initial_state
+    }
+
+    fn sd(&self) -> &StaticData<Self::M> {
+        &self.sd
+    }
+
+    fn preprocessing_expand<'a>(
+        sd: &StaticData<Self::M>,
+        state: &State,
+        arena: &'a Arena<State>,
+    ) -> Vec<&'a State> {
+        expand_push_remover(sd, state, arena)
+    }
+
+    fn preprocessing_heuristic(sd: &StaticData<Self::M>, state: &State) -> u16 {
+        heuristic_push_manhattan_remover(sd, state)
+    }
 }
 
 #[derive(Debug)]
@@ -174,7 +423,7 @@ impl Solver<GoalMap> {
 
         let processed_map = GoalMap::new(processed_grid, reachable_goals);
         let clean_state = State::new(state.player_pos, reachable_boxes);
-        let distances = find_distances_goals(&processed_map);
+        let distances = Self::find_distances(&processed_map);
         Ok(Solver {
             sd: StaticData {
                 map: processed_map,
@@ -214,7 +463,7 @@ impl Solver<RemoverMap> {
         }
 
         let processed_map = RemoverMap::new(processed_grid, map.remover);
-        let distances = find_distances_remover(&processed_map);
+        let distances = Self::find_distances(&processed_map);
         Ok(Solver {
             sd: StaticData {
                 map: processed_map,
@@ -267,248 +516,9 @@ impl<M: Map> Solver<M> {
 
         Ok(processed_grid)
     }
-
-    fn search<Expand, Heuristic>(
-        &self,
-        method: Method,
-        print_status: bool,
-        expand: Expand,
-        heuristic: Heuristic,
-    ) -> SolverOk
-    where
-        Expand: for<'a> Fn(&StaticData<M>, &State, &'a Arena<State>) -> Vec<&'a State>,
-        Heuristic: Fn(&StaticData<M>, &State) -> u16,
-    {
-        debug!("Search called");
-
-        let mut stats = Stats::new();
-        let states = Arena::new();
-
-        let mut to_visit = BinaryHeap::new();
-        let mut prevs = FnvHashMap::default();
-
-        let start = SearchNode::new(
-            &self.initial_state,
-            None,
-            0,
-            heuristic(&self.sd, &self.initial_state),
-        );
-        stats.add_created(&start);
-        to_visit.push(Reverse(start));
-
-        //let mut counter = 0;
-        while let Some(Reverse(cur_node)) = to_visit.pop() {
-            /*counter += 1;
-            if counter % 10_000 == 0 {
-                use crate::map::Map;
-                println!("prevs: {}, to_visit: {}", prevs.len(), to_visit.len());
-                println!("{}", self.map.xsb_with_state(&cur_node.state));
-            }*/
-
-            if prevs.contains_key(cur_node.state) {
-                stats.add_reached_duplicate(&cur_node);
-                continue;
-            }
-            if stats.add_unique_visited(&cur_node) && print_status {
-                println!("Visited new depth: {}", cur_node.dist);
-                println!("{:?}", stats);
-            }
-
-            // insert when expanding and not when generating
-            // otherwise we might overwrite the shortest path with longer ones
-            if let Some(p) = cur_node.prev {
-                prevs.insert(cur_node.state, p);
-            } else {
-                // initial state has no prev - hack to avoid Option
-                prevs.insert(cur_node.state, cur_node.state);
-            }
-
-            if cur_node.cost == cur_node.dist {
-                // heuristic is 0 so level is solved
-                debug!("Solved, backtracking path");
-                return SolverOk::new(
-                    Some(backtracking::reconstruct_moves(
-                        &self.sd.map,
-                        &prevs,
-                        &cur_node.state,
-                    )),
-                    stats,
-                    method,
-                );
-            }
-
-            for neighbor_state in expand(&self.sd, &cur_node.state, &states) {
-                // Insert everything and ignore duplicates when popping. This wastes memory
-                // but when I filter them out here using a HashMap, push-optimal/boxxle2/4 becomes 8x slower
-                // and generates much more states (although push-optimal/original/1 becomes about 2x faster).
-                // I might have done something wrong, might wanna try again when i have better debugging tools
-                // to look at the generated states.
-
-                // Also might wanna try https://crates.io/crates/priority-queue for changing priorities
-                // instead of adding duplicates.
-
-                let h = heuristic(&self.sd, neighbor_state);
-                let next_node =
-                    SearchNode::new(neighbor_state, Some(&cur_node.state), cur_node.dist + 1, h);
-                stats.add_created(&next_node);
-                to_visit.push(Reverse(next_node));
-            }
-        }
-
-        SolverOk::new(None, stats, method)
-    }
 }
 
-/*fn find_push_distances(grid: Vec2d<MapCell>, targets: &[Pos]) -> Vec2d<Option<u16>> {
-    // run bfs from all possible positions, then pick src/dest pairs
-    unimplemented!()
-}
-
-fn bfs_push(grid: &Vec2d<MapCell>, box_pos: Pos) -> Vec2d<Option<u16>> {
-    // at first, just use the minimum, later return all 16 combinations
-    unimplemented!()
-}*/
-
-// #######
-// ### ###
-// ### ###
-// #    .#
-// ###$###
-// ###@###
-// #######
-
-// #######
-// ### ###
-// ### ###
-// #    .#
-// # #$###
-// #  @###
-// #######
-
-// TODO get rid of this recursive fake solver nonsense
-// every time i change something i make a mistake and spend an hour debugging it
-// just use BFS
-// oh, and the distance depends on from which direction*s* the box is pushable
-// use an array for all combinations - directions as bitflags?
-fn find_distances_goals(map: &GoalMap) -> Vec2d<Option<u16>> {
-    let mut distances = map.grid().scratchpad();
-
-    // some functions don't check walls but only dead ends
-    let mut fake_distances = map.grid().scratchpad();
-    for pos in map.grid().positions() {
-        if map.grid()[pos] != MapCell::Wall {
-            fake_distances[pos] = Some(0);
-        }
-    }
-
-    // put box on every position and try to get it to the nearest goal
-    for box_pos in map.grid().positions() {
-        if map.grid()[box_pos] == MapCell::Wall {
-            continue;
-        }
-
-        for &player_pos in &box_pos.neighbors() {
-            if map.grid()[player_pos] == MapCell::Wall {
-                continue;
-            }
-
-            let fake_state = State {
-                player_pos,
-                boxes: vec![box_pos],
-            };
-            let fake_solver = Solver {
-                sd: StaticData {
-                    map: map.clone(),
-                    distances: fake_distances.clone(),
-                },
-                initial_state: fake_state,
-            };
-
-            // using manhattan dist here because the fake solver needs a heuristic
-            // that only reports 0 when the level is solved
-            let moves = fake_solver
-                .search(
-                    Method::PushOptimal,
-                    false,
-                    expand_push,
-                    heuristic_push_manhattan,
-                ).moves;
-            if let Some(moves) = moves {
-                let new_dist = moves.push_cnt() as u16; // dist can't be larger than MAX_SIZE^2
-                match distances[box_pos] {
-                    None => distances[box_pos] = Some(new_dist),
-                    Some(cur_min_dist) => if new_dist < cur_min_dist {
-                        distances[box_pos] = Some(new_dist);
-                    },
-                }
-            }
-        }
-    }
-
-    distances
-}
-
-// FIXME well, this is just lazy - give it a generic map?
-fn find_distances_remover(map: &RemoverMap) -> Vec2d<Option<u16>> {
-    let mut distances = map.grid().scratchpad();
-    distances[map.remover] = Some(0);
-
-    // some functions don't check walls but only dead ends
-    let mut fake_distances = map.grid().scratchpad();
-    for pos in map.grid().positions() {
-        if map.grid()[pos] != MapCell::Wall {
-            fake_distances[pos] = Some(0);
-        }
-    }
-
-    // put box on every position and try to get it to the nearest goal
-    for box_pos in map.grid().positions() {
-        if box_pos == map.remover || map.grid()[box_pos] == MapCell::Wall {
-            continue;
-        }
-
-        for &player_pos in &box_pos.neighbors() {
-            if map.grid()[player_pos] == MapCell::Wall {
-                continue;
-            }
-
-            let fake_state = State {
-                player_pos,
-                boxes: vec![box_pos],
-            };
-            let fake_solver = Solver {
-                sd: StaticData {
-                    map: map.clone(),
-                    distances: fake_distances.clone(),
-                },
-                initial_state: fake_state,
-            };
-
-            // using manhattan dist here because the fake solver needs a heuristic
-            // that only reports 0 when the level is solved
-            let moves = fake_solver
-                .search(
-                    Method::PushOptimal,
-                    false,
-                    expand_push_remover,
-                    heuristic_push_manhattan_remover,
-                ).moves;
-            if let Some(moves) = moves {
-                let new_dist = moves.push_cnt() as u16; // dist can't be larger than MAX_SIZE^2
-                match distances[box_pos] {
-                    None => distances[box_pos] = Some(new_dist),
-                    Some(cur_min_dist) => if new_dist < cur_min_dist {
-                        distances[box_pos] = Some(new_dist);
-                    },
-                }
-            }
-        }
-    }
-
-    distances
-}
-
-fn heuristic_push_manhattan(sd: &StaticData<GoalMap>, state: &State) -> u16 {
+fn heuristic_push_manhattan_goals(sd: &StaticData<GoalMap>, state: &State) -> u16 {
     let mut goal_dist_sum = 0;
 
     for box_pos in &state.boxes {
@@ -535,7 +545,8 @@ fn heuristic_push_manhattan_remover(sd: &StaticData<RemoverMap>, state: &State) 
     goal_dist_sum
 }
 
-fn heuristic_push(sd: &StaticData<GoalMap>, state: &State) -> u16 {
+fn heuristic_push<M: Map>(sd: &StaticData<M>, state: &State) -> u16 {
+    // thanks to precomputed distances, this is the same for goals and remover
     let mut goal_dist_sum = 0;
 
     for &box_pos in &state.boxes {
@@ -545,20 +556,7 @@ fn heuristic_push(sd: &StaticData<GoalMap>, state: &State) -> u16 {
     goal_dist_sum
 }
 
-fn heuristic_push_remover(sd: &StaticData<RemoverMap>, state: &State) -> u16 {
-    // thanks to distances, this is literally the same which means
-    // heuristic_move_remover is also the same
-    // TODO ^ merge into one
-    let mut goal_dist_sum = 0;
-
-    for &box_pos in &state.boxes {
-        goal_dist_sum += sd.distances[box_pos].unwrap();
-    }
-
-    goal_dist_sum
-}
-
-fn heuristic_move(sd: &StaticData<GoalMap>, state: &State) -> u16 {
+fn heuristic_move_goals(sd: &StaticData<GoalMap>, state: &State) -> u16 {
     let mut closest_box = u16::max_value();
     for box_pos in &state.boxes {
         let dist = state.player_pos.dist(*box_pos);
@@ -587,10 +585,10 @@ fn heuristic_move_remover(sd: &StaticData<RemoverMap>, state: &State) -> u16 {
 
     // -1 because it should be the distance until being able to push the box
     // and when all boxes are on goals, the heuristic should be 0
-    closest_box - 1 + heuristic_push_remover(sd, state)
+    closest_box - 1 + heuristic_push(sd, state)
 }
 
-fn expand_push<'a>(
+fn expand_push_goals<'a>(
     sd: &StaticData<GoalMap>,
     state: &State,
     arena: &'a Arena<State>,
@@ -696,7 +694,7 @@ fn expand_push_remover<'a>(
     new_states
 }
 
-fn expand_move<'a>(
+fn expand_move_goals<'a>(
     sd: &StaticData<GoalMap>,
     state: &State,
     arena: &'a Arena<State>,
@@ -959,7 +957,10 @@ mod tests {
             vec![None, None, None, None, None],
         ]);
         //assert_eq!(find_distances(&level.map), expected);
-        assert_eq!(find_distances_goals(level.goal_map()), expected);
+        assert_eq!(
+            Solver::<GoalMap>::find_distances(level.goal_map()),
+            expected
+        );
     }
 
     #[test]
@@ -993,7 +994,7 @@ None    None    None    None    None    None    None     None     None None None
 ".trim_left_matches('\n');
         //assert_eq!(format!("{:?}", find_distances(&level.map)), expected);
         assert_eq!(
-            format!("{:?}", find_distances_goals(level.goal_map())),
+            format!("{:?}", Solver::<GoalMap>::find_distances(level.goal_map())),
             expected
         );
     }
@@ -1042,7 +1043,7 @@ None    None    None    None    None    None    None     None     None None None
         //let solver = Solver::new(&level).unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
-        let neighbor_states = expand_push(&solver.sd, &solver.initial_state, &states);
+        let neighbor_states = expand_push_goals(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 2);
     }
 
@@ -1060,7 +1061,7 @@ None    None    None    None    None    None    None     None     None None None
         //let solver = Solver::new(&level).unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
-        let neighbor_states = expand_move(&solver.sd, &solver.initial_state, &states);
+        let neighbor_states = expand_move_goals(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 2);
     }
 
@@ -1078,7 +1079,7 @@ None    None    None    None    None    None    None     None     None None None
         //let solver = Solver::new(&level).unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
-        let neighbor_states = expand_move(&solver.sd, &solver.initial_state, &states);
+        let neighbor_states = expand_move_goals(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 4);
     }
 }
