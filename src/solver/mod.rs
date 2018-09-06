@@ -127,9 +127,9 @@ struct StaticData<M: Map> {
 trait SolverTrait {
     type M: Map + Clone;
 
-    fn initial_state(&self) -> &State;
-
     fn sd(&self) -> &StaticData<Self::M>;
+
+    fn initial_state(&self) -> &State;
 
     fn preprocessing_expand<'a>(
         sd: &StaticData<Self::M>,
@@ -325,12 +325,12 @@ trait SolverTrait {
 impl SolverTrait for Solver<GoalMap> {
     type M = GoalMap;
 
-    fn initial_state(&self) -> &State {
-        &self.initial_state
-    }
-
     fn sd(&self) -> &StaticData<Self::M> {
         &self.sd
+    }
+
+    fn initial_state(&self) -> &State {
+        &self.initial_state
     }
 
     fn preprocessing_expand<'a>(
@@ -349,12 +349,12 @@ impl SolverTrait for Solver<GoalMap> {
 impl SolverTrait for Solver<RemoverMap> {
     type M = RemoverMap;
 
-    fn initial_state(&self) -> &State {
-        &self.initial_state
-    }
-
     fn sd(&self) -> &StaticData<Self::M> {
         &self.sd
+    }
+
+    fn initial_state(&self) -> &State {
+        &self.initial_state
     }
 
     fn preprocessing_expand<'a>(
