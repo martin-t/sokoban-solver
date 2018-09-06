@@ -10,7 +10,9 @@ use crate::vec2d::Vec2d;
 crate trait Map {
     fn grid(&self) -> &Vec2d<MapCell>;
 
-    // HACK for backtracking and replaying moves during formatting
+    // this is a hack for things that are not performance critical
+    // like backtracking and replaying moves during formatting to share some code
+    // still would be nice to get rid of it someday
     fn remover(&self) -> Option<Pos>;
 
     fn xsb(&self) -> MapFormatter<'_> {
