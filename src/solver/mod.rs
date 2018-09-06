@@ -139,25 +139,9 @@ trait SolverTrait {
 
     fn preprocessing_heuristic(sd: &StaticData<Self::M>, state: &State) -> u16;
 
-    // #######
-    // ### ###
-    // ### ###
-    // #    .#
-    // ###$###
-    // ###@###
-    // #######
-
-    // #######
-    // ### ###
-    // ### ###
-    // #    .#
-    // # #$###
-    // #  @###
-    // #######
-
     // TODO get rid of this recursive fake solver nonsense
     // every time i change something i make a mistake and spend an hour debugging it
-    // just use BFS (testcases above)
+    // just use BFS
     // oh, and the distance depends on from which direction*s* the box is pushable
     // use an array for all combinations - directions as bitflags?
     fn find_distances(map: &Self::M) -> Vec2d<Option<u16>>
@@ -940,31 +924,53 @@ mod tests {
     }
 
     #[test]
-    fn distances_goals_1() {
+    fn distances_goal_1() {
         let level = r"
-#####
-##@##
-##$##
-#  .#
-#####";
+#######
+###@###
+###$###
+#    .#
+#######";
         let level: Level = level.parse().unwrap();
 
-        let expected = Vec2d::new(&[
-            vec![None, None, None, None, None],
-            vec![None, None, None, None, None],
-            vec![None, None, None, None, None],
-            vec![None, None, Some(1), Some(0), None],
-            vec![None, None, None, None, None],
-        ]);
+        let expected = r"
+None None    None    None    None    None None 
+None None    None    None    None    None None 
+None None    None    None    None    None None 
+None None Some(3) Some(2) Some(1) Some(0) None 
+None None    None    None    None    None None 
+".trim_left_matches('\n');
+
         //assert_eq!(find_distances(&level.map), expected);
-        assert_eq!(
-            Solver::<GoalMap>::find_distances(level.goal_map()),
-            expected
-        );
+        let result = format!("{:?}", Solver::<GoalMap>::find_distances(level.goal_map()));
+        assert_eq!(result, expected);
     }
 
     #[test]
-    fn distances_goals_2() {
+    fn distances_goal_2() {
+        let level = r"
+#######
+#  @###
+# #$###
+#    .#
+#######";
+        let level: Level = level.parse().unwrap();
+
+        let expected = r"
+None None    None    None    None    None None 
+None None    None    None    None    None None 
+None None    None Some(3)    None    None None 
+None None Some(3) Some(2) Some(1) Some(0) None 
+None None    None    None    None    None None 
+".trim_left_matches('\n');
+
+        //assert_eq!(find_distances(&level.map), expected);
+        let result = format!("{:?}", Solver::<GoalMap>::find_distances(level.goal_map()));
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn distances_goals() {
         let level = r"
 ###########
 #@$$$$$$ ##
@@ -992,11 +998,10 @@ None    None Some(2) Some(3) Some(2) Some(1) Some(2)  Some(3)     None None None
 None    None    None    None    None Some(0)    None     None     None None None 
 None    None    None    None    None    None    None     None     None None None 
 ".trim_left_matches('\n');
+
         //assert_eq!(format!("{:?}", find_distances(&level.map)), expected);
-        assert_eq!(
-            format!("{:?}", Solver::<GoalMap>::find_distances(level.goal_map())),
-            expected
-        );
+        let result = format!("{:?}", Solver::<GoalMap>::find_distances(level.goal_map()));
+        assert_eq!(result, expected);
     }
 
     #[test]
