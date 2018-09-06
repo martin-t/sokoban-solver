@@ -87,7 +87,6 @@ fn parse_format(level: &str, format: Format) -> Result<Level, ParserErr> {
     let player_pos = player_pos.ok_or(ParserErr::NoPlayer)?;
     let grid = Vec2d::new(&grid);
 
-    // TODO handle all 4 cases here
     if let Some(remover) = remover {
         if !goals.is_empty() {
             Err(ParserErr::RemoverAndGoals)
