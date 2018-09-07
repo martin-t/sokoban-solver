@@ -86,7 +86,7 @@ impl Solve for Level {
                     Method::MoveOptimal => Ok(solver.search(
                         method,
                         print_status,
-                        expand_move_goals,
+                        Solver::<GoalMap>::expand_move,
                         heuristic_move_goals,
                     )),
                     Method::PushOptimal => Ok(solver.search(
@@ -106,7 +106,7 @@ impl Solve for Level {
                     Method::MoveOptimal => Ok(solver.search(
                         method,
                         print_status,
-                        expand_move_remover,
+                        Solver::<RemoverMap>::expand_move,
                         heuristic_move_remover,
                     )),
                     Method::PushOptimal => Ok(solver.search(
@@ -305,6 +305,43 @@ trait SolverTrait {
         SolverOk::new(None, stats, method)
     }
 
+    fn expand_move<'a>(
+        sd: &StaticData<Self::M>,
+        state: &State,
+        arena: &'a Arena<State>,
+    ) -> Vec<&'a State> {
+        let mut new_states = Vec::new();
+
+        let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
+        for (i, b) in state.boxes.iter().enumerate() {
+            box_grid[*b] = i as u8;
+        }
+
+        for &dir in &DIRECTIONS {
+            let new_player_pos = state.player_pos + dir;
+            if sd.map.grid()[new_player_pos] != MapCell::Wall {
+                let box_index = box_grid[new_player_pos];
+                let push_dest = new_player_pos + dir;
+
+                if box_index == 255 {
+                    // step
+                    let new_state = arena.alloc(State::new(new_player_pos, state.boxes.clone()));
+                    new_states.push(&*new_state);
+                } else if box_grid[push_dest] == 255
+                    && sd.map.grid()[push_dest] != MapCell::Wall
+                    && sd.distances[push_dest].is_some()
+                {
+                    // push
+                    let new_boxes = Self::push_box(sd, state, box_index, push_dest);
+                    let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
+                    new_states.push(&*new_state);
+                }
+            }
+        }
+
+        new_states
+    }
+
     fn expand_push<'a>(
         sd: &StaticData<Self::M>,
         state: &State,
@@ -334,13 +371,6 @@ trait SolverTrait {
                     let push_dest = new_player_pos + dir;
                     if box_grid[push_dest] == 255 && sd.distances[push_dest].is_some() {
                         // new state to explore
-
-                        /*let mut new_boxes = state.boxes.clone();
-                        new_boxes[box_index as usize] = push_dest;
-                        //if sd.distances[push_dest].unwrap() == 0 { - can't do - preprocessing used 0 everywhere reachable
-                        if sd.map.grid()[push_dest] == MapCell::Remover {
-                            new_boxes.remove(box_index as usize);
-                        }*/
                         let new_boxes = Self::push_box(sd, state, box_index, push_dest);
 
                         // TODO normalize player pos - detect duplicates during expansion?
@@ -637,90 +667,6 @@ fn heuristic_move_remover(sd: &StaticData<RemoverMap>, state: &State) -> u16 {
     // and when all boxes are on goals, the heuristic should be 0
     closest_box - 1 + heuristic_push(sd, state)
 }
-
-fn expand_move_goals<'a>(
-    sd: &StaticData<GoalMap>,
-    state: &State,
-    arena: &'a Arena<State>,
-) -> Vec<&'a State> {
-    let mut new_states = Vec::new();
-
-    let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
-    for (i, b) in state.boxes.iter().enumerate() {
-        box_grid[*b] = i as u8;
-    }
-
-    for &dir in &DIRECTIONS {
-        let new_player_pos = state.player_pos + dir;
-        if sd.map.grid()[new_player_pos] != MapCell::Wall {
-            let box_index = box_grid[new_player_pos];
-            let push_dest = new_player_pos + dir;
-
-            if box_index == 255 {
-                // step
-                let new_state = arena.alloc(State::new(new_player_pos, state.boxes.clone()));
-                new_states.push(&*new_state);
-            } else if box_grid[push_dest] == 255
-                && sd.map.grid()[push_dest] != MapCell::Wall
-                && sd.distances[push_dest].is_some()
-            {
-                // push
-
-                let mut new_boxes = state.boxes.clone();
-                new_boxes[box_index as usize] = push_dest;
-                let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
-                new_states.push(&*new_state);
-            }
-        }
-    }
-
-    new_states
-}
-
-fn expand_move_remover<'a>(
-    sd: &StaticData<RemoverMap>,
-    state: &State,
-    arena: &'a Arena<State>,
-) -> Vec<&'a State> {
-    let mut new_states = Vec::new();
-
-    let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
-    for (i, b) in state.boxes.iter().enumerate() {
-        box_grid[*b] = i as u8;
-    }
-
-    for &dir in &DIRECTIONS {
-        let new_player_pos = state.player_pos + dir;
-        if sd.map.grid()[new_player_pos] != MapCell::Wall {
-            let box_index = box_grid[new_player_pos];
-            let push_dest = new_player_pos + dir;
-
-            if box_index == 255 {
-                // step
-                let new_state = arena.alloc(State::new(new_player_pos, state.boxes.clone()));
-                new_states.push(&*new_state);
-            } else if box_grid[push_dest] == 255
-                && sd.map.grid()[push_dest] != MapCell::Wall
-                && sd.distances[push_dest].is_some()
-            {
-                // push
-
-                let mut new_boxes = state.boxes.clone();
-                new_boxes[box_index as usize] = push_dest;
-                //if sd.distances[push_dest].unwrap() == 0 { - can't do - preprocessing used 0 everywhere reachable
-                if sd.map.grid()[push_dest] == MapCell::Remover {
-                    new_boxes.remove(box_index as usize);
-                }
-                let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
-                new_states.push(&*new_state);
-            }
-        }
-    }
-
-    new_states
-}
-
-// TODO unify all of the copy pasted stuff above
 
 #[cfg(test)]
 mod tests {
@@ -1027,7 +973,8 @@ None    None    None    None    None    None    None     None     None None None
         //let solver = Solver::new(&level).unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
-        let neighbor_states = expand_move_goals(&solver.sd, &solver.initial_state, &states);
+        let neighbor_states =
+            Solver::<GoalMap>::expand_move(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 2);
     }
 
@@ -1045,7 +992,8 @@ None    None    None    None    None    None    None     None     None None None
         //let solver = Solver::new(&level).unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
-        let neighbor_states = expand_move_goals(&solver.sd, &solver.initial_state, &states);
+        let neighbor_states =
+            Solver::<GoalMap>::expand_move(&solver.sd, &solver.initial_state, &states);
         assert_eq!(neighbor_states.len(), 4);
     }
 }
