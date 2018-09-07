@@ -8,9 +8,8 @@
 #![warn(unreachable_pub)]
 #![warn(unused)]
 // Clippy
-#![allow(unknown_lints)] // necessary because rustc doesn't know about clippy
-#![warn(clippy)]
-#![warn(unknown_lints)]
+#![feature(tool_lints)]
+#![warn(clippy::clippy)]
 
 use std::process;
 

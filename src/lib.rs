@@ -10,8 +10,8 @@
 #![warn(unreachable_pub)]
 #![warn(unused)]
 // Clippy
-#![allow(unknown_lints)] // necessary because rustc doesn't know about clippy
-#![warn(clippy)]
+#![feature(tool_lints)]
+#![warn(clippy::all)]
 // Stuff for testing
 #![cfg_attr(test, feature(duration_as_u128))]
 #![cfg_attr(test, feature(test))]
@@ -294,7 +294,7 @@ mod tests {
     fn test_level(method: Method, level_pack: &str, level_name: &str) -> bool {
         // for updating results more easily
         // (need to update when equal too because the file includes individual depths)
-        #![allow(collapsible_if)]
+        #![allow(clippy::collapsible_if)]
 
         use std::fmt::Write;
         use std::time::Instant;

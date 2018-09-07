@@ -111,7 +111,7 @@ impl Add<Dir> for Pos {
     type Output = Pos;
 
     fn add(self, dir: Dir) -> Pos {
-        #![allow(suspicious_arithmetic_impl)]
+        #![allow(clippy::suspicious_arithmetic_impl)]
         match dir {
             Dir::Up => Pos {
                 r: self.r - 1,
