@@ -373,8 +373,8 @@ trait SolverTrait {
                         // new state to explore
                         let new_boxes = Self::push_box(sd, state, box_index, push_dest);
 
-                        // TODO normalize player pos - detect duplicates during expansion?
-                        // otherwise we'd have to generate reachable twice or save them as part of state
+                        // TODO normalize player pos
+                        // note that pushing a box can reveal new areas on both goal and remover maps
                         let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
                         new_states.push(&*new_state);
                     }
@@ -534,7 +534,7 @@ impl Solver<RemoverMap> {
         }
 
         // Note that a level with 0 boxes is valid (and already solved).
-        // This should not upset the heuristics (since they already have to handle that case)
+        // This should not upset the heuristics (since they already have to handle that case on remover maps)
         // or backtracking (since there are no moves).
 
         // only 255 boxes max because 255 (index of the 256th box) is used to represent empty in expand_{move,push}
@@ -621,7 +621,7 @@ fn heuristic_push_manhattan_remover(sd: &StaticData<RemoverMap>, state: &State) 
     for box_pos in &state.boxes {
         goal_dist_sum += box_pos.dist(sd.map.remover);
     }
-    debug!("goal_dist_sum {}", goal_dist_sum);
+
     goal_dist_sum
 }
 
@@ -645,8 +645,8 @@ fn heuristic_move_goals(sd: &StaticData<GoalMap>, state: &State) -> u16 {
         }
     }
 
-    // -1 because it should be the distance until being able to push the box
-    // and when all boxes are on goals, the heuristic should be 0
+    // -1 because it is the distance until being able to push the box
+    // and when all boxes are on goals, the heuristic must be 0
     closest_box - 1 + heuristic_push(sd, state)
 }
 
@@ -663,8 +663,8 @@ fn heuristic_move_remover(sd: &StaticData<RemoverMap>, state: &State) -> u16 {
         }
     }
 
-    // -1 because it should be the distance until being able to push the box
-    // and when all boxes are on goals, the heuristic should be 0
+    // -1 because it is the distance until being able to push the box
+    // and when all boxes are on goals, the heuristic must be 0
     closest_box - 1 + heuristic_push(sd, state)
 }
 
