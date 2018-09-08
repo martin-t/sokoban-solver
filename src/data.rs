@@ -102,7 +102,7 @@ impl Pos {
             assert_eq!(self.r, new_pos.r);
             Dir::Left
         } else {
-            unreachable!();
+            unreachable!("Positions are not adjacent");
         }
     }
 }

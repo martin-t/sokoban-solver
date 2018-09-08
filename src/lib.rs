@@ -16,8 +16,6 @@
 #![cfg_attr(test, feature(duration_as_u128))]
 #![cfg_attr(test, feature(test))]
 
-// TODO convert unwraps in non-test code to expects, add messages to unreachable/panic
-
 pub mod config;
 pub mod level;
 pub mod map_formatter;
@@ -83,6 +81,7 @@ mod tests {
             (PushOptimal, "custom", "03-long-way.txt", OK),
             (PushOptimal, "custom", "04-two-boxes-no-packing.txt", OK),
             (PushOptimal, "custom", "04-two-boxes.txt", OK),
+            (PushOptimal, "custom", "deadlock-cell-on-dead-end.txt", OK),
             (PushOptimal, "custom", "no-solution-parking.txt", OK),
             (PushOptimal, "custom", "remover-00-solved.txt", OK),
             (PushOptimal, "custom", "remover-01-simplest-custom.txt", OK),
@@ -246,6 +245,7 @@ mod tests {
             (MoveOptimal, "custom", "03-long-way.txt", OK),
             (MoveOptimal, "custom", "04-two-boxes-no-packing.txt", OK),
             (MoveOptimal, "custom", "04-two-boxes.txt", OK),
+            (MoveOptimal, "custom", "deadlock-cell-on-dead-end.txt", OK),
             (MoveOptimal, "custom", "no-solution-parking.txt", OK),
             (MoveOptimal, "custom", "remover-00-solved.txt", OK),
             (MoveOptimal, "custom", "remover-01-simplest-custom.txt", OK),

@@ -22,7 +22,7 @@ crate fn reconstruct_moves<H: BuildHasher>(
 
     let mut moves = Moves::default();
     let mut iter = states.iter();
-    let mut cur_state = iter.next().unwrap();
+    let mut cur_state = iter.next().expect("There must be at least one state");
     for next_state in iter {
         moves.extend(&moves_between_states(map, cur_state, next_state));
         cur_state = next_state;
@@ -37,20 +37,31 @@ fn moves_between_states(map: &dyn Map, old: &State, new: &State) -> Moves {
     let new_boxes: HashSet<_> = new.boxes.iter().collect();
 
     let mut old_iter = old_boxes.difference(&new_boxes);
-    let maybe_old_box_pos = old_iter.next();
-    if maybe_old_box_pos.is_none() {
-        // no box moved so there are only steps
-        return player_steps(map, old, old.player_pos, new.player_pos);
-    }
-    let old_box_pos = **maybe_old_box_pos.unwrap();
-    assert!(old_iter.next().is_none());
-
     let mut new_iter = new_boxes.difference(&old_boxes);
-    let new_box_pos = match new_iter.next() {
-        Some(pos) => **pos,
-        None => map.remover().unwrap(),
+
+    let old_box_pos = match old_iter.next() {
+        None => {
+            assert!(new_iter.next().is_none(), "A box appeared from nowhere");
+            // no box moved so there are only steps
+            return player_steps(map, old, old.player_pos, new.player_pos);
+        }
+        Some(&&pos) => pos,
     };
-    assert!(new_iter.next().is_none());
+    assert!(
+        old_iter.next().is_none(),
+        "Only one box can change its position at a time"
+    );
+
+    let new_box_pos = match new_iter.next() {
+        None => map
+            .remover()
+            .expect("A box disappeared so there must be a remover"),
+        Some(&&pos) => pos,
+    };
+    assert!(
+        new_iter.next().is_none(),
+        "Only one box can change its position at a time"
+    );
 
     let push_dir = old_box_pos.dir_to(new_box_pos);
     let player_pos_before_push = new.player_pos + push_dir.inverse();
@@ -102,7 +113,7 @@ fn player_steps(map: &dyn Map, state: &State, src_pos: Pos, dest_pos: Pos) -> Mo
 
     let mut moves = Moves::default();
     let mut iter = positions.iter();
-    let mut cur = iter.next().unwrap();
+    let mut cur = iter.next().expect("There must be at least one position");
     for next in iter {
         moves.add(Move::new(cur.dir_to(*next), false));
         cur = next;

@@ -81,7 +81,10 @@ fn main() {
         .filter_level(log_level)
         .init();
 
-    for path in matches.values_of_os("level-file").unwrap() {
+    for path in matches
+        .values_of_os("level-file")
+        .expect("Level path is required")
+    {
         let level = path.load_level().unwrap_or_else(|err| {
             eprintln!("Can't load level: {}", err);
             process::exit(1);

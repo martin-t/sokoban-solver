@@ -229,6 +229,13 @@ trait SolverTrait {
         debug!("Search called");
 
         let mut stats = Stats::new();
+
+        for &box_pos in &self.initial_state().boxes {
+            if self.sd().distances[box_pos].is_none() {
+                return SolverOk::new(None, stats, method);
+            }
+        }
+
         let states = Arena::new();
 
         let mut to_visit = BinaryHeap::new();
@@ -361,8 +368,7 @@ trait SolverTrait {
         // Vec is noticeably faster than VecDeque on some levels
         let mut to_visit = vec![state.player_pos];
 
-        while !to_visit.is_empty() {
-            let player_pos = to_visit.pop().unwrap();
+        while let Some(player_pos) = to_visit.pop() {
             for &dir in &DIRECTIONS {
                 let new_player_pos = player_pos + dir;
                 let box_index = box_grid[new_player_pos];
@@ -560,8 +566,7 @@ impl<M: Map> Solver<M> {
         let mut visited = map.grid().scratchpad();
 
         let mut to_visit = vec![state.player_pos];
-        while !to_visit.is_empty() {
-            let cur = to_visit.pop().unwrap();
+        while let Some(cur) = to_visit.pop() {
             visited[cur] = true;
 
             let (r, c) = (i32::from(cur.r), i32::from(cur.c));
@@ -630,7 +635,7 @@ fn heuristic_push<M: Map>(sd: &StaticData<M>, state: &State) -> u16 {
     let mut goal_dist_sum = 0;
 
     for &box_pos in &state.boxes {
-        goal_dist_sum += sd.distances[box_pos].unwrap();
+        goal_dist_sum += sd.distances[box_pos].expect("Box on unreachable cell");
     }
 
     goal_dist_sum
