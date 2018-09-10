@@ -2,7 +2,7 @@ crate mod a_star;
 mod backtracking;
 
 use std::cmp::Reverse;
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, VecDeque};
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -12,7 +12,7 @@ use log::{debug, log};
 use typed_arena::Arena;
 
 use crate::config::Method;
-use crate::data::{MapCell, Pos, DIRECTIONS, MAX_BOXES};
+use crate::data::{Dir, MapCell, Pos, DIRECTIONS, MAX_BOXES};
 use crate::level::Level;
 use crate::map::{GoalMap, Map, MapType, RemoverMap};
 use crate::moves::Moves;
@@ -124,7 +124,8 @@ impl Solve for Level {
 #[derive(Debug)]
 struct StaticData<M: Map> {
     map: M,
-    distances: Vec2d<Option<u16>>,
+    push_dists: Vec2d<[Vec2d<Option<u16>>; 4]>,
+    closest_push_dists: Vec2d<Option<u16>>,
 }
 
 trait SolverTrait {
@@ -134,84 +135,160 @@ trait SolverTrait {
 
     fn initial_state(&self) -> &State;
 
-    fn preprocessing_heuristic(sd: &StaticData<Self::M>, state: &State) -> u16;
-
     fn push_box(sd: &StaticData<Self::M>, state: &State, box_index: u8, push_dest: Pos)
         -> Vec<Pos>;
 
-    // TODO get rid of this recursive fake solver nonsense
-    // every time i change something i make a mistake and spend an hour debugging it
-    // just use BFS
-    // oh, and the distance depends on from which direction*s* the box is pushable
-    // use an array for all combinations - directions as bitflags?
-    fn find_distances(map: &Self::M) -> Vec2d<Option<u16>>
+    fn push_dists(map: &Self::M) -> Vec2d<[Vec2d<Option<u16>>; 4]>
     where
         Solver<Self::M>: SolverTrait<M = Self::M>,
     {
-        let mut distances = map.grid().scratchpad();
+        // I don't think distances per direction can be used as a heuristic - example:
+        // Center box is pushable only from bottom but shortest solution first pushes the bottom box
+        // which would lower the heuristic of the center box by 2 -> the push distance depends
+        // on the directions available *ignoring other boxes*.
+        // ##########
+        // #######  #
+        // ####     #
+        // ####  ##.#
+        // ##### ## #
+        // ##   $   #
+        // ## ##@#  #
+        // ## ## ####
+        // #.$   ####
+        // ##########
+        // The only think directions can probably prevent is pushing boxes into dead end tunnels.
 
-        if let Some(remover) = map.remover() {
-            distances[remover] = Some(0);
-        }
+        // this wastes some memory given
+        // a) for one cell many directions likely have the same distances
+        // b) there's a lot of cells and directions that have all dest cells None
+        // 16x16 map: 2^4 * 2^4 (src size) * 4 (dirs) * 2^4 * 2^4 (dest size) * 4 B (size of Option<u16>)
+        //            = 2^20 B = 1 MiB
+        // 32x32 map: 2^24 B = 16 MiB
+        // 64x64 map: 2^28 B = 256 MiB
+        // 128x128 map: 2^32 B = 4 GiB
+        // 256x256 map: 2^36 B = 64 GiB
+        let mut push_dists: Vec2d<[Vec2d<Option<u16>>; 4]> = map.grid().scratchpad_with_default([
+            map.grid().scratchpad(),
+            map.grid().scratchpad(),
+            map.grid().scratchpad(),
+            map.grid().scratchpad(),
+        ]);
 
-        // some functions don't check walls but only dead ends
-        let mut fake_distances = map.grid().scratchpad();
-        for pos in map.grid().positions() {
-            if map.grid()[pos] != MapCell::Wall {
-                fake_distances[pos] = Some(0);
-            }
-        }
-
-        // put box on every position and try to get it to the nearest goal
-        for box_pos in map.grid().positions() {
-            if map.grid()[box_pos] == MapCell::Wall {
+        for box_start_pos in map.grid().positions() {
+            if map.grid()[box_start_pos] == MapCell::Wall {
                 continue;
             }
-            if let Some(remover) = map.remover() {
-                if box_pos == remover {
-                    continue;
-                }
-            }
-
-            for &player_pos in &box_pos.neighbors() {
-                if map.grid()[player_pos] == MapCell::Wall {
+            for &initial_dir in &DIRECTIONS {
+                let player_start_pos = box_start_pos + initial_dir.inverse();
+                if map.grid()[player_start_pos] == MapCell::Wall {
                     continue;
                 }
 
-                let fake_state = State {
-                    player_pos,
-                    boxes: vec![box_pos],
-                };
-                let fake_solver = Solver {
-                    sd: StaticData {
-                        map: map.clone(),
-                        distances: fake_distances.clone(),
-                    },
-                    initial_state: fake_state,
-                };
+                // BFS of pushes fanning out from the box position.
+                // `visited` must be per direction because going back to the same cell from a different direction
+                // means different areas are accessible.
+                let mut visited = map.grid().scratchpad_with_default([false; 4]);
+                let mut to_visit = VecDeque::new();
+                to_visit.push_back((box_start_pos, player_start_pos, 0));
 
-                // using manhattan dist here because the fake solver needs a heuristic
-                // that only reports 0 when the level is solved
-                let moves = fake_solver
-                    .search(
-                        Method::PushOptimal,
-                        false,
-                        Self::expand_push,
-                        Self::preprocessing_heuristic,
-                    ).moves;
-                if let Some(moves) = moves {
-                    let new_dist = moves.push_cnt() as u16; // dist can't be larger than MAX_SIZE^2
-                    match distances[box_pos] {
-                        None => distances[box_pos] = Some(new_dist),
-                        Some(cur_min_dist) => if new_dist < cur_min_dist {
-                            distances[box_pos] = Some(new_dist);
-                        },
+                while let Some((cur_box_pos, cur_player_pos, cur_dist)) = to_visit.pop_front() {
+                    let player_to_box = cur_player_pos.dir_to(cur_box_pos);
+                    if visited[cur_box_pos][player_to_box as usize] {
+                        continue;
+                    }
+                    visited[cur_box_pos][player_to_box as usize] = true;
+
+                    let old_dist =
+                        &mut push_dists[box_start_pos][initial_dir as usize][cur_box_pos];
+                    if old_dist.is_none() {
+                        // given this is BFS, the old value, if there is any, is always better
+                        *old_dist = Some(cur_dist);
+                    }
+
+                    for push_dir in Self::dfs_one_box(map, cur_box_pos, cur_player_pos) {
+                        to_visit.push_back((cur_box_pos + push_dir, cur_box_pos, cur_dist + 1));
                     }
                 }
             }
         }
 
-        distances
+        /*for box_start_pos in map.grid().positions() {
+            for &initial_dir in &DIRECTIONS {
+                println!(
+                    "box_start_pos: {:?}, initial_dir: {:?}",
+                    box_start_pos, initial_dir
+                );
+                println!("{:?}", push_dists[box_start_pos][initial_dir as usize]);
+            }
+        }*/
+
+        push_dists
+    }
+
+    /// Finds in which directions the box is pushable
+    fn dfs_one_box(map: &Self::M, box_pos: Pos, player_start_pos: Pos) -> Vec<Dir> {
+        let mut ret = Vec::new();
+
+        let mut touched = map.grid().scratchpad();
+        touched[player_start_pos] = true;
+
+        let mut to_visit = Vec::new();
+        to_visit.push(player_start_pos);
+
+        while let Some(cur_pos) = to_visit.pop() {
+            for &dir in &DIRECTIONS {
+                let next_pos = cur_pos + dir;
+                if next_pos == box_pos {
+                    // can't step on this pos (so `else if` is no taken) but can we actually push?
+                    if map.grid()[next_pos + dir] != MapCell::Wall {
+                        // don't set touched here
+                        // box pos can be touched multiple times - that's the whole point
+                        ret.push(dir);
+                    }
+                } else if map.grid()[next_pos] != MapCell::Wall && !touched[next_pos] {
+                    touched[next_pos] = true;
+                    to_visit.push(next_pos);
+                }
+            }
+        }
+
+        ret
+    }
+
+    fn closest_push_dists(
+        map: &Self::M,
+        push_dists: &Vec2d<[Vec2d<Option<u16>>; 4]>,
+    ) -> Vec2d<Option<u16>>
+    where
+        Solver<Self::M>: SolverTrait<M = Self::M>,
+    {
+        let mut closest_push_dists = map.grid().scratchpad();
+
+        for src_pos in closest_push_dists.positions() {
+            let mut best = None;
+            for dests in &push_dists[src_pos] {
+                for dest_pos in dests.positions() {
+                    if map.grid()[dest_pos] != MapCell::Goal
+                        && map.grid()[dest_pos] != MapCell::Remover
+                    {
+                        continue;
+                    }
+
+                    let cur = dests[dest_pos];
+                    match best {
+                        None => best = cur,
+                        Some(best_dist) => if let Some(cur_dist) = cur {
+                            if cur_dist < best_dist {
+                                best = cur;
+                            }
+                        },
+                    }
+                }
+            }
+            closest_push_dists[src_pos] = best;
+        }
+
+        closest_push_dists
     }
 
     fn search<Expand, Heuristic>(
@@ -230,8 +307,9 @@ trait SolverTrait {
 
         let mut stats = Stats::new();
 
+        // normally such states would not be generated at all but the first one is not generated so needs to be checked
         for &box_pos in &self.initial_state().boxes {
-            if self.sd().distances[box_pos].is_none() {
+            if self.sd().closest_push_dists[box_pos].is_none() {
                 return SolverOk::new(None, stats, method);
             }
         }
@@ -336,7 +414,7 @@ trait SolverTrait {
                     new_states.push(&*new_state);
                 } else if box_grid[push_dest] == 255
                     && sd.map.grid()[push_dest] != MapCell::Wall
-                    && sd.distances[push_dest].is_some()
+                    && sd.closest_push_dists[push_dest].is_some()
                 {
                     // push
                     let new_boxes = Self::push_box(sd, state, box_index, push_dest);
@@ -375,7 +453,7 @@ trait SolverTrait {
                 if box_index < 255 {
                     // new_pos has a box
                     let push_dest = new_player_pos + dir;
-                    if box_grid[push_dest] == 255 && sd.distances[push_dest].is_some() {
+                    if box_grid[push_dest] == 255 && sd.closest_push_dists[push_dest].is_some() {
                         // new state to explore
                         let new_boxes = Self::push_box(sd, state, box_index, push_dest);
 
@@ -409,10 +487,6 @@ impl SolverTrait for Solver<GoalMap> {
         &self.initial_state
     }
 
-    fn preprocessing_heuristic(sd: &StaticData<Self::M>, state: &State) -> u16 {
-        heuristic_push_manhattan_goals(sd, state)
-    }
-
     fn push_box(
         _sd: &StaticData<Self::M>,
         state: &State,
@@ -434,10 +508,6 @@ impl SolverTrait for Solver<RemoverMap> {
 
     fn initial_state(&self) -> &State {
         &self.initial_state
-    }
-
-    fn preprocessing_heuristic(sd: &StaticData<Self::M>, state: &State) -> u16 {
-        heuristic_push_manhattan_remover(sd, state)
     }
 
     fn push_box(
@@ -509,11 +579,13 @@ impl Solver<GoalMap> {
 
         let processed_map = GoalMap::new(processed_grid, reachable_goals);
         let clean_state = State::new(state.player_pos, reachable_boxes);
-        let distances = Self::find_distances(&processed_map);
+        let push_dists = Self::push_dists(&processed_map);
+        let closest_push_dists = Self::closest_push_dists(&processed_map, &push_dists);
         Ok(Solver {
             sd: StaticData {
                 map: processed_map,
-                distances,
+                push_dists,
+                closest_push_dists,
             },
             initial_state: clean_state,
         })
@@ -549,11 +621,13 @@ impl Solver<RemoverMap> {
         }
 
         let processed_map = RemoverMap::new(processed_grid, map.remover);
-        let distances = Self::find_distances(&processed_map);
+        let push_dists = Self::push_dists(&processed_map);
+        let closest_push_dists = Self::closest_push_dists(&processed_map, &push_dists);
         Ok(Solver {
             sd: StaticData {
                 map: processed_map,
-                distances,
+                push_dists,
+                closest_push_dists,
             },
             initial_state: state.clone(),
         })
@@ -603,39 +677,12 @@ impl<M: Map> Solver<M> {
     }
 }
 
-fn heuristic_push_manhattan_goals(sd: &StaticData<GoalMap>, state: &State) -> u16 {
-    let mut goal_dist_sum = 0;
-
-    for box_pos in &state.boxes {
-        let mut min = u16::max_value();
-        for goal in &sd.map.goals {
-            let dist = box_pos.dist(*goal);
-            if dist < min {
-                min = dist;
-            }
-        }
-        goal_dist_sum += min;
-    }
-
-    goal_dist_sum
-}
-
-fn heuristic_push_manhattan_remover(sd: &StaticData<RemoverMap>, state: &State) -> u16 {
-    let mut goal_dist_sum = 0;
-
-    for box_pos in &state.boxes {
-        goal_dist_sum += box_pos.dist(sd.map.remover);
-    }
-
-    goal_dist_sum
-}
-
 fn heuristic_push<M: Map>(sd: &StaticData<M>, state: &State) -> u16 {
     // thanks to precomputed distances, this is the same for goals and remover
     let mut goal_dist_sum = 0;
 
     for &box_pos in &state.boxes {
-        goal_dist_sum += sd.distances[box_pos].expect("Box on unreachable cell");
+        goal_dist_sum += sd.closest_push_dists[box_pos].expect("Box on unreachable cell");
     }
 
     goal_dist_sum
@@ -835,7 +882,174 @@ mod tests {
     }
 
     #[test]
-    fn distances_goal_1() {
+    fn one_box_reachability() {
+        use crate::data::Dir::*;
+        use std::collections::HashSet;
+
+        let level = r"
+##########
+#######  #
+####     #
+####  ##.#
+##### ## #
+##   $   #
+## ##@#  ######
+## ## ####    #
+#.$         * #
+##########    #
+###############";
+        let level: Level = level.parse().unwrap();
+        let map = level.goal_map();
+        let center_box = level.state.boxes[0];
+        let left_box = level.state.boxes[1];
+        let right_box = level.state.boxes[2];
+
+        fn hash_set(v: Vec<Dir>) -> HashSet<Dir> {
+            v.into_iter().collect()
+        }
+        let dfs = Solver::<GoalMap>::dfs_one_box;
+
+        // although the function should handle all player positions,
+        // in practise the player will always be next to the box
+        assert_eq!(
+            hash_set(dfs(map, center_box, center_box + Up)),
+            hash_set(vec![Down, Left])
+        );
+        assert_eq!(
+            hash_set(dfs(map, center_box, center_box + Right)),
+            hash_set(vec![Down, Left])
+        );
+        assert_eq!(
+            hash_set(dfs(map, center_box, center_box + Down)),
+            hash_set(vec![Up, Right])
+        );
+        assert_eq!(
+            hash_set(dfs(map, center_box, center_box + Left)),
+            hash_set(vec![Up, Right])
+        );
+        assert_eq!(
+            hash_set(dfs(map, left_box, left_box + Up)),
+            hash_set(vec![Left])
+        );
+        assert_eq!(
+            hash_set(dfs(map, left_box, left_box + Right)),
+            hash_set(vec![Left])
+        );
+        assert_eq!(
+            hash_set(dfs(map, left_box, left_box + Left)),
+            hash_set(vec![Right])
+        );
+        assert_eq!(
+            hash_set(dfs(map, right_box, right_box + Up)),
+            hash_set(vec![Up, Right, Down, Left])
+        );
+        assert_eq!(
+            hash_set(dfs(map, right_box, right_box + Right)),
+            hash_set(vec![Up, Right, Down, Left])
+        );
+        assert_eq!(
+            hash_set(dfs(map, right_box, right_box + Down)),
+            hash_set(vec![Up, Right, Down, Left])
+        );
+        assert_eq!(
+            hash_set(dfs(map, right_box, right_box + Left)),
+            hash_set(vec![Up, Right, Down, Left])
+        );
+    }
+
+    #[test]
+    #[ignore] // pretty slow even in release mode
+    fn push_dists() {
+        fn heuristic_push_manhattan_goals(sd: &StaticData<GoalMap>, state: &State) -> u16 {
+            let mut goal_dist_sum = 0;
+
+            for box_pos in &state.boxes {
+                let mut min = u16::max_value();
+                for goal in &sd.map.goals {
+                    let dist = box_pos.dist(*goal);
+                    if dist < min {
+                        min = dist;
+                    }
+                }
+                goal_dist_sum += min;
+            }
+
+            goal_dist_sum
+        }
+
+        let level0 = r"
+###############
+#######  ######
+####     ######
+####  ## ######
+##### ## ######
+##       ######
+## ##@#  ######
+## ## ####    #
+#             #
+##########    #
+###############";
+        let level1 = r"
+###########
+#@       ##
+######## ##
+######   ##
+#         #
+#         #
+## ########
+#        ##
+#        ##
+##  # #####
+###########";
+        let level0: Level = level0.parse().unwrap();
+        let level1: Level = level1.parse().unwrap();
+        for level in &[level0, level1] {
+            let push_dists = Solver::<GoalMap>::push_dists(level.goal_map());
+
+            // put box on every position and try to get it to every position
+            for box_pos in level.map.grid().positions() {
+                println!("{:?}", box_pos);
+                if level.map.grid()[box_pos] == MapCell::Wall {
+                    continue;
+                }
+
+                for &dir in &DIRECTIONS {
+                    let player_pos = box_pos + dir.inverse();
+                    if level.map.grid()[player_pos] == MapCell::Wall {
+                        continue;
+                    }
+
+                    let fake_state = State::new(player_pos, vec![box_pos]);
+
+                    for goal_pos in level.map.grid().positions() {
+                        if level.map.grid()[goal_pos] == MapCell::Wall {
+                            continue;
+                        }
+
+                        let mut fake_map = level.goal_map().clone();
+                        fake_map.grid[goal_pos] = MapCell::Goal;
+                        fake_map.goals = vec![goal_pos];
+                        let fake_solver = Solver::new_with_goals(&fake_map, &fake_state).unwrap();
+                        let moves = fake_solver
+                            .search(
+                                Method::PushOptimal,
+                                false,
+                                Solver::<GoalMap>::expand_push,
+                                heuristic_push_manhattan_goals,
+                            ).moves;
+
+                        let dist_result = push_dists[box_pos][dir as usize][goal_pos];
+                        let dist_expected = moves.map(|m| m.push_cnt() as u16);
+
+                        assert_eq!(dist_result, dist_expected);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn closest_distances_one_goal_1() {
         let level = r"
 #######
 ###@###
@@ -852,13 +1066,13 @@ None None Some(3) Some(2) Some(1) Some(0) None
 None None    None    None    None    None None 
 ".trim_left_matches('\n');
 
-        //assert_eq!(find_distances(&level.map), expected);
-        let result = format!("{:?}", Solver::<GoalMap>::find_distances(level.goal_map()));
+        let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
+        let result = format!("{:?}", solver.sd.closest_push_dists);
         assert_eq!(result, expected);
     }
 
     #[test]
-    fn distances_goal_2() {
+    fn closest_distances_one_goal_2() {
         let level = r"
 #######
 #  @###
@@ -875,13 +1089,13 @@ None None Some(3) Some(2) Some(1) Some(0) None
 None None    None    None    None    None None 
 ".trim_left_matches('\n');
 
-        //assert_eq!(find_distances(&level.map), expected);
-        let result = format!("{:?}", Solver::<GoalMap>::find_distances(level.goal_map()));
+        let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
+        let result = format!("{:?}", solver.sd.closest_push_dists);
         assert_eq!(result, expected);
     }
 
     #[test]
-    fn distances_goals() {
+    fn closest_distances_many_goals() {
         let level = r"
 ###########
 #@$$$$$$ ##
@@ -910,8 +1124,8 @@ None    None    None    None    None Some(0)    None     None     None None None
 None    None    None    None    None    None    None     None     None None None 
 ".trim_left_matches('\n');
 
-        //assert_eq!(format!("{:?}", find_distances(&level.map)), expected);
-        let result = format!("{:?}", Solver::<GoalMap>::find_distances(level.goal_map()));
+        let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
+        let result = format!("{:?}", solver.sd.closest_push_dists);
         assert_eq!(result, expected);
     }
 

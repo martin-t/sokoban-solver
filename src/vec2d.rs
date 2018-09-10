@@ -19,13 +19,13 @@ crate struct Vec2d<T> {
 impl<T> Vec2d<T> {
     crate fn new(grid: &[Vec<T>]) -> Self
     where
-        T: Copy + Default,
+        T: Clone + Default,
     {
         let max_cols = grid.iter().map(|row| row.len()).max().unwrap_or(0);
         let mut data = Vec::with_capacity(grid.len() * max_cols);
-        for row in grid.iter() {
-            for c in row.iter() {
-                data.push(*c);
+        for row in grid {
+            for c in row {
+                data.push(c.clone());
             }
             for _ in row.len()..max_cols {
                 data.push(T::default());
@@ -48,7 +48,7 @@ impl<T> Vec2d<T> {
 
     crate fn scratchpad_with_default<U>(&self, default: U) -> Vec2d<U>
     where
-        U: Copy,
+        U: Clone,
     {
         Vec2d {
             data: vec![default; self.data.len()],
@@ -59,7 +59,7 @@ impl<T> Vec2d<T> {
 
     crate fn scratchpad<U>(&self) -> Vec2d<U>
     where
-        U: Copy + Default,
+        U: Clone + Default,
     {
         self.scratchpad_with_default(U::default())
     }
