@@ -50,6 +50,12 @@ fn bench_pushes_boxxle2_4(c: &mut Criterion) {
 }
 
 #[allow(unused)]
+fn bench_pushes_custom_remover_original_1(c: &mut Criterion) {
+    let level = "levels/custom/remover-original-01.txt";
+    bench_level(c, Method::PushOptimal, level, 20);
+}
+
+#[allow(unused)]
 fn bench_moves_boxxle1_1(c: &mut Criterion) {
     // 3 goals in a row
     bench_level(c, Method::MoveOptimal, "levels/boxxle1/1.txt", 75);
@@ -80,6 +86,7 @@ criterion_group!(
     bench_pushes_boxxle1_108,
     bench_pushes_boxxle2_3,
     bench_pushes_boxxle2_4,
-    //bench_moves_boxxle1_1,
+    bench_pushes_custom_remover_original_1,
+    bench_moves_boxxle1_1,
 );
 criterion_main!(benches);
