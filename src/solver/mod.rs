@@ -179,6 +179,7 @@ trait SolverTrait {
             if map.grid()[box_start_pos] == MapCell::Wall {
                 continue;
             }
+
             for &initial_dir in &DIRECTIONS {
                 let player_start_pos = box_start_pos + initial_dir.inverse();
                 if map.grid()[player_start_pos] == MapCell::Wall {
@@ -197,7 +198,6 @@ trait SolverTrait {
                     if visited[cur_box_pos][player_to_box as usize] {
                         continue;
                     }
-                    visited[cur_box_pos][player_to_box as usize] = true;
 
                     let old_dist =
                         &mut push_dists[box_start_pos][initial_dir as usize][cur_box_pos];
@@ -207,6 +207,7 @@ trait SolverTrait {
                     }
 
                     for push_dir in Self::dfs_one_box(map, cur_box_pos, cur_player_pos) {
+                        visited[cur_box_pos][player_to_box as usize] = true;
                         to_visit.push_back((cur_box_pos + push_dir, cur_box_pos, cur_dist + 1));
                     }
                 }
