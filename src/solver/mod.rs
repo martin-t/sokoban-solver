@@ -139,10 +139,7 @@ trait SolverTrait {
         -> Vec<Pos>;
 
     #[inline(never)] // this is called only once and this way it's easier to see in callgrind
-    fn push_dists(map: &Self::M) -> Vec2d<[Vec2d<Option<u16>>; 4]>
-    where
-        Solver<Self::M>: SolverTrait<M = Self::M>,
-    {
+    fn push_dists(map: &Self::M) -> Vec2d<[Vec2d<Option<u16>>; 4]> {
         // I don't think distances per direction can be used as a heuristic - example:
         // Center box is pushable only from bottom but shortest solution first pushes the bottom box
         // which would lower the heuristic of the center box by 2 -> the push distance depends
@@ -290,10 +287,7 @@ trait SolverTrait {
     fn closest_push_dists(
         map: &Self::M,
         push_dists: &Vec2d<[Vec2d<Option<u16>>; 4]>,
-    ) -> Vec2d<Option<u16>>
-    where
-        Solver<Self::M>: SolverTrait<M = Self::M>,
-    {
+    ) -> Vec2d<Option<u16>> {
         let mut closest_push_dists = map.grid().scratchpad();
 
         for src_pos in closest_push_dists.positions() {
@@ -333,7 +327,6 @@ trait SolverTrait {
     where
         Expand: for<'a> Fn(&StaticData<Self::M>, &State, &'a Arena<State>) -> Vec<&'a State>,
         Heuristic: Fn(&StaticData<Self::M>, &State) -> u16,
-        Solver<Self::M>: SolverTrait,
     {
         debug!("Search called");
 
