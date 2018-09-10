@@ -156,7 +156,7 @@ trait SolverTrait {
         // ## ## ####
         // #.$   ####
         // ##########
-        // The only think directions can probably prevent is pushing boxes into dead end tunnels.
+        // The only thing directions can probably prevent is pushing boxes into dead end tunnels.
 
         // this wastes some memory given
         // a) for one cell many directions likely have the same distances
@@ -167,6 +167,7 @@ trait SolverTrait {
         // 64x64 map: 2^28 B = 256 MiB
         // 128x128 map: 2^32 B = 4 GiB
         // 256x256 map: 2^36 B = 64 GiB
+        // also it's very slow for large open areas
         let mut push_dists: Vec2d<[Vec2d<Option<u16>>; 4]> = map.grid().scratchpad_with_default([
             map.grid().scratchpad(),
             map.grid().scratchpad(),
