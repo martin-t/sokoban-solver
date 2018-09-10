@@ -138,6 +138,7 @@ trait SolverTrait {
     fn push_box(sd: &StaticData<Self::M>, state: &State, box_index: u8, push_dest: Pos)
         -> Vec<Pos>;
 
+    #[inline(never)] // this is called only once and this way it's easier to see in callgrind
     fn push_dists(map: &Self::M) -> Vec2d<[Vec2d<Option<u16>>; 4]>
     where
         Solver<Self::M>: SolverTrait<M = Self::M>,
@@ -158,6 +159,30 @@ trait SolverTrait {
         // ##########
         // The only thing directions can probably prevent is pushing boxes into dead end tunnels.
 
+        let mut push_dirs =
+            map.grid()
+                .scratchpad_with_default([Vec::new(), Vec::new(), Vec::new(), Vec::new()]);
+
+        for box_pos in map.grid().positions() {
+            if map.grid()[box_pos] == MapCell::Wall {
+                continue;
+            }
+
+            for &player_to_box in &DIRECTIONS {
+                // Technically, this could be optimized further because if the box is reachable from multiple dirs,
+                // all of them have the same push dirs. `one_box_push_dirs` would have to be modified to return
+                // reachable dists, not push dists.
+
+                let player_pos = box_pos - player_to_box;
+                if map.grid()[player_pos] == MapCell::Wall {
+                    continue;
+                }
+
+                push_dirs[box_pos][player_to_box as usize] =
+                    Self::one_box_push_dirs(map, box_pos, player_pos);
+            }
+        }
+
         // this wastes some memory given
         // a) for one cell many directions likely have the same distances
         // b) there's a lot of cells and directions that have all dest cells None
@@ -167,7 +192,6 @@ trait SolverTrait {
         // 64x64 map: 2^28 B = 256 MiB
         // 128x128 map: 2^32 B = 4 GiB
         // 256x256 map: 2^36 B = 64 GiB
-        // also it's very slow for large open areas
         let mut push_dists: Vec2d<[Vec2d<Option<u16>>; 4]> = map.grid().scratchpad_with_default([
             map.grid().scratchpad(),
             map.grid().scratchpad(),
@@ -181,7 +205,7 @@ trait SolverTrait {
             }
 
             for &initial_dir in &DIRECTIONS {
-                let player_start_pos = box_start_pos + initial_dir.inverse();
+                let player_start_pos = box_start_pos - initial_dir;
                 if map.grid()[player_start_pos] == MapCell::Wall {
                     continue;
                 }
@@ -206,7 +230,8 @@ trait SolverTrait {
                         *old_dist = Some(cur_dist);
                     }
 
-                    for push_dir in Self::dfs_one_box(map, cur_box_pos, cur_player_pos) {
+                    //for push_dir in Self::one_box_push_dirs(map, cur_box_pos, cur_player_pos) {
+                    for &push_dir in &push_dirs[cur_box_pos][player_to_box as usize] {
                         visited[cur_box_pos][player_to_box as usize] = true;
                         to_visit.push_back((cur_box_pos + push_dir, cur_box_pos, cur_dist + 1));
                     }
@@ -228,16 +253,17 @@ trait SolverTrait {
     }
 
     /// Finds in which directions the box is pushable
-    fn dfs_one_box(map: &Self::M, box_pos: Pos, player_start_pos: Pos) -> Vec<Dir> {
+    fn one_box_push_dirs(map: &Self::M, box_pos: Pos, player_start_pos: Pos) -> Vec<Dir> {
         let mut ret = Vec::new();
 
         let mut touched = map.grid().scratchpad();
         touched[player_start_pos] = true;
 
-        let mut to_visit = Vec::new();
-        to_visit.push(player_start_pos);
+        // BFS turns out to be faster than DFS here on the levels i benched
+        let mut to_visit = VecDeque::new();
+        to_visit.push_back(player_start_pos);
 
-        while let Some(cur_pos) = to_visit.pop() {
+        while let Some(cur_pos) = to_visit.pop_front() {
             for &dir in &DIRECTIONS {
                 let next_pos = cur_pos + dir;
                 if next_pos == box_pos {
@@ -246,10 +272,14 @@ trait SolverTrait {
                         // don't set touched here
                         // box pos can be touched multiple times - that's the whole point
                         ret.push(dir);
+                        if ret.len() == 4 {
+                            // there's only one box so 4 dirs is the max
+                            return ret;
+                        }
                     }
                 } else if map.grid()[next_pos] != MapCell::Wall && !touched[next_pos] {
                     touched[next_pos] = true;
-                    to_visit.push(next_pos);
+                    to_visit.push_back(next_pos);
                 }
             }
         }
@@ -909,52 +939,52 @@ mod tests {
         fn hash_set(v: Vec<Dir>) -> HashSet<Dir> {
             v.into_iter().collect()
         }
-        let dfs = Solver::<GoalMap>::dfs_one_box;
+        let search_fn = Solver::<GoalMap>::one_box_push_dirs;
 
         // although the function should handle all player positions,
         // in practise the player will always be next to the box
         assert_eq!(
-            hash_set(dfs(map, center_box, center_box + Up)),
+            hash_set(search_fn(map, center_box, center_box + Up)),
             hash_set(vec![Down, Left])
         );
         assert_eq!(
-            hash_set(dfs(map, center_box, center_box + Right)),
+            hash_set(search_fn(map, center_box, center_box + Right)),
             hash_set(vec![Down, Left])
         );
         assert_eq!(
-            hash_set(dfs(map, center_box, center_box + Down)),
+            hash_set(search_fn(map, center_box, center_box + Down)),
             hash_set(vec![Up, Right])
         );
         assert_eq!(
-            hash_set(dfs(map, center_box, center_box + Left)),
+            hash_set(search_fn(map, center_box, center_box + Left)),
             hash_set(vec![Up, Right])
         );
         assert_eq!(
-            hash_set(dfs(map, left_box, left_box + Up)),
+            hash_set(search_fn(map, left_box, left_box + Up)),
             hash_set(vec![Left])
         );
         assert_eq!(
-            hash_set(dfs(map, left_box, left_box + Right)),
+            hash_set(search_fn(map, left_box, left_box + Right)),
             hash_set(vec![Left])
         );
         assert_eq!(
-            hash_set(dfs(map, left_box, left_box + Left)),
+            hash_set(search_fn(map, left_box, left_box + Left)),
             hash_set(vec![Right])
         );
         assert_eq!(
-            hash_set(dfs(map, right_box, right_box + Up)),
+            hash_set(search_fn(map, right_box, right_box + Up)),
             hash_set(vec![Up, Right, Down, Left])
         );
         assert_eq!(
-            hash_set(dfs(map, right_box, right_box + Right)),
+            hash_set(search_fn(map, right_box, right_box + Right)),
             hash_set(vec![Up, Right, Down, Left])
         );
         assert_eq!(
-            hash_set(dfs(map, right_box, right_box + Down)),
+            hash_set(search_fn(map, right_box, right_box + Down)),
             hash_set(vec![Up, Right, Down, Left])
         );
         assert_eq!(
-            hash_set(dfs(map, right_box, right_box + Left)),
+            hash_set(search_fn(map, right_box, right_box + Left)),
             hash_set(vec![Up, Right, Down, Left])
         );
     }

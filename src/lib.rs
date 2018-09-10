@@ -47,8 +47,10 @@ pub trait Solve {
 mod tests {
     use test::{self, Bencher};
 
+    use std::fmt::Write;
     use std::fs;
     use std::path::Path;
+    use std::time::Instant;
 
     use separator::Separatable;
 
@@ -276,12 +278,20 @@ mod tests {
             .iter()
             .filter(|&&(_, _, _, difficulty)| difficulty <= MAX_DIFFICULTY)
             .collect();
+
+        let started = Instant::now();
+
         let succeeded = levels
             .iter()
             .filter(|&(method, level_pack, level_name, _)| {
                 test_level(*method, level_pack, level_name)
             }).count();
-        println!("Tested {} levels", levels.len());
+
+        println!(
+            "Tested {} levels in {} ms",
+            levels.len(),
+            (started.elapsed().as_millis() as u64).separated_string() // separator doesn't support u128
+        );
         assert_eq!(succeeded, levels.len());
     }
 
@@ -301,9 +311,6 @@ mod tests {
         // for updating results more easily
         // (need to update when equal too because the file includes individual depths)
         #![allow(clippy::collapsible_if)]
-
-        use std::fmt::Write;
-        use std::time::Instant;
 
         let method_name = method.to_string();
         let level_path = format!("levels/{}/{}", level_pack, level_name);

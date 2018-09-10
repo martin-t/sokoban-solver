@@ -1,6 +1,6 @@
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::ops::Add;
+use std::ops::{Add, Sub};
 
 crate const MAX_SIZE: usize = 255;
 crate const MAX_BOXES: usize = 255;
@@ -130,6 +130,15 @@ impl Add<Dir> for Pos {
                 c: self.c - 1,
             },
         }
+    }
+}
+
+impl Sub<Dir> for Pos {
+    type Output = Pos;
+
+    fn sub(self, dir: Dir) -> Pos {
+        #![allow(clippy::suspicious_arithmetic_impl)]
+        self + dir.inverse()
     }
 }
 

@@ -13,14 +13,12 @@ use sokoban_solver::{LoadLevel, Solve};
 #[allow(unused)]
 fn bench_pushes_boxxle1_1(c: &mut Criterion) {
     // 3 goals in a row
-    // a lot of the time here is spent generating push_distances
     bench_level(c, Method::PushOptimal, "levels/boxxle1/1.txt", 150);
 }
 
 #[allow(unused)]
 fn bench_pushes_boxxle1_5(c: &mut Criterion) {
     // 4 boxes goal room
-    // a lot of the time here is spent generating push_distances
     bench_level(c, Method::PushOptimal, "levels/boxxle1/5.txt", 75);
 }
 
@@ -45,7 +43,6 @@ fn bench_pushes_boxxle2_3(c: &mut Criterion) {
 #[allow(unused)]
 fn bench_pushes_boxxle2_4(c: &mut Criterion) {
     // 13 goals in a checkerboard
-    // a lot of the time here is spent generating push_distances
     bench_level(c, Method::PushOptimal, "levels/boxxle2/4.txt", 25);
 }
 
