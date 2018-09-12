@@ -1,3 +1,5 @@
+// https://github.com/rust-lang/rust/issues/45388
+#![feature(crate_visibility_modifier)]
 // https://github.com/rust-lang/rust/issues/31844
 #![feature(specialization)]
 // Opt in to warnings about new 2018 idioms
