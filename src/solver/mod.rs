@@ -8,7 +8,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 
 use fnv::FnvHashMap; // using rustc-hash gives the same results, maybe bench again when able to solve levels with many boxes
-use log::{debug, log};
+use log::debug;
 use typed_arena::Arena;
 
 use crate::config::Method;
