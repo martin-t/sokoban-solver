@@ -76,6 +76,12 @@ impl Solve for Level {
     fn solve(&self, method: Method, print_status: bool) -> Result<SolverOk, SolverErr> {
         debug!("Processing level...");
 
+        // I am not quite sure how to merge these branches.
+        // It should be possible with trait objects but they have additional restrictions
+        // (https://doc.rust-lang.org/error-index.html#E0038) plus even then I might run
+        // into [this](https://github.com/rust-lang/rust/issues/23856) bug.
+        // It might be easier to keep the 2 branches.
+
         match self.map {
             MapType::Goals(ref goals_map) => {
                 let solver = Solver::new_with_goals(goals_map, &self.state)?;
@@ -779,7 +785,6 @@ mod tests {
         for level in &[level0, level1, level2, level3, level4] {
             let level: Level = level.parse().unwrap();
             assert_eq!(
-                //Solver::new(&level).unwrap_err(),
                 Solver::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
                 SolverErr::IncompleteBorder
             );
@@ -795,7 +800,6 @@ mod tests {
 ";
         let level: Level = level.parse().unwrap();
         assert_eq!(
-            //Solver::new(&level).unwrap_err(),
             Solver::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
             SolverErr::UnreachableBoxes
         );
@@ -810,7 +814,6 @@ mod tests {
 ";
         let level: Level = level.parse().unwrap();
         assert_eq!(
-            //Solver::new(&level).unwrap_err(),
             Solver::new_with_remover(level.remover_map(), &level.state).unwrap_err(),
             SolverErr::UnreachableBoxes
         );
@@ -825,7 +828,6 @@ mod tests {
 ";
         let level: Level = level.parse().unwrap();
         assert_eq!(
-            //Solver::new(&level).unwrap_err(),
             Solver::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
             SolverErr::UnreachableGoals
         );
@@ -840,7 +842,6 @@ mod tests {
 ";
         let level: Level = level.parse().unwrap();
         assert_eq!(
-            //Solver::new(&level).unwrap_err(),
             Solver::new_with_remover(level.remover_map(), &level.state).unwrap_err(),
             SolverErr::UnreachableRemover
         );
@@ -870,7 +871,7 @@ mod tests {
 ###
 ";
         let level: Level = level.parse().unwrap();
-        //let err = Solver::new(&level).unwrap_err();
+
         let err = Solver::new_with_goals(level.goal_map(), &level.state).unwrap_err();
         assert_eq!(err, SolverErr::TooMany);
         assert_eq!(err.to_string(), "More than 255 reachable boxes or goals");
@@ -884,7 +885,6 @@ mod tests {
 ###
 ";
         let level: Level = level.parse().unwrap();
-        //assert_eq!(Solver::new(&level).unwrap_err(), SolverErr::NoBoxesGoals);
         assert_eq!(
             Solver::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
             SolverErr::NoBoxesGoals
@@ -899,7 +899,6 @@ mod tests {
 ####
 ";
         let level: Level = level.parse().unwrap();
-        //assert_eq!(Solver::new(&level).unwrap_err(), SolverErr::DiffBoxesGoals);
         assert_eq!(
             Solver::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
             SolverErr::DiffBoxesGoals
@@ -1162,7 +1161,6 @@ None    None    None    None    None    None    None     None     None None None
 *####*#
 ".trim_left_matches('\n');
 
-        //let solver = Solver::new(&level.parse().unwrap()).unwrap();
         let level: Level = level.parse().unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
 
@@ -1195,7 +1193,6 @@ None    None    None    None    None    None    None     None     None None None
 <><><><><>
 ";
         let level: Level = level.parse().unwrap();
-        //let solver = Solver::new(&level).unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
         let neighbor_states =
@@ -1214,7 +1211,6 @@ None    None    None    None    None    None    None     None     None None None
  ####
 ";
         let level: Level = level.parse().unwrap();
-        //let solver = Solver::new(&level).unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
         let neighbor_states =
@@ -1233,7 +1229,6 @@ None    None    None    None    None    None    None     None     None None None
  ####
 ";
         let level: Level = level.parse().unwrap();
-        //let solver = Solver::new(&level).unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
         let neighbor_states =
@@ -1241,5 +1236,3 @@ None    None    None    None    None    None    None     None     None None None
         assert_eq!(neighbor_states.len(), 4);
     }
 }
-
-// TODO when the interface is stable, remove all the commented out code in tests
