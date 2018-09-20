@@ -261,7 +261,7 @@ trait SolverTrait {
             for &dir in &DIRECTIONS {
                 let next_pos = cur_pos + dir;
                 if next_pos == box_pos {
-                    // can't step on this pos (so `else if` is no taken) but can we actually push?
+                    // can't step on this pos (so `else if` is not taken) but can we actually push?
                     if map.grid()[next_pos + dir] != MapCell::Wall {
                         // don't set touched here
                         // box pos can be touched multiple times - that's the whole point
