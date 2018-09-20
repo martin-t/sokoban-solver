@@ -47,7 +47,9 @@ pub trait Solve {
 
 #[cfg(test)]
 mod tests {
-    use test::{self, Bencher};
+    #[allow(unused)] // needed for latest nightly
+    extern crate test;
+    use self::test::Bencher;
 
     use std::fmt::Write;
     use std::fs;
