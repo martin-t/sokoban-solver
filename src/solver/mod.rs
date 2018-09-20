@@ -59,16 +59,11 @@ impl Error for SolverErr {}
 pub struct SolverOk {
     pub moves: Option<Moves>,
     pub stats: Stats,
-    crate method: Method,
 }
 
 impl SolverOk {
-    fn new(moves: Option<Moves>, stats: Stats, method: Method) -> Self {
-        Self {
-            moves,
-            stats,
-            method,
-        }
+    fn new(moves: Option<Moves>, stats: Stats) -> Self {
+        Self { moves, stats }
     }
 }
 
@@ -90,13 +85,11 @@ impl Solve for Level {
 
                 match method {
                     Method::MoveOptimal => Ok(solver.search(
-                        method,
                         print_status,
                         Solver::<GoalMap>::expand_move,
                         heuristic_move_goals,
                     )),
                     Method::PushOptimal => Ok(solver.search(
-                        method,
                         print_status,
                         Solver::<GoalMap>::expand_push,
                         heuristic_push,
@@ -110,13 +103,11 @@ impl Solve for Level {
 
                 match method {
                     Method::MoveOptimal => Ok(solver.search(
-                        method,
                         print_status,
                         Solver::<RemoverMap>::expand_move,
                         heuristic_move_remover,
                     )),
                     Method::PushOptimal => Ok(solver.search(
-                        method,
                         print_status,
                         Solver::<RemoverMap>::expand_push,
                         heuristic_push,
@@ -325,7 +316,6 @@ trait SolverTrait {
 
     fn search<Expand, Heuristic>(
         &self,
-        method: Method,
         print_status: bool,
         expand: Expand,
         heuristic: Heuristic,
@@ -341,7 +331,7 @@ trait SolverTrait {
         // normally such states would not be generated at all but the first one is not generated so needs to be checked
         for &box_pos in &self.initial_state().boxes {
             if self.sd().closest_push_dists[box_pos].is_none() {
-                return SolverOk::new(None, stats, method);
+                return SolverOk::new(None, stats);
             }
         }
 
@@ -396,7 +386,6 @@ trait SolverTrait {
                         &cur_node.state,
                     )),
                     stats,
-                    method,
                 );
             }
 
@@ -418,7 +407,7 @@ trait SolverTrait {
             }
         }
 
-        SolverOk::new(None, stats, method)
+        SolverOk::new(None, stats)
     }
 
     fn expand_move<'a>(
@@ -1056,7 +1045,6 @@ mod tests {
                         let fake_solver = Solver::new_with_goals(&fake_map, &fake_state).unwrap();
                         let moves = fake_solver
                             .search(
-                                Method::PushOptimal,
                                 false,
                                 Solver::<GoalMap>::expand_push,
                                 heuristic_push_manhattan_goals,
