@@ -88,7 +88,7 @@ impl Solve for Level {
                     Method::MoveOptimal => Ok(solver.search(
                         print_status,
                         Solver::<GoalMap>::expand_move,
-                        heuristic_move_goals,
+                        heuristic_move,
                     )),
                     Method::PushOptimal => Ok(solver.search(
                         print_status,
@@ -106,7 +106,7 @@ impl Solve for Level {
                     Method::MoveOptimal => Ok(solver.search(
                         print_status,
                         Solver::<RemoverMap>::expand_move,
-                        heuristic_move_remover,
+                        heuristic_move,
                     )),
                     Method::PushOptimal => Ok(solver.search(
                         print_status,
@@ -478,22 +478,9 @@ fn heuristic_push<M: Map>(sd: &StaticData<M>, state: &State) -> u16 {
     goal_dist_sum
 }
 
-fn heuristic_move_goals(sd: &StaticData<GoalMap>, state: &State) -> u16 {
-    let mut closest_box = u16::max_value();
-    for box_pos in &state.boxes {
-        let dist = state.player_pos.dist(*box_pos);
-        if dist < closest_box {
-            closest_box = dist;
-        }
-    }
-
-    // -1 because it is the distance until being able to push the box
-    // and when all boxes are on goals, the heuristic must be 0
-    closest_box - 1 + heuristic_push(sd, state)
-}
-
-fn heuristic_move_remover(sd: &StaticData<RemoverMap>, state: &State) -> u16 {
+fn heuristic_move<M: Map>(sd: &StaticData<M>, state: &State) -> u16 {
     if state.boxes.is_empty() {
+        // TODO not necessary for goal maps, remove when using BFS in expand_move
         return 0;
     }
 
