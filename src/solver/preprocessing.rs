@@ -147,14 +147,14 @@ crate fn push_dists<M: Map>(map: &M) -> Vec2d<[Vec2d<Option<u16>>; 4]> {
     }
 
     /*for box_start_pos in map.grid().positions() {
-            for &initial_dir in &DIRECTIONS {
-                println!(
-                    "box_start_pos: {:?}, initial_dir: {:?}",
-                    box_start_pos, initial_dir
-                );
-                println!("{:?}", push_dists[box_start_pos][initial_dir as usize]);
-            }
-        }*/
+        for &initial_dir in &DIRECTIONS {
+            println!(
+                "box_start_pos: {:?}, initial_dir: {:?}",
+                box_start_pos, initial_dir
+            );
+            println!("{:?}", push_dists[box_start_pos][initial_dir as usize]);
+        }
+    }*/
 
     push_dists
 }

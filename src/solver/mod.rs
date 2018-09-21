@@ -124,12 +124,12 @@ struct Solver<M: Map> {
     // this should remain private given i might use unsafe to optimize things
     // and some of the values must be correct to avoid out of bounds array access
     sd: StaticData<M>,
-    initial_state: State,
 }
 
 #[derive(Debug)]
 struct StaticData<M: Map> {
     map: M,
+    initial_state: State,
     push_dists: Vec2d<[Vec2d<Option<u16>>; 4]>,
     closest_push_dists: Vec2d<Option<u16>>,
 }
@@ -184,10 +184,10 @@ impl Solver<GoalMap> {
         Ok(Solver {
             sd: StaticData {
                 map: processed_map,
+                initial_state: clean_state,
                 push_dists,
                 closest_push_dists,
             },
-            initial_state: clean_state,
         })
     }
 }
@@ -226,10 +226,10 @@ impl Solver<RemoverMap> {
         Ok(Solver {
             sd: StaticData {
                 map: processed_map,
+                initial_state: state.clone(),
                 push_dists,
                 closest_push_dists,
             },
-            initial_state: state.clone(),
         })
     }
 }
@@ -238,8 +238,6 @@ trait SolverTrait {
     type M: Map + Clone;
 
     fn sd(&self) -> &StaticData<Self::M>;
-
-    fn initial_state(&self) -> &State;
 
     fn push_box(sd: &StaticData<Self::M>, state: &State, box_index: u8, push_dest: Pos)
         -> Vec<Pos>;
@@ -259,7 +257,7 @@ trait SolverTrait {
         let mut stats = Stats::new();
 
         // normally such states would not be generated at all but the first one is not generated so needs to be checked
-        for &box_pos in &self.initial_state().boxes {
+        for &box_pos in &self.sd().initial_state.boxes {
             if self.sd().closest_push_dists[box_pos].is_none() {
                 return SolverOk::new(None, stats);
             }
@@ -271,10 +269,10 @@ trait SolverTrait {
         let mut prevs = FnvHashMap::default();
 
         let start = SearchNode::new(
-            self.initial_state(),
+            &self.sd().initial_state,
             None,
             0,
-            heuristic(self.sd(), self.initial_state()),
+            heuristic(self.sd(), &self.sd().initial_state),
         );
         stats.add_created(&start);
         to_visit.push(Reverse(start));
@@ -408,7 +406,8 @@ trait SolverTrait {
                         let new_boxes = Self::push_box(sd, state, box_index, push_dest);
 
                         // TODO normalize player pos
-                        // note that pushing a box can reveal new areas on both goal and remover maps
+                        // note that pushing a box can reveal or hide new areas on both goal and remover maps
+                        // (and reusing is not worth it according to Brian Damgaard)
                         let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
                         new_states.push(&*new_state);
                     }
@@ -433,10 +432,6 @@ impl SolverTrait for Solver<GoalMap> {
         &self.sd
     }
 
-    fn initial_state(&self) -> &State {
-        &self.initial_state
-    }
-
     fn push_box(
         _sd: &StaticData<Self::M>,
         state: &State,
@@ -454,10 +449,6 @@ impl SolverTrait for Solver<RemoverMap> {
 
     fn sd(&self) -> &StaticData<Self::M> {
         &self.sd
-    }
-
-    fn initial_state(&self) -> &State {
-        &self.initial_state
     }
 
     fn push_box(
@@ -691,9 +682,9 @@ mod tests {
 ".trim_left_matches('\n');
         assert_eq!(solver.sd.map.to_string(), processed_empty_level);
 
-        assert_eq!(solver.initial_state.player_pos, Pos { r: 1, c: 1 });
+        assert_eq!(solver.sd.initial_state.player_pos, Pos { r: 1, c: 1 });
         assert_eq!(
-            solver.initial_state.boxes,
+            solver.sd.initial_state.boxes,
             vec![Pos { r: 1, c: 2 }, Pos { r: 1, c: 4 }]
         );
     }
@@ -716,7 +707,7 @@ mod tests {
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
         let neighbor_states =
-            Solver::<GoalMap>::expand_push(&solver.sd, &solver.initial_state, &states);
+            Solver::<GoalMap>::expand_push(&solver.sd, &solver.sd.initial_state, &states);
         assert_eq!(neighbor_states.len(), 2);
     }
 
@@ -734,7 +725,7 @@ mod tests {
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
         let neighbor_states =
-            Solver::<GoalMap>::expand_move(&solver.sd, &solver.initial_state, &states);
+            Solver::<GoalMap>::expand_move(&solver.sd, &solver.sd.initial_state, &states);
         assert_eq!(neighbor_states.len(), 2);
     }
 
@@ -752,7 +743,7 @@ mod tests {
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
         let neighbor_states =
-            Solver::<GoalMap>::expand_move(&solver.sd, &solver.initial_state, &states);
+            Solver::<GoalMap>::expand_move(&solver.sd, &solver.sd.initial_state, &states);
         assert_eq!(neighbor_states.len(), 4);
     }
 }
