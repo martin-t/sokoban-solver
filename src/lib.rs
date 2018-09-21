@@ -51,7 +51,7 @@ mod tests {
     extern crate test;
     use self::test::Bencher;
 
-    use std::fmt::Write;
+    use std::fmt::{Display, Write};
     use std::fs;
     use std::path::Path;
     use std::time::Instant;
@@ -283,15 +283,117 @@ mod tests {
         let levels: Vec<_> = levels
             .iter()
             .filter(|&&(_, _, _, difficulty)| difficulty <= MAX_DIFFICULTY)
+            .map(|&(method, pack, level, _)| (method, pack, level))
             .collect();
+        test_and_time_levels(&levels);
+    }
 
+    #[test]
+    #[ignore] // most are simple but there's so many of them that testing all of them takes too long
+    fn test_696() {
+        let levels: Vec<_> = (100..=696)
+            .filter(|&i| i != 250 && i != 693) // currently can't solve these two
+            .map(|num| (Method::PushOptimal, "696", format!("{}.txt", num)))
+            .collect();
+        test_and_time_levels(&levels);
+    }
+
+    #[test]
+    #[ignore]
+    fn test_aymeric_cosmonotes() {
+        let levels: Vec<_> = (1..=20)
+            .map(|num| {
+                (
+                    Method::PushOptimal,
+                    "aymeric-cosmonotes",
+                    format!("{}.txt", num),
+                )
+            }).collect();
+        test_and_time_levels(&levels);
+    }
+
+    #[test]
+    #[ignore]
+    fn test_aymeric_microcosmos() {
+        let levels: Vec<_> = (1..=40)
+            .map(|num| {
+                (
+                    Method::PushOptimal,
+                    "aymeric-microcosmos",
+                    format!("{}.txt", num),
+                )
+            }).collect();
+        test_and_time_levels(&levels);
+    }
+
+    #[test]
+    #[ignore]
+    fn test_aymeric_minicosmos() {
+        let levels: Vec<_> = (1..=40)
+            .map(|num| {
+                (
+                    Method::PushOptimal,
+                    "aymeric-minicosmos",
+                    format!("{}.txt", num),
+                )
+            }).collect();
+        test_and_time_levels(&levels);
+    }
+
+    #[test]
+    #[ignore]
+    fn test_aymeric_nabocosmos() {
+        let levels: Vec<_> = (1..=40)
+            .map(|num| {
+                (
+                    Method::PushOptimal,
+                    "aymeric-nabocosmos",
+                    format!("{}.txt", num),
+                )
+            }).collect();
+        test_and_time_levels(&levels);
+    }
+
+    #[test]
+    #[ignore]
+    fn test_aymeric_picocosmos() {
+        let levels: Vec<_> = (1..=20)
+            .map(|num| {
+                (
+                    Method::PushOptimal,
+                    "aymeric-picocosmos",
+                    format!("{}.txt", num),
+                )
+            }).collect();
+        test_and_time_levels(&levels);
+    }
+
+    #[test]
+    #[ignore]
+    fn test_microban1() {
+        let levels: Vec<_> = (1..=155)
+            .map(|num| (Method::PushOptimal, "microban1", format!("{}.txt", num)))
+            .collect();
+        test_and_time_levels(&levels);
+    }
+
+    #[test]
+    #[ignore]
+    fn test_microban2() {
+        let levels: Vec<_> = (1..=135)
+            .filter(|&num| num != 66 && num != 102 && num != 104 && num < 100)
+            .map(|num| (Method::PushOptimal, "microban2", format!("{}.txt", num)))
+            .collect();
+        test_and_time_levels(&levels);
+    }
+
+    fn test_and_time_levels<L: AsRef<str> + Display>(levels: &[(Method, &str, L)]) {
         let started = Instant::now();
 
         let succeeded = levels
             .iter()
-            .filter(|&(method, level_pack, level_name, _)| {
-                test_level(*method, level_pack, level_name)
-            }).count();
+            .filter(|&(method, level_pack, level_name)| test_level(*method, level_pack, level_name))
+            .count();
 
         println!(
             "Tested {} levels in {} ms",
@@ -301,19 +403,12 @@ mod tests {
         assert_eq!(succeeded, levels.len());
     }
 
-    #[test]
-    #[ignore] // most are simple but there's so many of them that testing all of them takes too long
-    fn test_696() {
-        // currently can't solve these two
-        let level_numbers = (100..=696).filter(|&i| i != 250 && i != 693);
-        for i in level_numbers {
-            let res = test_level(Method::PushOptimal, "696", &format!("{}.txt", i));
-            assert!(res);
-        }
-    }
-
     #[must_use]
-    fn test_level(method: Method, level_pack: &str, level_name: &str) -> bool {
+    fn test_level<L: AsRef<str> + Display>(
+        method: Method,
+        level_pack: &str,
+        level_name: L,
+    ) -> bool {
         // for updating results more easily
         // (need to update when equal too because the file includes individual depths)
         #![allow(clippy::collapsible_if)]
