@@ -85,16 +85,8 @@ impl Solve for Level {
                 debug!("Processed level");
 
                 match method {
-                    Method::MoveOptimal => Ok(solver.search(
-                        print_status,
-                        Solver::<GoalMap>::expand_move,
-                        heuristic_move,
-                    )),
-                    Method::PushOptimal => Ok(solver.search(
-                        print_status,
-                        Solver::<GoalMap>::expand_push,
-                        heuristic_push,
-                    )),
+                    Method::MoveOptimal => Ok(solver.search(print_status, MoveLogic)),
+                    Method::PushOptimal => Ok(solver.search(print_status, PushLogic)),
                 }
             }
             MapType::Remover(ref remover_map) => {
@@ -103,16 +95,8 @@ impl Solve for Level {
                 debug!("Processed level");
 
                 match method {
-                    Method::MoveOptimal => Ok(solver.search(
-                        print_status,
-                        Solver::<RemoverMap>::expand_move,
-                        heuristic_move,
-                    )),
-                    Method::PushOptimal => Ok(solver.search(
-                        print_status,
-                        Solver::<RemoverMap>::expand_push,
-                        heuristic_push,
-                    )),
+                    Method::MoveOptimal => Ok(solver.search(print_status, MoveLogic)),
+                    Method::PushOptimal => Ok(solver.search(print_status, PushLogic)),
                 }
             }
         }
@@ -242,15 +226,9 @@ trait SolverTrait {
     fn push_box(sd: &StaticData<Self::M>, state: &State, box_index: u8, push_dest: Pos)
         -> Vec<Pos>;
 
-    fn search<Expand, Heuristic>(
-        &self,
-        print_status: bool,
-        expand: Expand,
-        heuristic: Heuristic,
-    ) -> SolverOk
+    fn search<Logic: GameLogic<Self::M>>(&self, print_status: bool, _: Logic) -> SolverOk
     where
-        Expand: for<'a> Fn(&StaticData<Self::M>, &State, &'a Arena<State>) -> Vec<&'a State>,
-        Heuristic: Fn(&StaticData<Self::M>, &State) -> u16,
+        Solver<<Self as SolverTrait>::M>: SolverTrait,
     {
         debug!("Search called");
 
@@ -272,7 +250,7 @@ trait SolverTrait {
             &self.sd().initial_state,
             None,
             0,
-            heuristic(self.sd(), &self.sd().initial_state),
+            Logic::heuristic(self.sd(), &self.sd().initial_state),
         );
         stats.add_created(&start);
         to_visit.push(Reverse(start));
@@ -317,7 +295,7 @@ trait SolverTrait {
                 );
             }
 
-            for neighbor_state in expand(self.sd(), &cur_node.state, &states) {
+            for neighbor_state in Logic::expand(self.sd(), &cur_node.state, &states) {
                 // Insert everything and ignore duplicates when popping. This wastes memory
                 // but when I filter them out here using a HashMap, push-optimal/boxxle2/4 becomes 8x slower
                 // and generates much more states (although push-optimal/original/1 becomes about 2x faster).
@@ -327,7 +305,7 @@ trait SolverTrait {
                 // Also might wanna try https://crates.io/crates/priority-queue for changing priorities
                 // instead of adding duplicates.
 
-                let h = heuristic(self.sd(), neighbor_state);
+                let h = Logic::heuristic(self.sd(), neighbor_state);
                 let next_node =
                     SearchNode::new(neighbor_state, Some(&cur_node.state), cur_node.dist + 1, h);
                 stats.add_created(&next_node);
@@ -336,92 +314,6 @@ trait SolverTrait {
         }
 
         SolverOk::new(None, stats)
-    }
-
-    fn expand_move<'a>(
-        sd: &StaticData<Self::M>,
-        state: &State,
-        arena: &'a Arena<State>,
-    ) -> Vec<&'a State> {
-        let mut new_states = Vec::new();
-
-        let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
-        for (i, b) in state.boxes.iter().enumerate() {
-            box_grid[*b] = i as u8;
-        }
-
-        for &dir in &DIRECTIONS {
-            let new_player_pos = state.player_pos + dir;
-            if sd.map.grid()[new_player_pos] != MapCell::Wall {
-                let box_index = box_grid[new_player_pos];
-                let push_dest = new_player_pos + dir;
-
-                if box_index == 255 {
-                    // step
-                    let new_state = arena.alloc(State::new(new_player_pos, state.boxes.clone()));
-                    new_states.push(&*new_state);
-                } else if box_grid[push_dest] == 255
-                    && sd.map.grid()[push_dest] != MapCell::Wall
-                    && sd.closest_push_dists[push_dest].is_some()
-                {
-                    // push
-                    let new_boxes = Self::push_box(sd, state, box_index, push_dest);
-                    let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
-                    new_states.push(&*new_state);
-                }
-            }
-        }
-
-        new_states
-    }
-
-    fn expand_push<'a>(
-        sd: &StaticData<Self::M>,
-        state: &State,
-        arena: &'a Arena<State>,
-    ) -> Vec<&'a State> {
-        let mut new_states = Vec::new();
-
-        let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
-        for (i, b) in state.boxes.iter().enumerate() {
-            box_grid[*b] = i as u8;
-        }
-
-        // find each box and each direction from which it can be pushed
-        let mut reachable = sd.map.grid().scratchpad();
-        reachable[state.player_pos] = true;
-
-        // Vec is noticeably faster than VecDeque on some levels
-        let mut to_visit = vec![state.player_pos];
-
-        while let Some(player_pos) = to_visit.pop() {
-            for &dir in &DIRECTIONS {
-                let new_player_pos = player_pos + dir;
-                let box_index = box_grid[new_player_pos];
-                if box_index < 255 {
-                    // new_pos has a box
-                    let push_dest = new_player_pos + dir;
-                    if box_grid[push_dest] == 255 && sd.closest_push_dists[push_dest].is_some() {
-                        // new state to explore
-                        let new_boxes = Self::push_box(sd, state, box_index, push_dest);
-
-                        // TODO normalize player pos
-                        // note that pushing a box can reveal or hide new areas on both goal and remover maps
-                        // (and reusing is not worth it according to Brian Damgaard)
-                        let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
-                        new_states.push(&*new_state);
-                    }
-                } else if sd.map.grid()[new_player_pos] != MapCell::Wall
-                    && !reachable[new_player_pos]
-                {
-                    // new_pos is empty and not yet visited
-                    reachable[new_player_pos] = true;
-                    to_visit.push(new_player_pos);
-                }
-            }
-        }
-
-        new_states
     }
 }
 
@@ -467,34 +359,134 @@ impl SolverTrait for Solver<RemoverMap> {
     }
 }
 
-fn heuristic_push<M: Map>(sd: &StaticData<M>, state: &State) -> u16 {
-    // thanks to precomputed distances, this is the same for goals and remover
-    let mut goal_dist_sum = 0;
-
-    for &box_pos in &state.boxes {
-        goal_dist_sum += sd.closest_push_dists[box_pos].expect("Box on unreachable cell");
-    }
-
-    goal_dist_sum
+trait GameLogic<M: Map + Clone>
+where
+    Solver<M>: SolverTrait,
+{
+    fn expand<'a>(sd: &StaticData<M>, state: &State, arena: &'a Arena<State>) -> Vec<&'a State>;
+    fn heuristic(sd: &StaticData<M>, state: &State) -> u16;
 }
 
-fn heuristic_move<M: Map>(sd: &StaticData<M>, state: &State) -> u16 {
-    if state.boxes.is_empty() {
-        // TODO not necessary for goal maps, remove when using BFS in expand_move
-        return 0;
-    }
+struct MoveLogic;
 
-    let mut closest_box = u16::max_value();
-    for box_pos in &state.boxes {
-        let dist = state.player_pos.dist(*box_pos);
-        if dist < closest_box {
-            closest_box = dist;
+impl<M: Map + Clone> GameLogic<M> for MoveLogic
+where
+    Solver<M>: SolverTrait<M = M>,
+{
+    fn expand<'a>(sd: &StaticData<M>, state: &State, arena: &'a Arena<State>) -> Vec<&'a State> {
+        let mut new_states = Vec::new();
+
+        let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
+        for (i, b) in state.boxes.iter().enumerate() {
+            box_grid[*b] = i as u8;
         }
+
+        for &dir in &DIRECTIONS {
+            let new_player_pos = state.player_pos + dir;
+            if sd.map.grid()[new_player_pos] != MapCell::Wall {
+                let box_index = box_grid[new_player_pos];
+                let push_dest = new_player_pos + dir;
+
+                if box_index == 255 {
+                    // step
+                    let new_state = arena.alloc(State::new(new_player_pos, state.boxes.clone()));
+                    new_states.push(&*new_state);
+                } else if box_grid[push_dest] == 255
+                    && sd.map.grid()[push_dest] != MapCell::Wall
+                    && sd.closest_push_dists[push_dest].is_some()
+                {
+                    // push
+                    let new_boxes = Solver::<M>::push_box(sd, state, box_index, push_dest);
+                    let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
+                    new_states.push(&*new_state);
+                }
+            }
+        }
+
+        new_states
     }
 
-    // -1 because it is the distance until being able to push the box
-    // and when all boxes are on goals, the heuristic must be 0
-    closest_box - 1 + heuristic_push(sd, state)
+    fn heuristic(sd: &StaticData<M>, state: &State) -> u16 {
+        if state.boxes.is_empty() {
+            // TODO not necessary for goal maps, remove when using BFS in expand_move
+            return 0;
+        }
+
+        let mut closest_box = u16::max_value();
+        for box_pos in &state.boxes {
+            let dist = state.player_pos.dist(*box_pos);
+            if dist < closest_box {
+                closest_box = dist;
+            }
+        }
+
+        // -1 because it is the distance until being able to push the box
+        // and when all boxes are on goals, the heuristic must be 0
+        closest_box - 1 + PushLogic::heuristic(sd, state)
+    }
+}
+
+struct PushLogic;
+
+impl<M: Map + Clone> GameLogic<M> for PushLogic
+where
+    Solver<M>: SolverTrait<M = M>,
+{
+    fn expand<'a>(sd: &StaticData<M>, state: &State, arena: &'a Arena<State>) -> Vec<&'a State> {
+        let mut new_states = Vec::new();
+
+        let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
+        for (i, b) in state.boxes.iter().enumerate() {
+            box_grid[*b] = i as u8;
+        }
+
+        // find each box and each direction from which it can be pushed
+        let mut reachable = sd.map.grid().scratchpad();
+        reachable[state.player_pos] = true;
+
+        // Vec is noticeably faster than VecDeque on some levels
+        let mut to_visit = vec![state.player_pos];
+
+        while let Some(player_pos) = to_visit.pop() {
+            for &dir in &DIRECTIONS {
+                let new_player_pos = player_pos + dir;
+                let box_index = box_grid[new_player_pos];
+                if box_index < 255 {
+                    // new_pos has a box
+                    let push_dest = new_player_pos + dir;
+                    if box_grid[push_dest] == 255 && sd.closest_push_dists[push_dest].is_some() {
+                        // new state to explore
+                        let new_boxes = Solver::<M>::push_box(sd, state, box_index, push_dest);
+
+                        // TODO normalize player pos
+                        // note that pushing a box can reveal or hide new areas on both goal and remover maps
+                        // (and reusing is not worth it according to Brian Damgaard)
+                        let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
+                        new_states.push(&*new_state);
+                    }
+                } else if sd.map.grid()[new_player_pos] != MapCell::Wall
+                    && !reachable[new_player_pos]
+                {
+                    // new_pos is empty and not yet visited
+                    reachable[new_player_pos] = true;
+                    to_visit.push(new_player_pos);
+                }
+            }
+        }
+
+        new_states
+    }
+
+    fn heuristic(sd: &StaticData<M>, state: &State) -> u16 {
+        // thanks to precomputed distances, this is the same for goals and remover
+        let mut goal_dist_sum = 0;
+
+        for &box_pos in &state.boxes {
+            goal_dist_sum += sd.closest_push_dists[box_pos].expect("Box on unreachable cell");
+        }
+
+        goal_dist_sum
+    }
 }
 
 #[cfg(test)]
@@ -693,8 +685,7 @@ mod tests {
         let level: Level = level.parse().unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
-        let neighbor_states =
-            Solver::<GoalMap>::expand_push(&solver.sd, &solver.sd.initial_state, &states);
+        let neighbor_states = PushLogic::expand(&solver.sd, &solver.sd.initial_state, &states);
         assert_eq!(neighbor_states.len(), 2);
     }
 
@@ -711,8 +702,7 @@ mod tests {
         let level: Level = level.parse().unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
-        let neighbor_states =
-            Solver::<GoalMap>::expand_move(&solver.sd, &solver.sd.initial_state, &states);
+        let neighbor_states = MoveLogic::expand(&solver.sd, &solver.sd.initial_state, &states);
         assert_eq!(neighbor_states.len(), 2);
     }
 
@@ -729,8 +719,7 @@ mod tests {
         let level: Level = level.parse().unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
-        let neighbor_states =
-            Solver::<GoalMap>::expand_move(&solver.sd, &solver.sd.initial_state, &states);
+        let neighbor_states = MoveLogic::expand(&solver.sd, &solver.sd.initial_state, &states);
         assert_eq!(neighbor_states.len(), 4);
     }
 }

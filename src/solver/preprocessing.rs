@@ -230,8 +230,11 @@ crate fn closest_push_dists<M: Map>(
 mod tests {
     use super::*;
 
+    use typed_arena::Arena;
+
     use crate::level::Level;
     use crate::map::GoalMap;
+    use crate::solver::{GameLogic, PushLogic};
     use crate::solver::{Solver, SolverTrait, StaticData};
 
     #[test]
@@ -313,21 +316,32 @@ mod tests {
     #[test]
     #[ignore] // pretty slow even in release mode
     fn push_distances() {
-        fn heuristic_push_manhattan_goals(sd: &StaticData<GoalMap>, state: &State) -> u16 {
-            let mut goal_dist_sum = 0;
+        struct FakePushLogic;
 
-            for box_pos in &state.boxes {
-                let mut min = u16::max_value();
-                for goal in &sd.map.goals {
-                    let dist = box_pos.dist(*goal);
-                    if dist < min {
-                        min = dist;
-                    }
-                }
-                goal_dist_sum += min;
+        impl GameLogic<GoalMap> for FakePushLogic {
+            fn expand<'a>(
+                sd: &StaticData<GoalMap>,
+                state: &State,
+                arena: &'a Arena<State>,
+            ) -> Vec<&'a State> {
+                PushLogic::expand(sd, state, arena)
             }
+            fn heuristic(sd: &StaticData<GoalMap>, state: &State) -> u16 {
+                let mut goal_dist_sum = 0;
 
-            goal_dist_sum
+                for box_pos in &state.boxes {
+                    let mut min = u16::max_value();
+                    for goal in &sd.map.goals {
+                        let dist = box_pos.dist(*goal);
+                        if dist < min {
+                            min = dist;
+                        }
+                    }
+                    goal_dist_sum += min;
+                }
+
+                goal_dist_sum
+            }
         }
 
         let level0 = r"
@@ -383,12 +397,7 @@ mod tests {
                         fake_map.grid[goal_pos] = MapCell::Goal;
                         fake_map.goals = vec![goal_pos];
                         let fake_solver = Solver::new_with_goals(&fake_map, &fake_state).unwrap();
-                        let moves = fake_solver
-                            .search(
-                                false,
-                                Solver::<GoalMap>::expand_push,
-                                heuristic_push_manhattan_goals,
-                            ).moves;
+                        let moves = fake_solver.search(false, FakePushLogic).moves;
 
                         let dist_result = push_dists[box_pos][dir as usize][goal_pos];
                         let dist_expected = moves.map(|m| m.push_cnt() as u16);
