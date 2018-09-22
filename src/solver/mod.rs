@@ -295,7 +295,7 @@ trait SolverTrait {
                 );
             }
 
-            for neighbor_state in Logic::expand(self.sd(), &cur_node.state, &states) {
+            for (neighbor_state, h) in Logic::expand(self.sd(), &cur_node.state, &states) {
                 // Insert everything and ignore duplicates when popping. This wastes memory
                 // but when I filter them out here using a HashMap, push-optimal/boxxle2/4 becomes 8x slower
                 // and generates much more states (although push-optimal/original/1 becomes about 2x faster).
@@ -305,7 +305,6 @@ trait SolverTrait {
                 // Also might wanna try https://crates.io/crates/priority-queue for changing priorities
                 // instead of adding duplicates.
 
-                let h = Logic::heuristic(self.sd(), neighbor_state);
                 let next_node =
                     SearchNode::new(neighbor_state, Some(&cur_node.state), cur_node.dist + 1, h);
                 stats.add_created(&next_node);
@@ -363,7 +362,11 @@ trait GameLogic<M: Map + Clone>
 where
     Solver<M>: SolverTrait,
 {
-    fn expand<'a>(sd: &StaticData<M>, state: &State, arena: &'a Arena<State>) -> Vec<&'a State>;
+    fn expand<'a>(
+        sd: &StaticData<M>,
+        state: &State,
+        arena: &'a Arena<State>,
+    ) -> Vec<(&'a State, u16)>;
     fn heuristic(sd: &StaticData<M>, state: &State) -> u16;
 }
 
@@ -373,7 +376,11 @@ impl<M: Map + Clone> GameLogic<M> for MoveLogic
 where
     Solver<M>: SolverTrait<M = M>,
 {
-    fn expand<'a>(sd: &StaticData<M>, state: &State, arena: &'a Arena<State>) -> Vec<&'a State> {
+    fn expand<'a>(
+        sd: &StaticData<M>,
+        state: &State,
+        arena: &'a Arena<State>,
+    ) -> Vec<(&'a State, u16)> {
         let mut new_states = Vec::new();
 
         let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
@@ -390,7 +397,8 @@ where
                 if box_index == 255 {
                     // step
                     let new_state = arena.alloc(State::new(new_player_pos, state.boxes.clone()));
-                    new_states.push(&*new_state);
+                    let h = Self::heuristic(sd, &new_state);
+                    new_states.push((&*new_state, h));
                 } else if box_grid[push_dest] == 255
                     && sd.map.grid()[push_dest] != MapCell::Wall
                     && sd.closest_push_dists[push_dest].is_some()
@@ -398,7 +406,8 @@ where
                     // push
                     let new_boxes = Solver::<M>::push_box(sd, state, box_index, push_dest);
                     let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
-                    new_states.push(&*new_state);
+                    let h = Self::heuristic(sd, &new_state);
+                    new_states.push((&*new_state, h));
                 }
             }
         }
@@ -432,7 +441,11 @@ impl<M: Map + Clone> GameLogic<M> for PushLogic
 where
     Solver<M>: SolverTrait<M = M>,
 {
-    fn expand<'a>(sd: &StaticData<M>, state: &State, arena: &'a Arena<State>) -> Vec<&'a State> {
+    fn expand<'a>(
+        sd: &StaticData<M>,
+        state: &State,
+        arena: &'a Arena<State>,
+    ) -> Vec<(&'a State, u16)> {
         let mut new_states = Vec::new();
 
         let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
@@ -462,7 +475,8 @@ where
                         // note that pushing a box can reveal or hide new areas on both goal and remover maps
                         // (and reusing is not worth it according to Brian Damgaard)
                         let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
-                        new_states.push(&*new_state);
+                        let h = Self::heuristic(sd, &new_state);
+                        new_states.push((&*new_state, h));
                     }
                 } else if sd.map.grid()[new_player_pos] != MapCell::Wall
                     && !reachable[new_player_pos]

@@ -323,9 +323,14 @@ mod tests {
                 sd: &StaticData<GoalMap>,
                 state: &State,
                 arena: &'a Arena<State>,
-            ) -> Vec<&'a State> {
-                PushLogic::expand(sd, state, arena)
+            ) -> Vec<(&'a State, u16)> {
+                let mut new_states = PushLogic::expand(sd, state, arena);
+                for (new_state, h) in &mut new_states {
+                    *h = Self::heuristic(sd, new_state);
+                }
+                new_states
             }
+
             fn heuristic(sd: &StaticData<GoalMap>, state: &State) -> u16 {
                 let mut goal_dist_sum = 0;
 
