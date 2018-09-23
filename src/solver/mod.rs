@@ -218,7 +218,7 @@ trait SolverTrait {
     fn push_box(sd: &StaticData<Self::M>, state: &State, box_index: u8, push_dest: Pos)
         -> Vec<Pos>;
 
-    fn search<Logic: GameLogic<Self::M>>(&self, print_status: bool, _: Logic) -> SolverOk
+    fn search<GL: GameLogic<Self::M>>(&self, print_status: bool, _: GL) -> SolverOk
     where
         Solver<<Self as SolverTrait>::M>: SolverTrait,
     {
@@ -254,7 +254,7 @@ trait SolverTrait {
             &self.sd().initial_state,
             None,
             0,
-            Logic::heuristic(self.sd(), &self.sd().initial_state),
+            GL::heuristic(self.sd(), &self.sd().initial_state),
         );
         stats.add_created(&start);
         to_visit.push(Reverse(start));
@@ -299,7 +299,7 @@ trait SolverTrait {
                 );
             }
 
-            for (neighbor_state, cost, h) in Logic::expand(self.sd(), &cur_node.state, &states) {
+            for (neighbor_state, cost, h) in GL::expand(self.sd(), &cur_node.state, &states) {
                 // Insert everything and ignore duplicates when popping. This wastes memory
                 // but when I filter them out here using a HashMap, push-optimal/boxxle2/4 becomes 8x slower
                 // and generates much more states (although push-optimal/original/1 becomes about 2x faster).
@@ -434,7 +434,7 @@ where
 
     fn heuristic(sd: &StaticData<M>, state: &State) -> u16 {
         if state.boxes.is_empty() {
-            // TODO not necessary for goal maps, remove when using BFS in expand_move
+            // TODO not necessary for goal maps
             return 0;
         }
 
