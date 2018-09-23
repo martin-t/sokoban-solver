@@ -85,28 +85,24 @@ Visited new depth: 0
 total created / unique visited / reached duplicates:
 1               1                0
 
-Visited new depth: 1
-total created / unique visited / reached duplicates:
-3               2                0
-
 Visited new depth: 2
 total created / unique visited / reached duplicates:
-5               3                0
+2               2                0
 
 Visited new depth: 3
 total created / unique visited / reached duplicates:
-7               4                0
+3               3                0
 
-States created total: 7
-Unique visited total: 4
+States created total: 3
+Unique visited total: 3
 Reached duplicates total: 0
-Created but not reached total: 3
+Created but not reached total: 0
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
-1:             2              1              0              1
-2:             2              1              0              1
-3:             2              1              0              1
+1:             0              0              0              0
+2:             1              1              0              0
+3:             1              1              0              0
 
 Found solution:
 <><><><><><><><><>
