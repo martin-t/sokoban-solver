@@ -30,7 +30,6 @@ pub enum SolverErr {
     UnreachableGoals,
     UnreachableRemover,
     TooMany,
-    NoBoxesGoals,
     DiffBoxesGoals,
 }
 
@@ -48,7 +47,6 @@ impl Display for SolverErr {
             ),
             SolverErr::UnreachableRemover => write!(f, "Remover is not reachable"),
             SolverErr::TooMany => write!(f, "More than {} reachable boxes or goals", MAX_BOXES),
-            SolverErr::NoBoxesGoals => write!(f, "No reachable boxes or goals"),
             SolverErr::DiffBoxesGoals => write!(f, "Different number of reachable boxes and goals"),
         }
     }
@@ -146,12 +144,6 @@ impl Solver<GoalMap> {
             }
         }
 
-        // technically, one could argue such a level is solved
-        // but it creates an annyoing edge case for some heuristics
-        if reachable_boxes.is_empty() || reachable_goals.is_empty() {
-            return Err(SolverErr::NoBoxesGoals);
-        }
-
         if reachable_boxes.len() != reachable_goals.len() {
             return Err(SolverErr::DiffBoxesGoals);
         }
@@ -234,11 +226,23 @@ trait SolverTrait {
 
         let mut stats = Stats::new();
 
+        // boxes that can't reach any goals
         // normally such states would not be generated at all but the first one is not generated so needs to be checked
         for &box_pos in &self.sd().initial_state.boxes {
             if self.sd().closest_push_dists[box_pos].is_none() {
                 return SolverOk::new(None, stats);
             }
+        }
+
+        // already solved
+        if self
+            .sd()
+            .initial_state
+            .boxes
+            .iter()
+            .all(|&box_pos| self.sd().map.grid()[box_pos] == MapCell::Goal)
+        {
+            return SolverOk::new(Some(Moves::default()), stats);
         }
 
         let states = Arena::new();
@@ -644,20 +648,6 @@ mod tests {
     }
 
     #[test]
-    fn no_boxes_or_goals() {
-        let level = r"
-###
-#@#
-###
-";
-        let level: Level = level.parse().unwrap();
-        assert_eq!(
-            Solver::new_with_goals(level.goal_map(), &level.state).unwrap_err(),
-            SolverErr::NoBoxesGoals
-        );
-    }
-
-    #[test]
     fn diff_boxes_or_goals() {
         let level = r"
 ####
@@ -721,17 +711,17 @@ mod tests {
     fn expand_move1() {
         let level = r"
  ####
-# $  #
+# $ .#
 # @$*#
-# $  #
-# ...#
+#.$  #
+# .  #
  ####
 ";
         let level: Level = level.parse().unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let states = Arena::new();
         let neighbor_states = MoveLogic::expand(&solver.sd, &solver.sd.initial_state, &states);
-        assert_eq!(neighbor_states.len(), 2);
+        assert_eq!(neighbor_states.len(), 7);
     }
 
     #[test]

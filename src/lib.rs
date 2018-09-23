@@ -88,6 +88,7 @@ mod tests {
 
         #[cfg_attr(rustfmt, rustfmt_skip)]
         let levels = [
+            (PushOptimal, "custom", "00-empty.txt", OK),
             (PushOptimal, "custom", "00-solved.txt", OK),
             (PushOptimal, "custom", "01-simplest-custom.txt", OK),
             (PushOptimal, "custom", "01-simplest-xsb.txt", OK),
@@ -253,6 +254,7 @@ mod tests {
             (PushOptimal, "boxxle2", "9.txt", UNSOLVED),
             (PushOptimal, "boxxle2", "10.txt", UNSOLVED),
             (PushOptimal, "original-and-extra", "1.txt", VERY_SLOW),
+            (MoveOptimal, "custom", "00-empty.txt", OK),
             (MoveOptimal, "custom", "00-solved.txt", OK),
             (MoveOptimal, "custom", "01-simplest-custom.txt", OK),
             (MoveOptimal, "custom", "01-simplest-xsb.txt", OK),
