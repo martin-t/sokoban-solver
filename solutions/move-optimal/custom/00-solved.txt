@@ -1,28 +1,18 @@
-u
-Moves: 1
+
+Moves: 0
 Pushes: 0
-States created total: 5
-Unique visited total: 2
+States created total: 0
+Unique visited total: 0
 Reached duplicates total: 0
-Created but not reached total: 3
+Created but not reached total: 0
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
-0:             1              1              0              0
-1:             4              1              0              3
 
 #####
 #   #
 # * #
 #   #
 # @ #
-#   #
-#####
-
-#####
-#   #
-# * #
-# @ #
-#   #
 #   #
 #####
 

@@ -278,7 +278,7 @@ mod tests {
             (MoveOptimal, "custom", "remover-original-03.txt", UNSOLVED),
             (MoveOptimal, "custom", "remover-original-04.txt", UNSOLVED),
             (MoveOptimal, "custom", "supaplex-remover.txt", VERY_SLOW),
-            (MoveOptimal, "custom", "supaplex-goals.txt", UNSOLVED),
+            (MoveOptimal, "custom", "supaplex-goals.txt", VERY_SLOW),
             (MoveOptimal, "boxxle1", "1.txt", OK),
             (MoveOptimal, "boxxle1", "2.txt", SLOW_IN_DEBUG),
             (MoveOptimal, "boxxle1", "3.txt", OK),
@@ -290,6 +290,7 @@ mod tests {
             // TODO jsoko says it's solvable in 170 moves and 41 pushes (not 43)
             // jsoko: ldldlluurDldRurrurrdLLLDlluullldRddDrdrRRdrruUUUddddlluRlllluluuuRurDurDlDRurrurrdLLLrrdddlddrUUUUdddllllluluuuurrrDrrurrdLddddllllldlUUUUdddrrrrruruuuLLLDuulDullldRRRurD
             // this: ldldlluurDDldRuurrurrdLLLLulDullldRddDrdrRRdrruUUUddddlluRlllluluuuRRurDlDRurrurrdLLLrrdddlddrUUUUddldlllluluuururrDrrurrdLdddldlllldlUUUUddrdrrrruruuuLLLDuulDlulldRRRurD
+            // supaplex-remover can also be solved move optimally with fewer pushes
             (MoveOptimal, "boxxle1", "9.txt", SLOW),
             (MoveOptimal, "boxxle1", "10.txt", OK),
         ];
@@ -515,7 +516,7 @@ mod tests {
                     println!("         >>> WORSE <<<\n\n");
                     TestResult::Worse
                 } else {
-                    if out_moves == expected_moves
+                    let res = if out_moves == expected_moves
                         && out_pushes == expected_pushes
                         && out_created == expected_created
                         && out_visited == expected_visited
@@ -525,10 +526,13 @@ mod tests {
                     } else {
                         println!("         >>> BETTER <<<\n\n");
                         TestResult::Better
-                    }
+                    };
 
                     // uncomment to update results - here to avoid accidentally accepting worse
                     //fs::write(&result_file, &out).unwrap();
+
+                    #[allow(clippy::let_and_return)]
+                    res
                 }
             }
         } else {
