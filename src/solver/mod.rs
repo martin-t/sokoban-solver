@@ -3,7 +3,7 @@ mod backtracking;
 mod preprocessing;
 
 use std::cmp::Reverse;
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, VecDeque};
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -295,7 +295,7 @@ trait SolverTrait {
                 );
             }
 
-            for (neighbor_state, h) in Logic::expand(self.sd(), &cur_node.state, &states) {
+            for (neighbor_state, cost, h) in Logic::expand(self.sd(), &cur_node.state, &states) {
                 // Insert everything and ignore duplicates when popping. This wastes memory
                 // but when I filter them out here using a HashMap, push-optimal/boxxle2/4 becomes 8x slower
                 // and generates much more states (although push-optimal/original/1 becomes about 2x faster).
@@ -305,8 +305,12 @@ trait SolverTrait {
                 // Also might wanna try https://crates.io/crates/priority-queue for changing priorities
                 // instead of adding duplicates.
 
-                let next_node =
-                    SearchNode::new(neighbor_state, Some(&cur_node.state), cur_node.dist + 1, h);
+                let next_node = SearchNode::new(
+                    neighbor_state,
+                    Some(&cur_node.state),
+                    cur_node.dist + cost,
+                    h,
+                );
                 stats.add_created(&next_node);
                 to_visit.push(Reverse(next_node));
             }
@@ -366,7 +370,7 @@ where
         sd: &StaticData<M>,
         state: &State,
         arena: &'a Arena<State>,
-    ) -> Vec<(&'a State, u16)>;
+    ) -> Vec<(&'a State, u16, u16)>;
     fn heuristic(sd: &StaticData<M>, state: &State) -> u16;
 }
 
@@ -378,36 +382,45 @@ where
 {
     fn expand<'a>(
         sd: &StaticData<M>,
-        state: &State,
+        cur_state: &State,
         arena: &'a Arena<State>,
-    ) -> Vec<(&'a State, u16)> {
+    ) -> Vec<(&'a State, u16, u16)> {
         let mut new_states = Vec::new();
 
         let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
-        for (i, b) in state.boxes.iter().enumerate() {
+        for (i, b) in cur_state.boxes.iter().enumerate() {
             box_grid[*b] = i as u8;
         }
 
-        for &dir in &DIRECTIONS {
-            let new_player_pos = state.player_pos + dir;
-            if sd.map.grid()[new_player_pos] != MapCell::Wall {
-                let box_index = box_grid[new_player_pos];
-                let push_dest = new_player_pos + dir;
+        // find each box and each direction from which it can be pushed
+        let mut reachable = sd.map.grid().scratchpad();
+        reachable[cur_state.player_pos] = true;
 
-                if box_index == 255 {
-                    // step
-                    let new_state = arena.alloc(State::new(new_player_pos, state.boxes.clone()));
-                    let h = Self::heuristic(sd, &new_state);
-                    new_states.push((&*new_state, h));
-                } else if box_grid[push_dest] == 255
-                    && sd.map.grid()[push_dest] != MapCell::Wall
-                    && sd.closest_push_dists[push_dest].is_some()
+        // Vec is noticeably faster than VecDeque on some levels
+        let mut to_visit = VecDeque::new();
+        to_visit.push_back((cur_state.player_pos, 0));
+
+        while let Some((player_pos, steps)) = to_visit.pop_front() {
+            for &dir in &DIRECTIONS {
+                let new_player_pos = player_pos + dir;
+                let box_index = box_grid[new_player_pos];
+                if box_index < 255 {
+                    // new_pos has a box
+                    let push_dest = new_player_pos + dir;
+                    if box_grid[push_dest] == 255 && sd.closest_push_dists[push_dest].is_some() {
+                        // new state to explore
+                        let new_boxes = Solver::<M>::push_box(sd, cur_state, box_index, push_dest);
+                        let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
+                        let h = PushLogic::heuristic(sd, new_state);
+                        // cost is number of steps plus the push
+                        new_states.push((&*new_state, steps + 1, h));
+                    }
+                } else if sd.map.grid()[new_player_pos] != MapCell::Wall
+                    && !reachable[new_player_pos]
                 {
-                    // push
-                    let new_boxes = Solver::<M>::push_box(sd, state, box_index, push_dest);
-                    let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
-                    let h = Self::heuristic(sd, &new_state);
-                    new_states.push((&*new_state, h));
+                    // new_pos is empty and not yet visited
+                    reachable[new_player_pos] = true;
+                    to_visit.push_back((new_player_pos, steps + 1));
                 }
             }
         }
@@ -443,22 +456,23 @@ where
 {
     fn expand<'a>(
         sd: &StaticData<M>,
-        state: &State,
+        cur_state: &State,
         arena: &'a Arena<State>,
-    ) -> Vec<(&'a State, u16)> {
+    ) -> Vec<(&'a State, u16, u16)> {
         let mut new_states = Vec::new();
 
         let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
-        for (i, b) in state.boxes.iter().enumerate() {
+        for (i, b) in cur_state.boxes.iter().enumerate() {
             box_grid[*b] = i as u8;
         }
 
         // find each box and each direction from which it can be pushed
         let mut reachable = sd.map.grid().scratchpad();
-        reachable[state.player_pos] = true;
+        reachable[cur_state.player_pos] = true;
 
         // Vec is noticeably faster than VecDeque on some levels
-        let mut to_visit = vec![state.player_pos];
+        let mut to_visit = Vec::new();
+        to_visit.push(cur_state.player_pos);
 
         while let Some(player_pos) = to_visit.pop() {
             for &dir in &DIRECTIONS {
@@ -469,14 +483,14 @@ where
                     let push_dest = new_player_pos + dir;
                     if box_grid[push_dest] == 255 && sd.closest_push_dists[push_dest].is_some() {
                         // new state to explore
-                        let new_boxes = Solver::<M>::push_box(sd, state, box_index, push_dest);
+                        let new_boxes = Solver::<M>::push_box(sd, cur_state, box_index, push_dest);
 
                         // TODO normalize player pos
                         // note that pushing a box can reveal or hide new areas on both goal and remover maps
                         // (and reusing is not worth it according to Brian Damgaard)
                         let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
                         let h = Self::heuristic(sd, &new_state);
-                        new_states.push((&*new_state, h));
+                        new_states.push((&*new_state, 1, h));
                     }
                 } else if sd.map.grid()[new_player_pos] != MapCell::Wall
                     && !reachable[new_player_pos]

@@ -62,6 +62,15 @@ mod tests {
 
     use super::*;
 
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    enum TestResult {
+        Ok,
+        Worse,
+        Equal,
+        Better,
+        SolvabilityChanged,
+    }
+
     #[test]
     fn test_levels() {
         const UNSOLVED: i32 = 5;
@@ -276,6 +285,9 @@ mod tests {
             (MoveOptimal, "boxxle1", "6.txt", SLOW),
             (MoveOptimal, "boxxle1", "7.txt", SLOW_IN_DEBUG),
             (MoveOptimal, "boxxle1", "8.txt", OK),
+            // TODO jsoko says it's solvable in 170 moves and 41 pushes (not 43)
+            // jsoko: ldldlluurDldRurrurrdLLLDlluullldRddDrdrRRdrruUUUddddlluRlllluluuuRurDurDlDRurrurrdLLLrrdddlddrUUUUdddllllluluuuurrrDrrurrdLddddllllldlUUUUdddrrrrruruuuLLLDuulDullldRRRurD
+            // this: ldldlluurDDldRuurrurrdLLLLulDullldRddDrdrRRdrruUUUddddlluRlllluluuuRRurDlDRurrurrdLLLrrdddlddrUUUUddldlllluluuururrDrrurrdLdddldlllldlUUUUddrdrrrruruuuLLLDuulDlulldRRRurD
             (MoveOptimal, "boxxle1", "9.txt", SLOW),
             (MoveOptimal, "boxxle1", "10.txt", OK),
         ];
@@ -390,16 +402,40 @@ mod tests {
     fn test_and_time_levels<L: AsRef<str> + Display>(levels: &[(Method, &str, L)]) {
         let started = Instant::now();
 
-        let succeeded = levels
+        let results: Vec<_> = levels
             .iter()
-            .filter(|&(method, level_pack, level_name)| test_level(*method, level_pack, level_name))
-            .count();
+            .map(|(method, pack, name)| (method, pack, name, test_level(*method, pack, name)))
+            .collect();
 
         println!(
             "Tested {} levels in {} ms",
             levels.len(),
             (started.elapsed().as_millis() as u64).separated_string() // separator doesn't support u128
         );
+
+        let succeeded = results
+            .iter()
+            .filter(|&(_, _, _, res)| *res == TestResult::Ok)
+            .count();
+
+        let print_bad = |bad_type| {
+            let bad_levels: Vec<_> = results
+                .iter()
+                .filter(|&(_, _, _, res)| *res == bad_type)
+                .collect();
+            if !bad_levels.is_empty() {
+                println!("{:?} ({}):", bad_type, bad_levels.len());
+                for (method, pack, name, _) in bad_levels {
+                    println!("\t{} {}/{}", method, pack, name);
+                }
+            }
+        };
+
+        print_bad(TestResult::Better);
+        print_bad(TestResult::Equal);
+        print_bad(TestResult::Worse);
+        print_bad(TestResult::SolvabilityChanged);
+
         assert_eq!(succeeded, levels.len());
     }
 
@@ -408,7 +444,7 @@ mod tests {
         method: Method,
         level_pack: &str,
         level_name: L,
-    ) -> bool {
+    ) -> TestResult {
         // for updating results more easily
         // (need to update when equal too because the file includes individual depths)
         #![allow(clippy::collapsible_if)]
@@ -465,6 +501,7 @@ mod tests {
             let (maybe_expected_lens, expected_created, expected_visited) = parse_stats(&expected);
             if maybe_out_lens.is_some() != maybe_expected_lens.is_some() {
                 println!("         >>> SOLVABILITY CHANGED <<<\n\n");
+                TestResult::SolvabilityChanged
             } else {
                 let (out_moves, out_pushes) = maybe_out_lens.unwrap_or((-1, -1));
                 let (expected_moves, expected_pushes) = maybe_expected_lens.unwrap_or((-1, -1));
@@ -474,6 +511,7 @@ mod tests {
                     || out_visited > expected_visited
                 {
                     println!("         >>> WORSE <<<\n\n");
+                    TestResult::Worse
                 } else {
                     if out_moves == expected_moves
                         && out_pushes == expected_pushes
@@ -481,18 +519,18 @@ mod tests {
                         && out_visited == expected_visited
                     {
                         println!("         >>> EQUAL <<<\n\n");
+                        TestResult::Equal
                     } else {
                         println!("         >>> BETTER <<<\n\n");
+                        TestResult::Better
                     }
 
                     // uncomment to update results - here to avoid accidentally accepting worse
                     //fs::write(&result_file, &out).unwrap();
                 }
             }
-
-            false
         } else {
-            true
+            TestResult::Ok
         }
     }
 

@@ -323,9 +323,9 @@ mod tests {
                 sd: &StaticData<GoalMap>,
                 state: &State,
                 arena: &'a Arena<State>,
-            ) -> Vec<(&'a State, u16)> {
+            ) -> Vec<(&'a State, u16, u16)> {
                 let mut new_states = PushLogic::expand(sd, state, arena);
-                for (new_state, h) in &mut new_states {
+                for (new_state, _, h) in &mut new_states {
                     *h = Self::heuristic(sd, new_state);
                 }
                 new_states
