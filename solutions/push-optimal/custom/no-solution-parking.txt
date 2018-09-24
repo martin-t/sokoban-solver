@@ -1,19 +1,18 @@
 No solution
-States created total: 102
-Unique visited total: 52
-Reached duplicates total: 50
+States created total: 53
+Unique visited total: 32
+Reached duplicates total: 21
 Created but not reached total: 0
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             2              2              0              0
 2:             3              3              0              0
-3:             9              9              0              0
-4:             19             8              11             0
-5:             21             8              13             0
-6:             15             7              8              0
-7:             13             6              7              0
-8:             7              6              1              0
-9:             9              2              7              0
-10:            3              0              3              0
+3:             9              6              3              0
+4:             8              4              4              0
+5:             8              4              4              0
+6:             7              4              3              0
+7:             6              6              0              0
+8:             7              2              5              0
+9:             2              0              2              0
 

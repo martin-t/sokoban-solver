@@ -1,24 +1,24 @@
-rUrruuruuLLrrddlddllUdrruuruulldlLulDrrrurrddlddlluUddrruuruulldLruLLrdL
-Moves: 72
+rUrruuruuLLrrddlddllUdrruuruulldlLulDrrruLrrrddlddlluUddrruuruulldLLruL
+Moves: 71
 Pushes: 11
-States created total: 177
-Unique visited total: 74
-Reached duplicates total: 30
-Created but not reached total: 73
+States created total: 139
+Unique visited total: 58
+Reached duplicates total: 36
+Created but not reached total: 45
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             1              1              0              0
 2:             2              2              0              0
-3:             4              4              0              0
-4:             10             7              2              1
-5:             24             12             5              7
-6:             34             13             8              13
-7:             36             14             9              13
-8:             33             12             4              17
-9:             22             6              2              14
-10:            9              1              0              8
-11:            1              1              0              0
+3:             4              3              1              0
+4:             8              5              2              1
+5:             18             9              5              4
+6:             28             11             8              9
+7:             30             10             7              13
+8:             23             7              8              8
+9:             14             5              3              6
+10:            8              3              2              3
+11:            2              1              0              1
 
 ########
 #.   $ #
@@ -84,7 +84,16 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
  #####
 
 ########
-#. $   #
+#.$@   #
+#.   # #
+#*#$#  #
+### # ##
+ #    #
+ #  ###
+ #####
+
+########
+#.$    #
 #. $ # #
 #*#@#  #
 ### # ##
@@ -93,7 +102,7 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
  #####
 
 ########
-#. $   #
+#.$    #
 #.$@ # #
 #*# #  #
 ### # ##
@@ -102,8 +111,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
  #####
 
 ########
-#.$@   #
-#.$  # #
+#.$    #
+#*@  # #
 #*# #  #
 ### # ##
  #    #
@@ -112,16 +121,7 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
 ########
 #*@    #
-#.$  # #
-#*# #  #
-### # ##
- #    #
- #  ###
- #####
-
-########
-#*     #
-#*@  # #
+#*   # #
 #*# #  #
 ### # ##
  #    #

@@ -1,34 +1,34 @@
 ddlUrdddlUruulllddRRUruLruulDrddlddrUUUUlDrddllluuRRurDDulllddrrUruLLrdddrUU
 Moves: 76
 Pushes: 21
-States created total: 477
-Unique visited total: 235
-Reached duplicates total: 211
-Created but not reached total: 31
+States created total: 264
+Unique visited total: 128
+Reached duplicates total: 119
+Created but not reached total: 17
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             4              4              0              0
-2:             5              5              0              0
-3:             15             8              7              0
-4:             15             5              10             0
-5:             12             10             2              0
-6:             18             12             6              0
-7:             31             21             10             0
-8:             37             27             10             0
-9:             65             36             29             0
-10:            69             26             43             0
-11:            45             12             33             0
-12:            15             6              9              0
-13:            14             9              5              0
-14:            13             6              7              0
-15:            16             7              9              0
-16:            15             12             3              0
-17:            36             15             14             7
-18:            24             6              9              9
-19:            14             3              5              6
-20:            5              3              0              2
-21:            8              1              0              7
+2:             5              3              2              0
+3:             8              4              4              0
+4:             8              4              4              0
+5:             11             7              4              0
+6:             13             9              4              0
+7:             22             14             8              0
+8:             29             16             13             0
+9:             37             14             23             0
+10:            26             10             16             0
+11:            13             6              7              0
+12:            7              3              4              0
+13:            9              4              5              0
+14:            7              3              4              0
+15:            7              5              2              0
+16:            13             7              6              0
+17:            20             6              9              5
+18:            8              3              3              2
+19:            5              2              1              2
+20:            5              2              0              3
+21:            6              1              0              5
 
 ########
 ### .###
