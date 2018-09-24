@@ -66,10 +66,15 @@ mod tests {
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     enum TestResult {
         Ok,
+        Changed(Change, Change, Change),
+        SolvabilityChanged,
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    enum Change {
         Worse,
         Equal,
         Better,
-        SolvabilityChanged,
     }
 
     #[test]
@@ -422,23 +427,44 @@ mod tests {
             .filter(|&(_, _, _, res)| *res == TestResult::Ok)
             .count();
 
-        let print_bad = |bad_type| {
+        let print_bad = |msg, predicate: fn(TestResult) -> bool| {
             let bad_levels: Vec<_> = results
                 .iter()
-                .filter(|&(_, _, _, res)| *res == bad_type)
+                .filter(|&(_, _, _, res)| predicate(*res))
                 .collect();
             if !bad_levels.is_empty() {
-                println!("{:?} ({}):", bad_type, bad_levels.len());
+                println!("{} ({}):", msg, bad_levels.len());
                 for (method, pack, name, _) in bad_levels {
                     println!("\t{} {}/{}", method, pack, name);
                 }
             }
         };
 
-        print_bad(TestResult::Better);
-        print_bad(TestResult::Equal);
-        print_bad(TestResult::Worse);
-        print_bad(TestResult::SolvabilityChanged);
+        macro_rules! level_list {
+            ($msg:expr, $moves:pat, $pushes:pat, $stats:pat) => {
+                print_bad($msg, |res| {
+                    if let TestResult::Changed($moves, $pushes, $stats) = res {
+                        true
+                    } else {
+                        false
+                    }
+                });
+            };
+        }
+
+        level_list!("Better moves", Change::Better, _, _);
+        level_list!("Equal moves", Change::Equal, _, _);
+        level_list!("Worse moves", Change::Worse, _, _);
+        level_list!("Better pushes", _, Change::Better, _);
+        level_list!("Equal pushes", _, Change::Equal, _);
+        level_list!("Worse pushes", _, Change::Worse, _);
+        level_list!("Better stats", _, _, Change::Better);
+        level_list!("Equal stats", _, _, Change::Equal);
+        level_list!("Worse stats", _, _, Change::Worse);
+
+        print_bad("Solvability changed", |res| {
+            res == TestResult::SolvabilityChanged
+        });
 
         assert_eq!(succeeded, levels.len());
     }
@@ -500,7 +526,7 @@ mod tests {
         if out != expected {
             //print!("\t>>> Expected:\n{}", expected);
             //print!("\t>>> Got:\n{}", out);
-            println!("{}", Changeset::new(&expected, &out, "\n"));
+            print!("{}", Changeset::new(&expected, &out, "\n"));
 
             // other stats can go up with a better solution
             let (maybe_out_lens, out_created, out_visited) = parse_stats(&out);
@@ -511,32 +537,48 @@ mod tests {
             } else {
                 let (out_moves, out_pushes) = maybe_out_lens.unwrap_or((-1, -1));
                 let (expected_moves, expected_pushes) = maybe_expected_lens.unwrap_or((-1, -1));
-                if out_moves > expected_moves
-                    || out_pushes > expected_pushes
-                    || out_created > expected_created
-                    || out_visited > expected_visited
-                {
-                    println!("\t>>> WORSE <<<\n\n");
-                    TestResult::Worse
+
+                let moves_change = if out_moves > expected_moves {
+                    println!("\t>>> WORSE MOVES <<<");
+                    Change::Worse
+                } else if out_moves == expected_moves {
+                    println!("\t>>> EQUAL MOVES <<<");
+                    Change::Equal
                 } else {
-                    let res = if out_moves == expected_moves
-                        && out_pushes == expected_pushes
-                        && out_created == expected_created
-                        && out_visited == expected_visited
-                    {
-                        println!("\t>>> EQUAL <<<\n\n");
-                        TestResult::Equal
+                    println!("\t>>> BETTER MOVES <<<");
+                    Change::Better
+                };
+
+                let pushes_change = if out_pushes > expected_pushes {
+                    println!("\t>>> WORSE PUSHES <<<");
+                    Change::Worse
+                } else if out_pushes == expected_pushes {
+                    println!("\t>>> EQUAL PUSHES <<<");
+                    Change::Equal
+                } else {
+                    println!("\t>>> BETTER PUSHES <<<");
+                    Change::Better
+                };
+
+                let stats_change =
+                    if out_created > expected_created || out_visited > expected_visited {
+                        println!("\t>>> WORSE STATS <<<");
+                        Change::Worse
+                    } else if out_created == expected_created && out_visited == expected_visited {
+                        println!("\t>>> EQUAL STATS <<<");
+                        Change::Equal
                     } else {
-                        println!("\t>>> BETTER <<<\n\n");
-                        TestResult::Better
+                        println!("\t>>> BETTER STATS <<<");
+                        Change::Better
                     };
 
-                    // uncomment to update results - here to avoid accidentally accepting worse
-                    //fs::write(&result_file, &out).unwrap();
+                println!();
+                println!();
 
-                    #[allow(clippy::let_and_return)]
-                    res
-                }
+                // uncomment to update results
+                //fs::write(&result_file, &out).unwrap();
+
+                TestResult::Changed(moves_change, pushes_change, stats_change)
             }
         } else {
             TestResult::Ok
