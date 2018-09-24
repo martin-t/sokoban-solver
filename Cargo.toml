@@ -28,6 +28,7 @@ debug = true
 [dev-dependencies]
 criterion = { version = "0.2.4", features = ['real_blackbox'] }
 assert_cmd = "0.9"
+difference = "2.0.0"
 
 [[bench]]
 name = "criterion_benches"

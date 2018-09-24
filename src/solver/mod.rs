@@ -245,16 +245,20 @@ trait SolverTrait {
             return SolverOk::new(Some(Moves::default()), stats);
         }
 
+        // this might be more trouble than it's worth, we avoid expanding a whole *one* extra state
+        // but it'll look cleaner if i ever get around to printing graphs of the state space
+        let norm_initial_state = GL::preprocess_state(&self.sd().map, &self.sd().initial_state);
+
         let states = Arena::new();
 
         let mut to_visit = BinaryHeap::new();
         let mut prevs = FnvHashMap::default();
 
         let start = SearchNode::new(
-            &self.sd().initial_state,
+            &norm_initial_state,
             None,
             0,
-            GL::heuristic(self.sd(), &self.sd().initial_state),
+            GL::heuristic(self.sd(), &norm_initial_state),
         );
         stats.add_created(&start);
         to_visit.push(Reverse(start));
@@ -289,14 +293,13 @@ trait SolverTrait {
             if cur_node.cost == cur_node.dist {
                 // heuristic is 0 so level is solved
                 debug!("Solved, backtracking path");
-                return SolverOk::new(
-                    Some(backtracking::reconstruct_moves(
-                        &self.sd().map,
-                        &prevs,
-                        &cur_node.state,
-                    )),
-                    stats,
+                let moves = backtracking::reconstruct_moves(
+                    &self.sd().map,
+                    self.sd().initial_state.player_pos,
+                    &prevs,
+                    &cur_node.state,
                 );
+                return SolverOk::new(Some(moves), stats);
             }
 
             for (neighbor_state, cost, h) in GL::expand(self.sd(), &cur_node.state, &states) {
@@ -370,6 +373,9 @@ trait GameLogic<M: Map + Clone>
 where
     Solver<M>: SolverTrait,
 {
+    fn preprocess_state(_map: &M, state: &State) -> State {
+        state.clone()
+    }
     fn expand<'a>(
         sd: &StaticData<M>,
         state: &State,
@@ -458,6 +464,12 @@ impl<M: Map + Clone> GameLogic<M> for PushLogic
 where
     Solver<M>: SolverTrait<M = M>,
 {
+    fn preprocess_state(map: &M, state: &State) -> State {
+        State::new(
+            normalized_pos(map, state.player_pos, &state.boxes),
+            state.boxes.clone(),
+        )
+    }
     fn expand<'a>(
         sd: &StaticData<M>,
         cur_state: &State,
@@ -488,11 +500,8 @@ where
                     if box_grid[push_dest] == 255 && sd.closest_push_dists[push_dest].is_some() {
                         // new state to explore
                         let new_boxes = Solver::<M>::push_box(sd, cur_state, box_index, push_dest);
-
-                        // TODO normalize player pos
-                        // note that pushing a box can reveal or hide new areas on both goal and remover maps
-                        // (and reusing is not worth it according to Brian Damgaard)
-                        let new_state = arena.alloc(State::new(new_player_pos, new_boxes));
+                        let norm_player_pos = normalized_pos(&sd.map, new_player_pos, &new_boxes);
+                        let new_state = arena.alloc(State::new(norm_player_pos, new_boxes));
                         let h = Self::heuristic(sd, &new_state);
                         new_states.push((&*new_state, 1, h));
                     }
@@ -521,9 +530,119 @@ where
     }
 }
 
+fn normalized_pos<M: Map>(map: &M, player_pos: Pos, boxes: &[Pos]) -> Pos {
+    // note that pushing a box can reveal or hide new areas on both goal and remover maps
+    // (and reusing is not worth it according to Brian Damgaard)
+    // http://www.sokobano.de/wiki/index.php?title=Sokoban_solver_%22scribbles%22_by_Brian_Damgaard_about_the_YASS_solver#Re-using_the_calculated_player.27s_reachable_squares
+
+    let mut top_left = player_pos;
+
+    // this could be reused from the expand fn, just modified, then restored
+    let mut box_grid = map.grid().scratchpad();
+    for &b in boxes {
+        box_grid[b] = true;
+    }
+
+    let mut to_visit = Vec::new();
+    to_visit.push(player_pos);
+
+    let mut visited = map.grid().scratchpad();
+    visited[player_pos] = true;
+
+    while let Some(cur_pos) = to_visit.pop() {
+        for &new_pos in &cur_pos.neighbors() {
+            if visited[new_pos] {
+                continue;
+            }
+            visited[new_pos] = true;
+
+            if map.grid()[new_pos] == MapCell::Wall || box_grid[new_pos] {
+                continue;
+            }
+
+            to_visit.push(new_pos);
+            if new_pos < top_left {
+                top_left = new_pos;
+            }
+        }
+    }
+
+    top_left
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn pos_normalization() {
+        let levels = [
+            r"
+#####
+#   #
+# @ #
+#   #
+#####
+",
+            r"
+#####
+##  #
+# @ #
+#   #
+#####
+",
+            r"
+#####
+#$  #
+# @ #
+#   #
+#####
+",
+            r"
+#####
+#*  #
+# @ #
+#   #
+#####
+",
+            r"
+#####
+#.  #
+# @ #
+#   #
+#####
+",
+            r"
+#############
+##      #####
+## #### #####
+##$####$#####
+##$         #
+#   ###$### #
+#$##### ### #
+##     @$## #
+## ######## #
+## ######## #
+##          #
+#############
+",
+        ];
+        let normalized_positions = [
+            Pos::new(1, 1),
+            Pos::new(1, 2),
+            Pos::new(1, 2),
+            Pos::new(1, 2),
+            Pos::new(1, 1),
+            Pos::new(4, 3),
+        ];
+
+        assert_eq!(levels.len(), normalized_positions.len());
+        for (level, &expected_np) in levels.iter().zip(normalized_positions.iter()) {
+            let level: Level = level.parse().unwrap();
+            let np = normalized_pos(&level.map, level.state.player_pos, &level.state.boxes);
+            assert_eq!(np, expected_np, "Level:\n{}", level.xsb());
+        }
+    }
 
     #[test]
     fn incomplete_border() {

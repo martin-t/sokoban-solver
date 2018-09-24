@@ -15,6 +15,7 @@ use crate::state::State;
 // dynamic dispatch has no perf impact here
 crate fn reconstruct_moves<H: BuildHasher>(
     map: &dyn Map,
+    real_initial_player_pos: Pos,
     prevs: &HashMap<&State, &State, H>,
     final_state: &State,
 ) -> Moves {
@@ -23,30 +24,38 @@ crate fn reconstruct_moves<H: BuildHasher>(
     let mut moves = Moves::default();
     let mut iter = states.iter();
     let mut cur_state = iter.next().expect("There must be at least one state");
+
+    // the states we're getting here might have been normalized (depending on solving method)
+    // so we need to track the actual player posistions (determined by how boxes are pushed)
+    let mut real_player_pos = real_initial_player_pos;
+
     for next_state in iter {
-        moves.extend(&moves_between_states(map, cur_state, next_state));
+        let (new_moves, new_player_pos) =
+            moves_between_states(map, real_player_pos, cur_state, next_state);
+        moves.extend(&new_moves);
+        real_player_pos = new_player_pos;
         cur_state = next_state;
     }
 
     moves
 }
 
-/// The difference between them must be any number of steps and zero or one push
-fn moves_between_states(map: &dyn Map, old: &State, new: &State) -> Moves {
+/// The difference between them must be any number of steps and one push
+fn moves_between_states(
+    map: &dyn Map,
+    old_player_pos: Pos,
+    old: &State,
+    new: &State,
+) -> (Moves, Pos) {
     let old_boxes: HashSet<_> = old.boxes.iter().collect();
     let new_boxes: HashSet<_> = new.boxes.iter().collect();
 
     let mut old_iter = old_boxes.difference(&new_boxes);
     let mut new_iter = new_boxes.difference(&old_boxes);
 
-    let old_box_pos = match old_iter.next() {
-        None => {
-            assert!(new_iter.next().is_none(), "A box appeared from nowhere");
-            // no box moved so there are only steps
-            return player_steps(map, old, old.player_pos, new.player_pos);
-        }
-        Some(&&pos) => pos,
-    };
+    let old_box_pos = **old_iter
+        .next()
+        .expect("There must be exactly one push between states");
     assert!(
         old_iter.next().is_none(),
         "Only one box can change its position at a time"
@@ -64,11 +73,11 @@ fn moves_between_states(map: &dyn Map, old: &State, new: &State) -> Moves {
     );
 
     let push_dir = old_box_pos.dir_to(new_box_pos);
-    let player_pos_before_push = new.player_pos + push_dir.inverse();
-    let mut moves = player_steps(map, old, old.player_pos, player_pos_before_push);
+    let player_pos_before_push = old_box_pos + push_dir.inverse();
+    let mut moves = player_steps(map, old, old_player_pos, player_pos_before_push);
     moves.add(Move::new(push_dir, true));
 
-    moves
+    (moves, old_box_pos)
 }
 
 fn player_steps(map: &dyn Map, state: &State, src_pos: Pos, dest_pos: Pos) -> Moves {
@@ -142,31 +151,17 @@ fn backtrack_prevs<T: Clone + Eq + Hash + Borrow<T>, H: BuildHasher>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::Format;
     use crate::level::Level;
 
     #[test]
     fn backtracking() {
-        // Combining moves and pushes in one solution and also testing multiple moves with no push.
-        // Currently can't happen but might later if I decide to optimize the moves-based solver.
+        // this mixes normalized positions with actual ones which can't normally happen
+        // but it shouldn't affect anything
 
-        let level0 = r"
+        let real_initial_level = r"
 ###########
-#$      $.#
-#        .#
-##$*## #..#
-#    #  ###
-#    #    #
-#  @ #    #
-## #### ###
-# $   #   #
-#     #   #
-#         #
-###########
-".trim_left_matches('\n');
-        // 2 steps
-        let level1 = r"
-###########
-#$      $.#
+# $     $.#
 #        .#
 ##$*## #..#
 #    #  ###
@@ -178,37 +173,49 @@ mod tests {
 #         #
 ###########
 ".trim_left_matches('\n');
-        // 2 steps + 1 push
+
+        let level1 = r"
+###########
+# $     $.#
+#        .#
+##$*## #..#
+#@   #  ###
+#    #    #
+#    #    #
+## #### ###
+# $   #   #
+#     #   #
+#         #
+###########
+".trim_left_matches('\n');
         let level2 = r"
 ###########
-#$      $.#
+#@$     $.#
 #        .#
 ##$*## #..#
 #    #  ###
 #    #    #
 #    #    #
 ## #### ###
-# @   #   #
+#     #   #
 # $   #   #
 #         #
 ###########
 ".trim_left_matches('\n');
-        // 1 step
         let level3 = r"
 ###########
-#$      $.#
+#$@     $.#
 #        .#
 ##$*## #..#
 #    #  ###
 #    #    #
 #    #    #
 ## #### ###
-#@    #   #
+#     #   #
 # $   #   #
 #         #
 ###########
 ".trim_left_matches('\n');
-        // 19 steps + 1 push
         let level4 = r"
 ###########
 #$      @*#
@@ -223,20 +230,28 @@ mod tests {
 #         #
 ###########
 ".trim_left_matches('\n');
-        let level0: Level = level0.parse().unwrap();
+        let real_initial_level: Level = real_initial_level.parse().unwrap();
         let level1: Level = level1.parse().unwrap();
         let level2: Level = level2.parse().unwrap();
         let level3: Level = level3.parse().unwrap();
         let level4: Level = level4.parse().unwrap();
 
         let mut prevs = HashMap::new();
-        prevs.insert(&level0.state, &level0.state);
-        prevs.insert(&level1.state, &level0.state);
+        prevs.insert(&level1.state, &level1.state);
         prevs.insert(&level2.state, &level1.state);
         prevs.insert(&level3.state, &level2.state);
         prevs.insert(&level4.state, &level3.state);
 
-        let moves = reconstruct_moves(&level0.map, &prevs, &level4.state);
-        assert_eq!(moves.to_string(), "ulddDlrrrrddrruuuuuuluuurR");
+        let moves = reconstruct_moves(
+            &level1.map,
+            real_initial_level.state.player_pos,
+            &prevs,
+            &level4.state,
+        );
+        let _ = format!(
+            "{}",
+            real_initial_level.format_solution(Format::Xsb, &moves, false)
+        );
+        assert_eq!(moves.to_string(), "ddDrrrddrruuuuuuluuulllLrrrrrR");
     }
 }

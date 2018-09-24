@@ -56,6 +56,7 @@ mod tests {
     use std::path::Path;
     use std::time::Instant;
 
+    use difference::Changeset;
     use separator::Separatable;
 
     use crate::config::Method::{self, MoveOptimal, PushOptimal};
@@ -491,19 +492,20 @@ mod tests {
         if !Path::new(&result_file).exists() {
             fs::write(&result_file, &out).unwrap();
             print!("Solution:\n{}", out);
-            println!("         >>> SAVED NEW SOLUTION <<<");
+            println!("\t>>> SAVED NEW SOLUTION <<<\n\n");
         }
 
         let expected = fs::read_to_string(&result_file).unwrap();
         if out != expected {
-            print!("Expected:\n{}", expected);
-            print!("Got:\n{}", out);
+            //print!("\t>>> Expected:\n{}", expected);
+            //print!("\t>>> Got:\n{}", out);
+            println!("{}", Changeset::new(&expected, &out, "\n"));
 
             // other stats can go up with a better solution
             let (maybe_out_lens, out_created, out_visited) = parse_stats(&out);
             let (maybe_expected_lens, expected_created, expected_visited) = parse_stats(&expected);
             if maybe_out_lens.is_some() != maybe_expected_lens.is_some() {
-                println!("         >>> SOLVABILITY CHANGED <<<\n\n");
+                println!("\t>>> SOLVABILITY CHANGED <<<\n\n");
                 TestResult::SolvabilityChanged
             } else {
                 let (out_moves, out_pushes) = maybe_out_lens.unwrap_or((-1, -1));
@@ -513,7 +515,7 @@ mod tests {
                     || out_created > expected_created
                     || out_visited > expected_visited
                 {
-                    println!("         >>> WORSE <<<\n\n");
+                    println!("\t>>> WORSE <<<\n\n");
                     TestResult::Worse
                 } else {
                     let res = if out_moves == expected_moves
@@ -521,10 +523,10 @@ mod tests {
                         && out_created == expected_created
                         && out_visited == expected_visited
                     {
-                        println!("         >>> EQUAL <<<\n\n");
+                        println!("\t>>> EQUAL <<<\n\n");
                         TestResult::Equal
                     } else {
-                        println!("         >>> BETTER <<<\n\n");
+                        println!("\t>>> BETTER <<<\n\n");
                         TestResult::Better
                     };
 
