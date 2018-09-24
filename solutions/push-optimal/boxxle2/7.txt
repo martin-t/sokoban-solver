@@ -1,27 +1,27 @@
-uuUUddllDulldRurrruulllluurrrDulllddDurUdldDrrUdlluuuuRddDrdrruLrdddlUruL
-Moves: 73
+uuUdlllDurrruUddllldldRuurrruullllDuuurrrDullldddDuurUdlddrrUdlluuuuRddDrdrrddlUruLruL
+Moves: 86
 Pushes: 14
-States created total: 1,751,857
-Unique visited total: 194,528
-Reached duplicates total: 240,640
-Created but not reached total: 1,316,689
+States created total: 569,169
+Unique visited total: 64,360
+Reached duplicates total: 100,574
+Created but not reached total: 404,235
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             11             11             0              0
-2:             121            117            0              4
-3:             1,217          621            454            142
-4:             6,053          1,974          2,146          1,933
-5:             19,275         5,116          6,070          8,089
-6:             53,836         13,193         14,911         25,732
-7:             140,048        29,158         33,405         77,485
-8:             296,360        46,737         56,589         193,034
-9:             446,524        50,343         63,309         332,872
-10:            439,902        33,548         44,467         361,887
-11:            259,785        11,796         16,595         231,394
-12:            78,171         1,824          2,587          73,760
-13:            10,135         88             107            9,940
-14:            418            1              0              417
+2:             121            66             51             4
+3:             688            268            331            89
+4:             2,641          783            1,158          700
+5:             7,763          2,023          2,952          2,788
+6:             21,391         5,050          6,864          9,477
+7:             52,667         10,086         14,259         28,322
+8:             99,646         15,309         23,497         60,840
+9:             142,322        16,010         26,205         100,107
+10:            136,235        10,366         17,604         108,265
+11:            78,067         3,728          6,565          67,774
+12:            24,048         621            1,036          22,391
+13:            3,400          37             52             3,311
+14:            168            1              0              167
 
 #######
 #  .  #
@@ -45,12 +45,22 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
 #######
 #  .  #
+# $*$.#
+#  ..$#
+#$$*$ #
+# ..  #
+#.@*$ #
+# $.  #
+#######
+
+#######
+#  .  #
 # $*$*#
 #  ..@#
 #$$*$ #
 # ..  #
-#.$*$ #
-#  .  #
+#. *$ #
+# $.  #
 #######
 
 #######
@@ -59,17 +69,17 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 #  .. #
 #$$*$ #
 # ..  #
-#.$+$ #
-#  *  #
+#. *$ #
+# @*  #
 #######
 
 #######
 #  .  #
 # $*$*#
 #  .. #
-#$$*$ #
-# ..  #
-#.@*$ #
+#@$*$ #
+#$..  #
+#. *$ #
 #  *  #
 #######
 
@@ -77,8 +87,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 #  .  #
 # $*@*#
 #  .* #
-#$$*$ #
-# ..  #
+# $*$ #
+#$..  #
 #. *$ #
 #  *  #
 #######
@@ -87,9 +97,9 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 #  .  #
 # $* *#
 #  .* #
-#@$*$ #
-#$..  #
-#. *$ #
+# $*$ #
+#@..  #
+#* *$ #
 #  *  #
 #######
 
@@ -98,17 +108,7 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 # @* *#
 #  .* #
 # $*$ #
-#$..  #
-#. *$ #
-#  *  #
-#######
-
-#######
-# $.  #
-#  * *#
-#  .* #
-# $*$ #
-#@..  #
+# ..  #
 #* *$ #
 #  *  #
 #######
@@ -147,17 +147,7 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 #  *  #
 #  * *#
 #  ** #
-#  *@ #
-# *.  #
-#* *$ #
-#  *  #
-#######
-
-#######
-#  *  #
-#  * *#
-#  ** #
-#  *  #
+#  .$ #
 # *.$ #
 #* *@ #
 #  *  #
@@ -167,8 +157,18 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 #  *  #
 #  * *#
 #  ** #
-#  *  #
+#  .$ #
 # **@ #
+#* *  #
+#  *  #
+#######
+
+#######
+#  *  #
+#  * *#
+#  ** #
+#  *@ #
+# **  #
 #* *  #
 #  *  #
 #######

@@ -575,7 +575,7 @@ mod tests {
                 println!();
                 println!();
 
-                // uncomment to update results
+                // uncomment to update results (might also wanna run with higher difficulty to update all levels)
                 //fs::write(&result_file, &out).unwrap();
 
                 TestResult::Changed(moves_change, pushes_change, stats_change)
