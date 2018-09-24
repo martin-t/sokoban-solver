@@ -493,6 +493,7 @@ mod tests {
             fs::write(&result_file, &out).unwrap();
             print!("Solution:\n{}", out);
             println!("\t>>> SAVED NEW SOLUTION <<<\n\n");
+            // we could return here but let's read the file back out as a sanity check
         }
 
         let expected = fs::read_to_string(&result_file).unwrap();
