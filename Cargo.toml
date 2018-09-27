@@ -24,6 +24,8 @@ codegen-units = 1
 # for profiling, doesn't effect performance
 debug = true
 
+[features]
+graph = ["dot"]
 
 [dev-dependencies]
 criterion = { version = "0.2.4", features = ['real_blackbox'] }
@@ -42,3 +44,4 @@ env_logger = "0.5.12"
 fnv = "1.0.6"
 prettytable-rs = "0.7.0"
 typed-arena = "1.4.1"
+dot = { version = "0.1.4", optional = true }

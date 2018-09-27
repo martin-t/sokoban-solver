@@ -2,6 +2,9 @@ crate mod a_star;
 mod backtracking;
 mod preprocessing;
 
+#[cfg(feature = "graph")]
+mod graph;
+
 use std::cmp::Reverse;
 use std::collections::{BinaryHeap, VecDeque};
 use std::error::Error;
@@ -266,10 +269,10 @@ trait SolverTrait {
         //let mut counter = 0;
         while let Some(Reverse(cur_node)) = to_visit.pop() {
             /*counter += 1;
-            if counter % 10_000 == 0 {
+            if counter % 100_000 == 0 {
                 use crate::map::Map;
                 println!("prevs: {}, to_visit: {}", prevs.len(), to_visit.len());
-                println!("{}", self.map.xsb_with_state(&cur_node.state));
+                println!("{}", self.sd().map.xsb_with_state(&cur_node.state));
             }*/
 
             if prevs.contains_key(cur_node.state) {
@@ -293,6 +296,9 @@ trait SolverTrait {
             if cur_node.cost == cur_node.dist {
                 // heuristic is 0 so level is solved
                 debug!("Solved, backtracking path");
+                #[cfg(feature = "graph")]
+                graph::draw_states(&self.sd().map, &prevs);
+
                 let moves = backtracking::reconstruct_moves(
                     &self.sd().map,
                     self.sd().initial_state.player_pos,
