@@ -85,15 +85,16 @@ impl Iterator for Positions {
     type Item = Pos;
 
     fn next(&mut self) -> Option<Pos> {
+        if self.cur_r == self.rows {
+            return None;
+        }
+
         let ret = Pos::new(self.cur_r, self.cur_c);
 
         self.cur_c += 1;
         if self.cur_c == self.cols {
             self.cur_c = 0;
             self.cur_r += 1;
-            if self.cur_r == self.rows {
-                return None;
-            }
         }
 
         Some(ret)
@@ -187,7 +188,15 @@ impl<T> IndexMut<Pos> for Vec2d<T> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::level::Level;
+
+    #[test]
+    fn positions() {
+        let v = Vec2d::new(&[vec![0, 1, 2], vec![3, 4, 5], vec![6, 7, 8]]);
+        let nums: Vec<_> = v.positions().map(|p| v[p]).collect();
+        assert_eq!(nums, &[0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    }
 
     #[test]
     fn formatting_vec2d() {
