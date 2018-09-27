@@ -1,6 +1,8 @@
-The level sets are downloaded from http://www.sourcecode.se/sokoban/levels because they use a simple format.
+- original-and-extra contains levels from both the original Sokoban by Thinking Rabbit and from XSokoban as collected [here](http://sokoban.dk/wp-content/uploads/2016/08/Thinking-Rabbit-Original-Plus-Extra.txt)
 
-- original-and-extra, boxxle1 and boxxle2 and are by Thinking Rabbit
+Other level sets are downloaded from http://www.sourcecode.se/sokoban/levels because they use a simple format:
+
+- boxxle1 and boxxle2 and are by Thinking Rabbit
 
 - 696 is by Dries De Clercq (the downloaded file was missing 15 and 557 so i added them from jsoko's collection)
 
