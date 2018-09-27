@@ -25,13 +25,13 @@ fn bench_pushes_boxxle1_5(c: &mut Criterion) {
 #[allow(unused)]
 fn bench_pushes_boxxle1_18(c: &mut Criterion) {
     // 6 boxes - tiny goalroom with 2 entrances
-    bench_level(c, Method::PushOptimal, "levels/boxxle1/18.txt", 10);
+    bench_level(c, Method::PushOptimal, "levels/boxxle1/18.txt", 15);
 }
 
 #[allow(unused)]
 fn bench_pushes_boxxle1_108(c: &mut Criterion) {
     // 6 boxes in the middle
-    bench_level(c, Method::PushOptimal, "levels/boxxle1/108.txt", 15);
+    bench_level(c, Method::PushOptimal, "levels/boxxle1/108.txt", 25);
 }
 
 #[allow(unused)]
@@ -43,19 +43,19 @@ fn bench_pushes_boxxle2_3(c: &mut Criterion) {
 #[allow(unused)]
 fn bench_pushes_boxxle2_4(c: &mut Criterion) {
     // 13 goals in a checkerboard
-    bench_level(c, Method::PushOptimal, "levels/boxxle2/4.txt", 25);
+    bench_level(c, Method::PushOptimal, "levels/boxxle2/4.txt", 10);
 }
 
 #[allow(unused)]
 fn bench_pushes_custom_remover_original_1(c: &mut Criterion) {
     let level = "levels/custom/remover-original-01.txt";
-    bench_level(c, Method::PushOptimal, level, 20);
+    bench_level(c, Method::PushOptimal, level, 10);
 }
 
 #[allow(unused)]
 fn bench_moves_boxxle1_1(c: &mut Criterion) {
     // 3 goals in a row
-    bench_level(c, Method::MoveOptimal, "levels/boxxle1/1.txt", 75);
+    bench_level(c, Method::MoveOptimal, "levels/boxxle1/1.txt", 150);
 }
 
 fn bench_level(c: &mut Criterion, method: Method, level_path: &str, samples: usize) {
