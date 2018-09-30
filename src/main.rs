@@ -30,23 +30,27 @@ fn main() {
                 .short("-c")
                 .long("--custom")
                 .help("Print as custom format"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("xsb")
                 .short("-x")
                 .long("--xsb")
                 .help("Print as XSB format (default)"),
-        ).group(ArgGroup::with_name("format").args(&["custom", "xsb"]))
+        )
+        .group(ArgGroup::with_name("format").args(&["custom", "xsb"]))
         .arg(
             Arg::with_name("move-optimal")
                 .short("-m")
                 .long("--move-optimal")
                 .help("Search for move-optimal solution"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("push-optimal")
                 .short("-p")
                 .long("--push-optimal")
                 .help("Search for push-optimal solution (default)"),
-        ).group(ArgGroup::with_name("method").args(&["move-optimal", "push-optimal"]))
+        )
+        .group(ArgGroup::with_name("method").args(&["move-optimal", "push-optimal"]))
         .arg(Arg::with_name("level-file").required(true).multiple(true));
 
     #[cfg(debug_assertions)]

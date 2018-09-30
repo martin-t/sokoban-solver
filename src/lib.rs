@@ -331,7 +331,8 @@ mod tests {
                     "aymeric-cosmonotes",
                     format!("{}.txt", num),
                 )
-            }).collect();
+            })
+            .collect();
         test_and_time_levels(&levels);
     }
 
@@ -345,7 +346,8 @@ mod tests {
                     "aymeric-microcosmos",
                     format!("{}.txt", num),
                 )
-            }).collect();
+            })
+            .collect();
         test_and_time_levels(&levels);
     }
 
@@ -359,7 +361,8 @@ mod tests {
                     "aymeric-minicosmos",
                     format!("{}.txt", num),
                 )
-            }).collect();
+            })
+            .collect();
         test_and_time_levels(&levels);
     }
 
@@ -373,7 +376,8 @@ mod tests {
                     "aymeric-nabocosmos",
                     format!("{}.txt", num),
                 )
-            }).collect();
+            })
+            .collect();
         test_and_time_levels(&levels);
     }
 
@@ -387,7 +391,8 @@ mod tests {
                     "aymeric-picocosmos",
                     format!("{}.txt", num),
                 )
-            }).collect();
+            })
+            .collect();
         test_and_time_levels(&levels);
     }
 

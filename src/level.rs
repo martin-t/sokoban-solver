@@ -105,12 +105,14 @@ mod tests {
 *####*
 #@$.*#
 *####*#
-".trim_left_matches('\n');
+"
+        .trim_left_matches('\n');
         let custom: &str = r"
 B_<><><><>B_
 <>P B  _B_<>
 B_<><><><>B_<>
-".trim_left_matches('\n');
+"
+        .trim_left_matches('\n');
 
         for level in &[xsb, custom] {
             let level: Level = level.parse().unwrap();
@@ -153,7 +155,8 @@ B_<><><><>B_<>
 #  @*#
 *####*
 
-".trim_left_matches('\n');
+"
+        .trim_left_matches('\n');
         let expected_without_steps = r"
 *####*
 #@ $.#
@@ -163,7 +166,8 @@ B_<><><><>B_<>
 #  @*#
 *####*
 
-".trim_left_matches('\n');
+"
+        .trim_left_matches('\n');
 
         let level: Level = level.parse().unwrap();
         let moves = Moves::new(vec![

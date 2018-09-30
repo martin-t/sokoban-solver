@@ -212,11 +212,13 @@ crate fn closest_push_dists<M: Map>(
                 let cur = dests[dest_pos];
                 match best {
                     None => best = cur,
-                    Some(best_dist) => if let Some(cur_dist) = cur {
-                        if cur_dist < best_dist {
-                            best = cur;
+                    Some(best_dist) => {
+                        if let Some(cur_dist) = cur {
+                            if cur_dist < best_dist {
+                                best = cur;
+                            }
                         }
-                    },
+                    }
                 }
             }
         }
@@ -430,7 +432,8 @@ None None    None    None    None    None None
 None None    None    None    None    None None 
 None None Some(3) Some(2) Some(1) Some(0) None 
 None None    None    None    None    None None 
-".trim_left_matches('\n');
+"
+        .trim_left_matches('\n');
 
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let result = format!("{:?}", solver.sd.closest_push_dists);
@@ -453,7 +456,8 @@ None None    None    None    None    None None
 None None    None Some(3)    None    None None 
 None None Some(3) Some(2) Some(1) Some(0) None 
 None None    None    None    None    None None 
-".trim_left_matches('\n');
+"
+        .trim_left_matches('\n');
 
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let result = format!("{:?}", solver.sd.closest_push_dists);
@@ -488,7 +492,8 @@ None Some(0) Some(1) Some(2) Some(3) Some(4) Some(5)  Some(6)     None None None
 None    None Some(2) Some(3) Some(2) Some(1) Some(2)  Some(3)     None None None 
 None    None    None    None    None Some(0)    None     None     None None None 
 None    None    None    None    None    None    None     None     None None None 
-".trim_left_matches('\n');
+"
+        .trim_left_matches('\n');
 
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
         let result = format!("{:?}", solver.sd.closest_push_dists);

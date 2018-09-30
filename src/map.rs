@@ -164,22 +164,26 @@ mod tests {
 *####*
 #@$.*#
 *####*#
-".trim_left_matches('\n');
+"
+        .trim_left_matches('\n');
         let xsb_map: &str = "
 .####.
 #  ..#
 .####.#
-".trim_left_matches('\n');
+"
+        .trim_left_matches('\n');
         let custom_level: &str = r"
 B_<><><><>B_
 <>P B  _B_<>
 B_<><><><>B_<>
-".trim_left_matches('\n');
+"
+        .trim_left_matches('\n');
         let custom_map: &str = r"
  _<><><><> _
 <>     _ _<>
  _<><><><> _<>
-".trim_left_matches('\n');
+"
+        .trim_left_matches('\n');
 
         let level: Level = xsb_level.parse().unwrap();
         let map = level.map();

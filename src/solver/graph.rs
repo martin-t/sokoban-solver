@@ -51,7 +51,8 @@ impl<'a, H: BuildHasher> Labeller<'a, Nd<'a>, Ed<'a>> for Graph<'a, H> {
                 self.counter.set(self.counter.get() + 1);
                 i
             })
-        )).unwrap()
+        ))
+        .unwrap()
     }
 
     // TODO shape, color

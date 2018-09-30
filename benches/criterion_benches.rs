@@ -71,7 +71,8 @@ fn bench_level(c: &mut Criterion, method: Method, level_path: &str, samples: usi
                     criterion::black_box(false),
                 ))
             })
-        }).sample_size(samples),
+        })
+        .sample_size(samples),
     );
 }
 
