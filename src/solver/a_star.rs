@@ -122,7 +122,7 @@ impl Display for Stats {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, Hash)]
 crate struct SearchNode<'a> {
     crate state: &'a State,
     crate prev: Option<&'a State>,
@@ -132,6 +132,7 @@ crate struct SearchNode<'a> {
 
 impl<'a> SearchNode<'a> {
     crate fn new(state: &'a State, prev: Option<&'a State>, dist: u16, heuristic: u16) -> Self {
+        //println!("state: {}, prev: {}", state as *const State as usize, 0);
         Self {
             state,
             prev,

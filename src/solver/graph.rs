@@ -7,13 +7,54 @@ use std::{
 };
 
 use dot::{self, Edges, GraphWalk, Id, LabelText, Labeller, Nodes};
+use fnv::FnvHashMap;
 
-use crate::{map::Map, state::State};
+use crate::{map::Map, solver::a_star::SearchNode, state::State};
 
 type Nd<'a> = &'a State;
 type Ed<'a> = (Nd<'a>, Nd<'a>);
 
-struct Graph<'a, H: BuildHasher> {
+enum Type {
+    Queued,
+    Duplicate,
+    Visited,
+}
+
+crate struct Graph<'a> {
+    node_to_index: FnvHashMap<SearchNode<'a>, usize>,
+    nodes: Vec<SearchNode<'a>, Type>,
+    edges: Vec<(usize, usize)>,
+}
+
+impl<'a> Graph<'a> {
+    crate fn new() -> Self {
+        Self {
+            nodes: Vec::new(),
+            edges: Vec::new(),
+            node_to_index: FnvHashMap::default(),
+        }
+    }
+
+    crate fn add(&mut self, node: SearchNode<'a>, prev: SearchNode<'a>) {
+        assert!(!self.node_to_index.contains_key(&node));
+
+        self.node_to_index.insert(node, self.nodes.len());
+        self.nodes.push(node, Queued);
+
+        self.edges
+            .push((self.node_to_index[&prev], self.node_to_index[&node]));
+    }
+
+    crate fn mark_duplicate(&mut self, node: SearchNode<'a>) {
+        self.nodes[self.node_to_index[node]]
+    }
+
+    crate fn mark_unique(&mut self, node: SearchNode<'a>) {
+        unimplemented!()
+    }
+}
+
+/*struct Graph<'a, H: BuildHasher> {
     map: &'a dyn Map,
     prevs: &'a HashMap<&'a State, &'a State, H>,
     ids: RefCell<HashMap<&'a State, u32>>,
@@ -67,10 +108,11 @@ impl<'a, H: BuildHasher> Labeller<'a, Nd<'a>, Ed<'a>> for Graph<'a, H> {
     //fn node_color(&'a self, _: &Nd<'a>) -> Option<LabelText<'a>>{
     //    Some(LabelText::LabelStr("gray75".into()))
     //}
-}
+}*/
 
 crate fn draw_states<H: BuildHasher>(map: &dyn Map, prevs: &HashMap<&State, &State, H>) {
-    let graph = Graph {
+    unimplemented!();
+    /*let graph = Graph {
         map,
         prevs,
         ids: RefCell::new(HashMap::new()),
@@ -87,5 +129,5 @@ crate fn draw_states<H: BuildHasher>(map: &dyn Map, prevs: &HashMap<&State, &Sta
         .args(&["-Tsvg", "-O", "state-space.dot"])
         .status()
         .unwrap();
-    assert!(status.success());
+    assert!(status.success());*/
 }
