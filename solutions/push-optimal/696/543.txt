@@ -1,77 +1,77 @@
-DDDLdlUUUluurDDDDrruuLrddlddrUrruuuLLdDlluUddrruurrdddlLulluuRRllluurDldRddrruuuLrdddlluuRurDllddrrdrruuuLrdddllulluuluRdddrrdrruuulLrrdddlldlUrrruuullDDuurrdddlLdllUUUURRllluurDldRddddrruuuuuLrdddddlluuuuRurDllddddrrurruuuLLrrdddlldlluuuuluRdddddrrurruuullLrrrdddlldlluRRlluuUrrDulldddrrRllluuurrdDuullluurDldRdddrRuuuuLrddddlluuuRurDDullluurDrrddDuuullldRRurDD
-Moves: 362
+DDDLdlUUUluurDDDDrruuLrddlddrUrruuuLLdDuurrdddlLulluURRllluurDldRddrruuuLrdddlluuRurDllddrrdrruuuLrdddllulluuluRdddrrddlUrrruuulLDurrdddlldllUUdrrrruuulldDuurrdddlLdlluuUURRllluurDldRddddrruuuuuLrddddrruuuLrdddlldlluuuuluurDrrDrrdddlldlluuuUluRdddddrrurruuullLrrrdddlldlluuuUdddRRlluuurrDulldddrrRllluuurrdDuullluurDldRdddrRuuuuLrddddlluuuRurDDullluurDrrddDuuullldRRurDD
+Moves: 370
 Pushes: 66
-States created total: 33,795
-Unique visited total: 11,721
-Reached duplicates total: 21,405
-Created but not reached total: 669
+States created total: 12,367
+Unique visited total: 4,502
+Reached duplicates total: 7,685
+Created but not reached total: 180
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             2              2              0              0
-2:             4              4              0              0
-3:             9              7              2              0
-4:             13             8              5              0
-5:             16             10             6              0
-6:             31             21             10             0
-7:             67             41             26             0
-8:             99             55             44             0
-9:             104            57             47             0
-10:            93             52             41             0
-11:            91             51             40             0
-12:            108            54             54             0
-13:            112            53             59             0
-14:            141            68             73             0
-15:            199            104            95             0
-16:            329            169            160            0
-17:            496            232            264            0
-18:            641            270            371            0
-19:            655            257            398            0
-20:            660            272            388            0
-21:            731            302            429            0
-22:            847            333            514            0
-23:            810            301            509            0
-24:            687            284            403            0
-25:            687            274            413            0
-26:            756            276            480            0
-27:            738            259            479            0
-28:            681            245            436            0
-29:            627            231            396            0
-30:            704            267            437            0
-31:            805            270            535            0
-32:            881            295            586            0
-33:            868            290            578            0
-34:            944            329            615            0
-35:            1,038          353            685            0
-36:            1,077          344            733            0
-37:            1,035          342            693            0
-38:            1,077          346            727            4
-39:            1,055          306            748            1
-40:            938            322            615            1
-41:            1,022          364            658            0
-42:            1,194          413            774            7
-43:            1,267          406            853            8
-44:            1,196          357            827            12
-45:            950            282            657            11
-46:            799            266            526            7
-47:            834            267            554            13
-48:            898            286            590            22
-49:            892            278            584            30
-50:            865            263            562            40
-51:            728            214            477            37
-52:            599            187            373            39
-53:            554            153            331            70
-54:            482            108            271            103
-55:            319            53             164            102
-56:            144            22             65             57
-57:            58             11             26             21
-58:            32             6              6              20
-59:            13             3              0              10
-60:            12             5              0              7
-61:            15             6              3              6
-62:            25             6              6              13
-63:            19             4              3              12
-64:            14             2              1              11
+2:             4              3              1              0
+3:             7              4              3              0
+4:             8              4              4              0
+5:             10             6              4              0
+6:             21             13             8              0
+7:             41             22             19             0
+8:             55             28             27             0
+9:             57             29             28             0
+10:            52             29             23             0
+11:            51             29             22             0
+12:            54             27             27             0
+13:            53             25             28             0
+14:            68             33             35             0
+15:            104            53             51             0
+16:            170            84             86             0
+17:            237            109            128            0
+18:            276            120            156            0
+19:            263            113            150            0
+20:            277            118            159            0
+21:            306            129            177            0
+22:            338            135            203            0
+23:            308            129            179            0
+24:            292            117            175            0
+25:            284            102            182            0
+26:            283            96             187            0
+27:            266            91             175            0
+28:            249            89             160            0
+29:            238            87             151            0
+30:            275            96             179            0
+31:            278            95             183            0
+32:            300            104            196            0
+33:            296            112            184            0
+34:            336            125            211            0
+35:            367            128            239            0
+36:            357            124            233            0
+37:            352            122            230            0
+38:            359            115            242            2
+39:            315            111            204            0
+40:            331            118            213            0
+41:            379            136            243            0
+42:            440            150            289            1
+43:            443            142            301            0
+44:            388            123            264            1
+45:            309            106            202            1
+46:            288            98             190            0
+47:            292            97             194            1
+48:            307            104            201            2
+49:            301            103            194            4
+50:            284            94             185            5
+51:            238            80             152            6
+52:            209            64             135            10
+53:            179            49             110            20
+54:            137            32             82             23
+55:            87             16             43             28
+56:            41             6              19             16
+57:            20             4              9              7
+58:            14             4              1              9
+59:            11             2              2              7
+60:            10             3              2              5
+61:            10             3              3              4
+62:            14             3              2              9
+63:            10             2              0              8
+64:            8              2              0              6
 65:            4              1              0              3
 66:            3              1              0              2
 
@@ -247,21 +247,21 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
 ########
 #  #####
-# $$ ###
-# @$   #
+#  $ ###
+# $$   #
 ## # # #
 ## ..# #
-##$ *..#
+##$$+..#
 ##   ###
 ########
 
 ########
 #  #####
 # $$ ###
-#  $   #
+# @$   #
 ## # # #
 ## ..# #
-##$$+..#
+##$$...#
 ##   ###
 ########
 
@@ -358,20 +358,20 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 ########
 #  #####
 #  $ ###
-#  $@  #
+#   $  #
 ## #$# #
-## ..# #
-##$$...#
+## *.# #
+##$@...#
 ##   ###
 ########
 
 ########
 #  #####
 #  $ ###
-#  $   #
+#  $@  #
 ## #$# #
 ## *.# #
-##$@...#
+##$ ...#
 ##   ###
 ########
 
@@ -390,28 +390,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 #  $ ###
 #  $   #
 ## # # #
-## *+# #
-##$ *..#
-##   ###
-########
-
-########
-#  #####
-#  $ ###
-#  $   #
-## # # #
-## *.# #
-##$$+..#
-##   ###
-########
-
-########
-#  #####
-#  $ ###
-#  $   #
-## # # #
-##$*.# #
-##@$...#
+##$**# #
+##@ ...#
 ##   ###
 ########
 
@@ -420,8 +400,28 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 #  $ ###
 #  $   #
 ##$# # #
-##@*.# #
-## $...#
+##@**# #
+##  ...#
+##   ###
+########
+
+########
+#  #####
+#  $ ###
+#  $   #
+##$# # #
+## *+# #
+##  *..#
+##   ###
+########
+
+########
+#  #####
+#  $ ###
+#  $   #
+##$# # #
+## *.# #
+## $+..#
 ##   ###
 ########
 
@@ -498,7 +498,7 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 ########
 #  #####
 # $  ###
-#  @$$ #
+#  $$@ #
 ## # # #
 ## *.# #
 ## $...#
@@ -507,8 +507,18 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
 ########
 #  #####
-# $  ###
-#   @$ #
+# @  ###
+# $$$  #
+## # # #
+## *.# #
+## $...#
+##   ###
+########
+
+########
+#  #####
+#    ###
+# $$@  #
 ## #$# #
 ## *.# #
 ## $...#
@@ -518,17 +528,7 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 ########
 #  #####
 # $  ###
-#   $@ #
-## #$# #
-## *.# #
-## $...#
-##   ###
-########
-
-########
-#  #####
-# $  ###
-#  $@  #
+# @$   #
 ## #$# #
 ## *.# #
 ## $...#
@@ -557,8 +557,18 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
 ########
 #  #####
-#  $ ###
-# $    #
+# $$ ###
+# @    #
+## #$# #
+## *.# #
+## $...#
+##   ###
+########
+
+########
+#  #####
+# $$ ###
+#      #
 ## #$# #
 ## *.# #
 ## @*..#
@@ -567,21 +577,11 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
 ########
 #  #####
-#  $ ###
-# $    #
+# $$ ###
+#      #
 ## #$# #
 ## *.# #
 ##  +*.#
-##   ###
-########
-
-########
-#  #####
-# $$ ###
-# @    #
-## #$# #
-## *.# #
-##  .*.#
 ##   ###
 ########
 

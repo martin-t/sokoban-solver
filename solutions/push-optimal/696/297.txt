@@ -1,35 +1,35 @@
-drdrrUUULullDDDrRdrUllluuurrdDDlddlUUrrrdLuuurDululldRururDDulDDDllUdddrU
-Moves: 73
+drdrrUUULullDDDrRlluuurrdDuulldddrdrrUdlluluuurrddDlddlUUrrrdLuuurDuluurDllldRurDurDlDDllUdddrU
+Moves: 95
 Pushes: 23
-States created total: 19,899
-Unique visited total: 6,129
-Reached duplicates total: 10,880
-Created but not reached total: 2,890
+States created total: 6,793
+Unique visited total: 2,150
+Reached duplicates total: 3,864
+Created but not reached total: 779
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             1              1              0              0
 2:             3              3              0              0
-3:             6              6              0              0
-4:             15             9              6              0
-5:             19             11             8              0
-6:             33             21             12             0
-7:             78             50             28             0
-8:             189            111            78             0
-9:             414            216            198            0
-10:            797            366            431            0
-11:            1,343          546            797            0
-12:            1,804          686            1,115          3
-13:            2,303          871            1,391          41
-14:            2,865          966            1,735          164
-15:            3,163          937            1,846          380
-16:            2,809          678            1,499          632
-17:            2,119          385            993            741
-18:            1,199          178            512            509
-19:            551            58             184            309
-20:            138            19             43             76
-21:            36             7              4              25
-22:            9              2              0              7
+3:             6              4              2              0
+4:             9              6              3              0
+5:             11             7              4              0
+6:             21             15             6              0
+7:             51             32             19             0
+8:             112            61             51             0
+9:             218            105            113            0
+10:            371            161            210            0
+11:            554            223            331            0
+12:            705            274            430            1
+13:            907            318            567            22
+14:            1,035          329            635            71
+15:            1,053          277            631            145
+16:            815            186            448            181
+17:            537            89             262            186
+18:            245            33             113            99
+19:            82             12             28             42
+20:            30             8              7              15
+21:            18             2              4              12
+22:            4              2              0              2
 23:            4              1              0              3
 
 #########
@@ -126,8 +126,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 ###  ####
 #   $####
 #.$  ####
-# #$*####
-# . +####
+# #@.####
+# .$*####
 #$ . ####
 #  ######
 #########
@@ -136,8 +136,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 ###  ####
 #   $####
 #.$  ####
-# #@*####
-# .$.####
+# # *####
+# .$+####
 #$ . ####
 #  ######
 #########
@@ -194,18 +194,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
 #########
 ###  ####
-#   $####
-#.@$ ####
-#$# .####
-# . *####
-# $. ####
-#  ######
-#########
-
-#########
-###  ####
 #   @####
-#. $$####
+#.$ $####
 #$# .####
 # . *####
 # $. ####
@@ -215,8 +205,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 #########
 ###  ####
 #    ####
-#. $@####
-#$# *####
+#.@$$####
+#$# .####
 # . *####
 # $. ####
 #  ######
@@ -225,7 +215,17 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 #########
 ###  ####
 #    ####
-#. @ ####
+#. @$####
+#$#$.####
+# . *####
+# $. ####
+#  ######
+#########
+
+#########
+###  ####
+#    ####
+#.  @####
 #$#$*####
 # . *####
 # $. ####
