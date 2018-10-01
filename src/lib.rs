@@ -323,7 +323,7 @@ mod tests {
 
     #[test]
     #[ignore]
-    fn test_aymeric_cosmonotes() {
+    fn test_aymeric() {
         let levels: Vec<_> = (1..=20)
             .map(|num| {
                 (
@@ -332,66 +332,34 @@ mod tests {
                     format!("{}.txt", num),
                 )
             })
-            .collect();
-        test_and_time_levels(&levels);
-    }
-
-    #[test]
-    #[ignore]
-    fn test_aymeric_microcosmos() {
-        let levels: Vec<_> = (1..=40)
-            .map(|num| {
+            .chain((1..=40).map(|num| {
                 (
                     Method::PushOptimal,
                     "aymeric-microcosmos",
                     format!("{}.txt", num),
                 )
-            })
-            .collect();
-        test_and_time_levels(&levels);
-    }
-
-    #[test]
-    #[ignore]
-    fn test_aymeric_minicosmos() {
-        let levels: Vec<_> = (1..=40)
-            .map(|num| {
+            }))
+            .chain((1..=40).map(|num| {
                 (
                     Method::PushOptimal,
                     "aymeric-minicosmos",
                     format!("{}.txt", num),
                 )
-            })
-            .collect();
-        test_and_time_levels(&levels);
-    }
-
-    #[test]
-    #[ignore]
-    fn test_aymeric_nabocosmos() {
-        let levels: Vec<_> = (1..=40)
-            .map(|num| {
+            }))
+            .chain((1..=40).map(|num| {
                 (
                     Method::PushOptimal,
                     "aymeric-nabocosmos",
                     format!("{}.txt", num),
                 )
-            })
-            .collect();
-        test_and_time_levels(&levels);
-    }
-
-    #[test]
-    #[ignore]
-    fn test_aymeric_picocosmos() {
-        let levels: Vec<_> = (1..=20)
-            .map(|num| {
+            }))
+            .chain((1..=20).map(|num| {
                 (
                     Method::PushOptimal,
                     "aymeric-picocosmos",
                     format!("{}.txt", num),
                 )
-            })
+            }))
             .collect();
         test_and_time_levels(&levels);
     }
@@ -400,6 +368,7 @@ mod tests {
     #[ignore]
     fn test_microban1() {
         let levels: Vec<_> = (1..=155)
+            .filter(|&num| num != 93 && num != 144 && num != 153)
             .map(|num| (Method::PushOptimal, "microban1", format!("{}.txt", num)))
             .collect();
         test_and_time_levels(&levels);
