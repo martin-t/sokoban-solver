@@ -1,25 +1,25 @@
-luuurrdLDldddrruLUUUruulldDrddlluRdrddlUUrUdlluR
-Moves: 48
+luuurrdLDldddrruLUUUruulldDrddlluRdrddlUruUlldRdrU
+Moves: 50
 Pushes: 12
-States created total: 276
-Unique visited total: 118
-Reached duplicates total: 48
-Created but not reached total: 110
+States created total: 179
+Unique visited total: 76
+Reached duplicates total: 37
+Created but not reached total: 66
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             3              3              0              0
 2:             5              5              0              0
-3:             9              9              0              0
-4:             16             15             1              0
-5:             27             18             7              2
-6:             34             16             6              12
-7:             38             16             10             12
-8:             52             16             14             22
-9:             50             13             8              29
-10:            26             4              2              20
-11:            13             1              0              12
-12:            2              1              0              1
+3:             9              8              1              0
+4:             15             12             3              0
+5:             21             12             7              2
+6:             21             9              7              5
+7:             22             8              7              7
+8:             27             8              7              12
+9:             29             4              5              20
+10:            10             3              0              7
+11:            10             2              0              8
+12:            6              1              0              5
 
  #####
  #   #
@@ -124,9 +124,9 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
  #####
  #   #
  # * #
-## . #
-# $*##
-# @ ##
+## * #
+#  +##
+# $ ##
 ##   #
  #   #
  #####
@@ -135,8 +135,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
  #   #
  # * #
 ## * #
-# $+##
-#   ##
+#  .##
+# @$##
 ##   #
  #   #
  #####
@@ -145,8 +145,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
  #   #
  # * #
 ## * #
-# @*##
-#   ##
+#  *##
+#  @##
 ##   #
  #   #
  #####

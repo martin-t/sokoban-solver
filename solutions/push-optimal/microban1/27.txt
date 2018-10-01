@@ -1,22 +1,22 @@
-dlULddlluuuurrrDulllddddrruuLrdrruLuullldDrRdrUUdlllD
-Moves: 53
+dlULddlluuuurrrDulllddddrruuLrdrruLuullldDDurRdrUU
+Moves: 50
 Pushes: 10
-States created total: 94
-Unique visited total: 45
-Reached duplicates total: 22
-Created but not reached total: 27
+States created total: 73
+Unique visited total: 35
+Reached duplicates total: 19
+Created but not reached total: 19
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             2              2              0              0
-2:             7              7              0              0
-3:             14             9              2              3
-4:             25             13             6              6
-5:             19             6              11             2
-6:             8              2              2              4
-7:             5              2              1              2
-8:             7              1              0              6
-9:             4              1              0              3
+2:             7              6              1              0
+3:             12             7              4              1
+4:             19             7              8              4
+5:             9              5              3              1
+6:             7              2              2              3
+7:             4              2              0              2
+8:             7              1              1              5
+9:             3              1              0              2
 10:            2              1              0              1
 
 ######
@@ -78,32 +78,32 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 ######
 #   .#
 # ## ##
+#  $  #
+#@#   #
+#*  ###
+#####
+
+######
+#   .#
+# ## ##
 #  @$ #
-#$#   #
-#.  ###
+# #   #
+#*  ###
 #####
 
 ######
 #   .#
 # ##$##
 #   @ #
-#$#   #
-#.  ###
+# #   #
+#*  ###
 #####
 
 ######
 #   *#
 # ##@##
 #     #
-#$#   #
-#.  ###
-#####
-
-######
-#   *#
-# ## ##
-#     #
-#@#   #
+# #   #
 #*  ###
 #####
 

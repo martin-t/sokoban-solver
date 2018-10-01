@@ -1,26 +1,26 @@
 luRdrUUrruullDlDRuuulDDrdddlluRdrUUUluurDrrddL
 Moves: 46
 Pushes: 14
-States created total: 186
-Unique visited total: 99
-Reached duplicates total: 70
-Created but not reached total: 17
+States created total: 111
+Unique visited total: 59
+Reached duplicates total: 44
+Created but not reached total: 8
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             2              2              0              0
 2:             3              3              0              0
-3:             4              4              0              0
-4:             9              7              2              0
-5:             14             10             4              0
-6:             15             12             3              0
-7:             15             9              6              0
-8:             25             18             7              0
-9:             35             11             24             0
-10:            21             10             11             0
-11:            20             8              9              3
-12:            13             2              4              7
-13:            6              1              0              5
+3:             4              3              1              0
+4:             7              5              2              0
+5:             10             7              3              0
+6:             12             6              6              0
+7:             9              6              3              0
+8:             18             8              10             0
+9:             13             6              7              0
+10:            11             5              6              0
+11:            8              4              4              0
+12:            6              1              2              3
+13:            4              1              0              3
 14:            3              1              0              2
 
  ####

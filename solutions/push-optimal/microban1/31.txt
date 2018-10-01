@@ -1,18 +1,18 @@
-RurDDullDurrdrddlluUluR
-Moves: 23
+RlDldRRdrruulLulD
+Moves: 17
 Pushes: 6
-States created total: 115
-Unique visited total: 41
-Reached duplicates total: 3
-Created but not reached total: 71
+States created total: 110
+Unique visited total: 38
+Reached duplicates total: 13
+Created but not reached total: 59
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             2              2              0              0
-2:             6              5              0              1
-3:             19             13             2              4
-4:             29             10             1              18
-5:             34             9              0              25
+2:             6              5              1              0
+3:             18             11             4              3
+4:             27             10             4              13
+5:             32             8              4              20
 6:             24             1              0              23
 
   ####
@@ -33,40 +33,40 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
   ####
  ##  #
-##  +##
-# $$$ #
-# . . #
+##  *##
+# @$  #
+# * . #
 ###   #
   #####
 
   ####
  ##  #
-##  .##
-# $$@ #
+##  *##
+#  $  #
+# +$. #
+###   #
+  #####
+
+  ####
+ ##  #
+##  *##
+#  $  #
+# .@* #
+###   #
+  #####
+
+  ####
+ ##  #
+##  *##
+# $@  #
 # . * #
 ###   #
   #####
 
   ####
  ##  #
-##  .##
-# @$  #
-# * * #
-###   #
-  #####
-
-  ####
- ##  #
-## $.##
-#  @  #
-# * * #
-###   #
-  #####
-
-  ####
- ##  #
-## @*##
-#     #
+##  *##
+# @   #
 # * * #
 ###   #
   #####

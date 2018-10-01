@@ -1,17 +1,17 @@
 dllUdlUluurDRddlU
 Moves: 17
 Pushes: 5
-States created total: 24
-Unique visited total: 14
-Reached duplicates total: 4
-Created but not reached total: 6
+States created total: 18
+Unique visited total: 11
+Reached duplicates total: 3
+Created but not reached total: 4
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             2              2              0              0
-2:             5              5              0              0
-3:             6              3              3              0
-4:             7              2              1              4
+2:             5              3              2              0
+3:             3              2              1              0
+4:             4              2              0              2
 5:             3              1              0              2
 
 ####

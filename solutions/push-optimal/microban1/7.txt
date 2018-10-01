@@ -1,19 +1,19 @@
-rruLdllluurRlluurRddlUruurrddLrdddlllU
-Moves: 38
+rruulUrdddlllluRuUrrdLrrddlUruuuullD
+Moves: 36
 Pushes: 6
-States created total: 1,206
-Unique visited total: 164
-Reached duplicates total: 11
-Created but not reached total: 1,031
+States created total: 1,975
+Unique visited total: 267
+Reached duplicates total: 155
+Created but not reached total: 1,553
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
-1:             16             8              0              8
-2:             90             34             0              56
-3:             266            61             1              204
-4:             379            45             10             324
-5:             310            14             0              296
-6:             144            1              0              143
+1:             16             12             0              4
+2:             136            57             15             64
+3:             457            95             46             316
+4:             604            80             67             457
+5:             543            21             27             495
+6:             218            1              0              217
 
 #######
 #     #
@@ -26,55 +26,55 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
 #######
 #     #
+# .$* #
+# $.@ #
 # .$. #
 # $.$ #
+#     #
+#######
+
+#######
+#     #
+# .$* #
+# $.  #
 # .$. #
-# $*@ #
+# @*$ #
 #     #
 #######
 
 #######
 #     #
+# *$* #
+# @.  #
 # .$. #
-# $.$ #
-# .@* #
-# $*  #
+#  *$ #
 #     #
 #######
 
 #######
 #     #
-# .@* #
-# $.$ #
-# . * #
-# $*  #
+# *$* #
+#  .  #
+# *@. #
+#  *$ #
 #     #
 #######
 
 #######
 #     #
-# * * #
-# @.$ #
-# . * #
-# $*  #
-#     #
-#######
-
-#######
-#     #
+# *$* #
+#  .  #
 # * * #
 #  *@ #
-# . * #
-# $*  #
 #     #
 #######
 
 #######
 #     #
-# * * #
+# *@* #
 #  *  #
 # * * #
-# @*  #
+#  *  #
 #     #
 #######
 

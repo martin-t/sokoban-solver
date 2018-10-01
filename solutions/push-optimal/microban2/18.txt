@@ -1,32 +1,32 @@
-ullDDRdddlluRRuulDDrdrruLdlUlldRuuuuurrdrdLuulldddddRuluuuurrddLruulldDDDrdLurrrdLulluurD
-Moves: 89
+ullDDRdddlluRRuulDDrdrruLdlUlldRRuluuuurrdrdLLruulldDDDrdLurrrdLulluurD
+Moves: 71
 Pushes: 19
-States created total: 1,501
-Unique visited total: 555
-Reached duplicates total: 708
-Created but not reached total: 238
+States created total: 649
+Unique visited total: 258
+Reached duplicates total: 290
+Created but not reached total: 101
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             2              2              0              0
 2:             4              4              0              0
-3:             8              8              0              0
-4:             12             7              5              0
-5:             16             8              8              0
-6:             18             13             5              0
-7:             35             24             11             0
-8:             66             26             36             4
-9:             78             38             39             1
-10:            111            52             49             10
-11:            169            80             76             13
-12:            249            85             132            32
-13:            252            77             133            42
-14:            204            58             104            42
-15:            146            42             61             43
-16:            73             16             32             25
-17:            33             9              15             9
-18:            15             4              2              9
-19:            9              1              0              8
+3:             8              6              2              0
+4:             7              4              3              0
+5:             8              5              3              0
+6:             13             9              4              0
+7:             24             12             11             1
+8:             29             14             13             2
+9:             39             19             18             2
+10:            57             28             25             4
+11:            88             34             41             13
+12:            99             33             48             18
+13:            90             31             49             10
+14:            74             25             31             18
+15:            54             16             26             12
+16:            22             7              11             4
+17:            13             4              4              5
+18:            9              3              1              5
+19:            8              1              0              7
 
  #####
  #   ##
@@ -130,19 +130,19 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
  #####
  #   ##
  # #  #
- # $@ #
+ #  $ #
 ## $###
 #  .  #
-#. *  #
+#. +$ #
 #######
 
  #####
  #   ##
  # #  #
- # $  #
+ # $@ #
 ## $###
 #  .  #
-#. +$ #
+#. .$ #
 #######
 
  #####

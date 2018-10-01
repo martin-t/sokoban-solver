@@ -1,22 +1,22 @@
 drdrruLruulDLrrddllUlURddrruLLrruulDrdL
 Moves: 39
 Pushes: 10
-States created total: 77
-Unique visited total: 43
-Reached duplicates total: 20
-Created but not reached total: 14
+States created total: 54
+Unique visited total: 29
+Reached duplicates total: 18
+Created but not reached total: 7
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             1              1              0              0
 2:             2              2              0              0
 3:             3              2              1              0
-4:             5              5              0              0
-5:             11             10             1              0
-6:             18             9              9              0
-7:             13             6              6              1
-8:             15             5              3              7
-9:             6              1              0              5
+4:             5              4              1              0
+5:             10             5              5              0
+6:             10             5              5              0
+7:             7              4              3              0
+8:             9              3              3              3
+9:             4              1              0              3
 10:            2              1              0              1
 
 ######

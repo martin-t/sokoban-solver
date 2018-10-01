@@ -1,33 +1,33 @@
-uLDuruullllldddddrruuuRldddlluuuuurrrrrdddlLulDDurrrddlUruLLulDrrruLruulDDDlluRdrruulDrdLLrrddlUruL
+uLDuruullllldddddrruuuRldddlluuuuurrrrrdddlLulDDurrrddlUruLLulDrrruLruulDDDlluRdrrddlUruLLrruulDrdL
 Moves: 99
 Pushes: 20
-States created total: 320
-Unique visited total: 145
-Reached duplicates total: 155
-Created but not reached total: 20
+States created total: 176
+Unique visited total: 81
+Reached duplicates total: 83
+Created but not reached total: 12
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             1              1              0              0
-2:             4              4              0              0
-3:             8              7              1              0
-4:             19             12             7              0
-5:             26             13             13             0
-6:             27             9              18             0
-7:             23             13             10             0
-8:             39             17             22             0
-9:             46             18             28             0
-10:            28             13             15             0
-11:            25             9              16             0
-12:            19             7              12             0
-13:            12             4              8              0
-14:            6              3              3              0
-15:            5              3              1              1
-16:            7              2              1              4
+2:             4              3              1              0
+3:             7              6              1              0
+4:             15             6              9              0
+5:             14             6              8              0
+6:             10             6              4              0
+7:             14             6              8              0
+8:             20             8              12             0
+9:             19             8              11             0
+10:            14             7              7              0
+11:            13             5              8              0
+12:            10             3              7              0
+13:            5              2              3              0
+14:            3              2              1              0
+15:            3              2              1              0
+16:            4              2              0              2
 17:            3              2              0              1
-18:            7              4              0              3
-19:            8              2              0              6
-20:            6              1              0              5
+18:            7              3              1              3
+19:            6              1              1              4
+20:            3              1              0              2
 
 ########
 #      #
@@ -176,36 +176,36 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 ########
 #      #
 # ###  #
-# #  @ #
+# #  $ #
 # #..$ #
-# #*#$ #
-#  *#  #
-########
-
-########
-#      #
-# ###  #
-# #    #
-# #.*@ #
-# #*#$ #
-#  *#  #
-########
-
-########
-#      #
-# ###  #
-# #    #
-# #*+  #
-# #*#$ #
-#  *#  #
-########
-
-########
-#      #
-# ###  #
-# #    #
-# #*.$ #
 # #*#@ #
+#  *#  #
+########
+
+########
+#      #
+# ###  #
+# #  $ #
+# #.*@ #
+# #*#  #
+#  *#  #
+########
+
+########
+#      #
+# ###  #
+# #  $ #
+# #*+  #
+# #*#  #
+#  *#  #
+########
+
+########
+#      #
+# ###  #
+# #  @ #
+# #*.$ #
+# #*#  #
 #  *#  #
 ########
 

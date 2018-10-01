@@ -1,20 +1,20 @@
-ullDullddrUrurrdLLLddrUluRurrdLululD
-Moves: 36
+ullDullddrUrurrdLLLddrUluRuulDrrrdL
+Moves: 35
 Pushes: 9
-States created total: 146
-Unique visited total: 70
-Reached duplicates total: 67
-Created but not reached total: 9
+States created total: 81
+Unique visited total: 40
+Reached duplicates total: 35
+Created but not reached total: 6
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             4              4              0              0
-2:             16             16             0              0
-3:             30             20             10             0
-4:             46             17             29             0
-5:             30             5              25             0
-6:             8              2              2              4
-7:             3              2              1              0
+2:             16             10             6              0
+3:             20             10             10             0
+4:             19             6              13             0
+5:             8              3              5              0
+6:             3              1              1              1
+7:             2              2              0              0
 8:             2              2              0              0
 9:             6              1              0              5
 
@@ -84,16 +84,16 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
  ####
 ##  ###
-# $   #
-#*.*@ #
+# @   #
+#**.$ #
 #   ###
 ##  #
  ####
 
  ####
 ##  ###
-# @   #
-#***  #
+#     #
+#***@ #
 #   ###
 ##  #
  ####

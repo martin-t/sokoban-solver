@@ -1,21 +1,21 @@
-ddLruulDllddrdRdrUUdlluRlluurrDulldR
-Moves: 36
+ddLruulDlDlddrRlluurRllddrrdrUlUdlluR
+Moves: 37
 Pushes: 8
-States created total: 956
-Unique visited total: 220
-Reached duplicates total: 119
-Created but not reached total: 617
+States created total: 813
+Unique visited total: 176
+Reached duplicates total: 180
+Created but not reached total: 457
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             4              4              0              0
-2:             14             14             0              0
-3:             52             20             6              26
-4:             101            56             19             26
-5:             252            70             42             140
-6:             338            46             49             243
-7:             166            8              3              155
-8:             28             1              0              27
+2:             14             8              6              0
+3:             32             20             8              4
+4:             98             47             26             25
+5:             220            56             62             102
+6:             282            32             60             190
+7:             138            7              18             113
+8:             24             1              0              23
 
   ####
 ### @#
@@ -47,8 +47,17 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
   ####
 ###  #
 #    #
+# @*.#
 # $*.#
+#  $ #
+###  #
+  ####
+
+  ####
+###  #
+#    #
 #  *.#
+# $*.#
 #  @$#
 ###  #
   ####
@@ -56,8 +65,17 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
   ####
 ###  #
 #    #
+#  +*#
 # $*.#
-#  **#
+#   $#
+###  #
+  ####
+
+  ####
+###  #
+#    #
+#  .*#
+# $**#
 #   @#
 ###  #
   ####
@@ -65,26 +83,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
   ####
 ###  #
 #    #
-# $**#
-#  *+#
-#    #
-###  #
-  ####
-
-  ####
-###  #
-#    #
-# $**#
-#  +*#
-#    #
-###  #
-  ####
-
-  ####
-###  #
-#    #
+#  **#
 # $+*#
-#  **#
 #    #
 ###  #
   ####
@@ -92,8 +92,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
   ####
 ###  #
 #    #
-# @**#
 #  **#
+# @**#
 #    #
 ###  #
   ####

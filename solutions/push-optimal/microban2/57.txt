@@ -1,27 +1,27 @@
-uuulDullDRurrddddlluUUluRRlddddrruuuLulldldRuurrdLrrdddlluUddrruuLuuurDD
-Moves: 72
+uuulDullDRurrddddlluUUluRRlddddrruuuLrdddlluuRuulldldRuurrurrdLdlLrruulDrdL
+Moves: 75
 Pushes: 14
-States created total: 2,550
-Unique visited total: 755
-Reached duplicates total: 901
-Created but not reached total: 894
+States created total: 1,191
+Unique visited total: 339
+Reached duplicates total: 518
+Created but not reached total: 334
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             4              4              0              0
-2:             10             10             0              0
-3:             32             21             11             0
-4:             46             28             18             0
-5:             93             43             50             0
-6:             112            43             69             0
-7:             126            69             56             1
-8:             235            119            92             24
-9:             411            163            175            73
-10:            569            150            222            197
-11:            548            79             169            300
-12:            259            20             33             206
-13:            88             4              6              78
-14:            16             1              0              15
+2:             10             7              3              0
+3:             23             12             11             0
+4:             30             14             16             0
+5:             45             16             29             0
+6:             43             22             21             0
+7:             72             40             32             0
+8:             143            59             74             10
+9:             220            68             123            29
+10:            231            52             122            57
+11:            191            29             68             94
+12:            111            11             17             83
+13:            55             3              2              50
+14:            12             1              0              11
 
    #####
  ###   #
@@ -108,7 +108,7 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
  ###   #
 ##   $ #
 # .*  ##
-# @*$.#
+# $.@*#
 ### # #
   #   #
   #####
@@ -116,35 +116,35 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
    #####
  ###   #
 ##   $ #
+# .*  ##
+# @* *#
+### # #
+  #   #
+  #####
+
+   #####
+ ###   #
+##  $@ #
+# .*  ##
+#  * *#
+### # #
+  #   #
+  #####
+
+   #####
+ ###   #
+##  $  #
 # *+  ##
-#  *$.#
+#  * *#
 ### # #
   #   #
   #####
 
    #####
  ###   #
-##   $ #
-# **  ##
-#  +$.#
-### # #
-  #   #
-  #####
-
-   #####
- ###   #
-##   $ #
-# **  ##
-#  *@.#
-### # #
-  #   #
-  #####
-
-   #####
- ###   #
-##   @ #
-# ** $##
-#  * .#
+##  @  #
+# *.$ ##
+#  * *#
 ### # #
   #   #
   #####
@@ -152,7 +152,7 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
    #####
  ###   #
 ##     #
-# ** @##
+# **@ ##
 #  * *#
 ### # #
   #   #
