@@ -1,43 +1,43 @@
-uurRurDDrddllUdrddlUruruulDuulllddRRUdllddRRlluuuurRddllddrrUdlluuuurrdrrddLULuullddddrrdrUUdllluuuurrddDuuullddddrRurruuLrddlldlluuuurrurDlllddddrruuUddrruuLuLrdrddllddrUluuUrrddLruulldDrruL
-Moves: 191
+uurRurDDrddllUdrruululllddRluurrrdrddlddlUruruulDuulllddrRllddRRlluurrUdllddrrUdlluuuurRdrrddLULuullddddrrdrUUdllluuuurrddDuuullddddrRurruuLrddlldlluuuurrurDlllddddrruuUddrruuLuLrdrddlluUddddrUluuurrddLruulldDrruL
+Moves: 213
 Pushes: 30
-States created total: 7,853
-Unique visited total: 2,638
-Reached duplicates total: 4,552
-Created but not reached total: 663
+States created total: 3,126
+Unique visited total: 997
+Reached duplicates total: 1,912
+Created but not reached total: 217
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             1              1              0              0
 2:             4              4              0              0
-3:             8              8              0              0
-4:             25             19             6              0
-5:             53             36             17             0
-6:             86             52             34             0
-7:             155            86             69             0
-8:             240            97             143            0
-9:             280            115            165            0
-10:            293            117            176            0
-11:            343            136            207            0
-12:            395            132            263            0
-13:            407            125            282            0
-14:            340            81             259            0
-15:            251            46             205            0
-16:            108            25             83             0
-17:            82             43             39             0
-18:            133            77             56             0
-19:            243            132            111            0
-20:            374            186            188            0
-21:            616            274            328            14
-22:            831            289            494            48
-23:            955            293            570            92
-24:            843            160            537            146
-25:            476            59             249            168
-26:            173            20             63             90
-27:            51             12             5              34
-28:            46             6              3              37
-29:            22             5              0              17
-30:            18             1              0              17
+3:             8              7              1              0
+4:             21             12             9              0
+5:             36             21             15             0
+6:             53             29             24             0
+7:             91             37             54             0
+8:             106            41             65             0
+9:             122            50             72             0
+10:            131            48             83             0
+11:            146            54             92             0
+12:            148            45             103            0
+13:            133            34             99             0
+14:            89             17             72             0
+15:            52             12             40             0
+16:            31             12             19             0
+17:            46             26             20             0
+18:            83             42             41             0
+19:            140            65             75             0
+20:            210            88             122            0
+21:            306            101            199            6
+22:            335            95             223            17
+23:            347            76             248            23
+24:            236            39             158            39
+25:            119            16             60             43
+26:            52             12             12             28
+27:            37             4              4              29
+28:            14             4              0              10
+29:            16             3              2              11
+30:            12             1              0              11
 
   ####
 ###  #
@@ -93,7 +93,17 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 ###  #
 # .. ##
 # #$  #
-# *.$ #
+# +*$ #
+# #   #
+# $* ##
+###  #
+  ####
+
+  ####
+###  #
+# .. ##
+# #$  #
+# .*$ #
 # #$  #
 # $+ ##
 ###  #
@@ -103,17 +113,7 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 ###  #
 # .. ##
 # #$  #
-# *.@ #
-# #$$ #
-# $. ##
-###  #
-  ####
-
-  ####
-###  #
-# .. ##
-# #$  #
-# +*  #
+# .*@ #
 # #$$ #
 # $. ##
 ###  #
@@ -131,18 +131,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
   ####
 ###  #
-# .* ##
-# #@  #
-# ..$ #
-# #$$ #
-# $. ##
-###  #
-  ####
-
-  ####
-###  #
-# .* ##
-# #   #
+# .. ##
+# #$  #
 # ..$ #
 # #$$ #
 # @* ##
@@ -151,8 +141,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
   ####
 ###  #
-# .* ##
-# #   #
+# .. ##
+# #$  #
 # ..$ #
 # #$$ #
 #  +$##
@@ -161,8 +151,8 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
   ####
 ###  #
-# .+$##
-# #   #
+# .* ##
+# #@  #
 # ..$ #
 # #$$ #
 #  .$##
@@ -171,10 +161,20 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
   ####
 ###  #
-# ..$##
+# .* ##
 # #   #
 # .*$ #
 # #@$ #
+#  .$##
+###  #
+  ####
+
+  ####
+###  #
+# .+$##
+# #   #
+# .*$ #
+# # $ #
 #  .$##
 ###  #
   ####
@@ -301,21 +301,21 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
   ####
 ###  #
-# *. ##
-# #$  #
+# ** ##
+# #@  #
 # *.$ #
-# # $ #
-#  .@##
+# #   #
+#  .$##
 ###  #
   ####
 
   ####
 ###  #
 # ** ##
-# #@  #
+# #   #
 # *.$ #
 # # $ #
-#  . ##
+#  .@##
 ###  #
   ####
 

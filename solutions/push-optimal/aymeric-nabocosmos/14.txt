@@ -1,43 +1,43 @@
-urRRdLululuurDlddrrruruulDLLDldRRdrrUUruLLrdddlluluuulDrddrRllldRuuulDrdrrUruulDLLddrrdrUUdllluurrDrdLuulldlluRRdddlUU
-Moves: 118
+urRluluurDlddrrRdLururuulDLLDldRRdrrUUruLLrdddlluRlluuulDrddldRuuulDrdrrUruulDLLddrrdrUUdllluurrDrdLuulldlluRRdddlUU
+Moves: 116
 Pushes: 30
-States created total: 36,677
-Unique visited total: 10,226
-Reached duplicates total: 24,153
-Created but not reached total: 2,298
+States created total: 11,261
+Unique visited total: 3,245
+Reached duplicates total: 7,299
+Created but not reached total: 717
 
 Depth          Created        Unique         Duplicates     Unknown (not reached)
 0:             1              1              0              0
 1:             3              3              0              0
-2:             9              9              0              0
-3:             29             17             12             0
-4:             52             27             25             0
-5:             84             40             44             0
-6:             113            46             67             0
-7:             124            56             68             0
-8:             145            82             63             0
-9:             259            146            113            0
-10:            510            277            233            0
-11:            1,005          460            545            0
-12:            1,644          611            1,033          0
-13:            2,191          712            1,479          0
-14:            2,665          775            1,890          0
-15:            2,936          875            2,061          0
-16:            3,111          880            2,231          0
-17:            3,033          835            2,198          0
-18:            2,753          711            2,042          0
-19:            2,514          609            1,905          0
-20:            2,106          511            1,595          0
-21:            1,668          436            1,232          0
-22:            1,413          413            999            1
-23:            1,461          421            1,031          9
-24:            1,575          431            1,012          132
-25:            1,732          403            1,053          276
-26:            1,635          271            789            575
-27:            1,164          132            344            688
-28:            585            30             83             472
-29:            137            5              6              126
-30:            20             1              0              19
+2:             9              5              4              0
+3:             17             9              8              0
+4:             27             15             12             0
+5:             40             21             19             0
+6:             46             24             22             0
+7:             56             32             24             0
+8:             83             47             36             0
+9:             147            78             69             0
+10:            277            127            150            0
+11:            462            177            285            0
+12:            622            206            416            0
+13:            729            219            510            0
+14:            803            248            555            0
+15:            907            278            629            0
+16:            917            268            649            0
+17:            855            240            615            0
+18:            738            195            543            0
+19:            634            167            467            0
+20:            536            143            393            0
+21:            448            129            319            0
+22:            429            116            313            0
+23:            440            123            315            2
+24:            479            119            324            36
+25:            495            110            306            79
+26:            455            81             201            173
+27:            341            46             93             202
+28:            196            12             21             163
+29:            50             5              1              44
+30:            19             1              0              18
 
  #######
 ##  #  ##
@@ -57,26 +57,26 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
  #######
 ##  #  ##
-# .$*$. #
-#   #   #
+# .@*$. #
+#  $#   #
+##  .$ ##
+ #  *  #
+ #######
+
+ #######
+##  #  ##
+# . *$. #
+#  $#   #
 ##  .@$##
  #  *  #
  #######
 
  #######
 ##  #  ##
-# .$*$. #
-#   #   #
-##  . $##
- # $+  #
- #######
-
- #######
-##  #  ##
-# .@*$. #
+# . *$. #
 #  $#   #
 ##  . $##
- # $.  #
+ # $+  #
  #######
 
  #######
@@ -161,17 +161,17 @@ Depth          Created        Unique         Duplicates     Unknown (not reached
 
  #######
 ##  #  ##
-# + * . #
-# $ #$  #
-##  .$ ##
+# * * . #
+#   #$  #
+##  .@$##
  # $.  #
  #######
 
  #######
 ##  #  ##
-# . * . #
+# + * . #
 # $ #$  #
-##  .@$##
+##  . $##
  # $.  #
  #######
 
