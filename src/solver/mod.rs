@@ -24,7 +24,7 @@ use crate::state::State;
 use crate::vec2d::Vec2d;
 use crate::Solve;
 
-use self::a_star::{SearchNode, Stats};
+use self::a_star::{CostComparator, SearchNode, Stats};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SolverErr {
@@ -264,10 +264,10 @@ trait SolverTrait {
             GL::heuristic(self.sd(), &norm_initial_state),
         );
         stats.add_created(&start);
-        to_visit.push(Reverse(start));
+        to_visit.push(Reverse(CostComparator(start)));
 
         //let mut counter = 0;
-        while let Some(Reverse(cur_node)) = to_visit.pop() {
+        while let Some(Reverse(CostComparator(cur_node))) = to_visit.pop() {
             /*counter += 1;
             if counter % 100_000 == 0 {
                 use crate::map::Map;
@@ -325,7 +325,7 @@ trait SolverTrait {
                     h,
                 );
                 stats.add_created(&next_node);
-                to_visit.push(Reverse(next_node));
+                to_visit.push(Reverse(CostComparator(next_node)));
             }
         }
 

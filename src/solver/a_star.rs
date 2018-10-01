@@ -141,26 +141,28 @@ impl<'a> SearchNode<'a> {
     }
 }
 
-impl<'a> PartialOrd for SearchNode<'a> {
+crate struct CostComparator<'a>(crate SearchNode<'a>);
+
+impl<'a> PartialOrd for CostComparator<'a> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<'a> Ord for SearchNode<'a> {
+impl<'a> Ord for CostComparator<'a> {
     fn cmp(&self, other: &Self) -> Ordering {
         // orders acording to cost lowest to highest
         // needs std::cmp::Reverse when using BinaryHeap (it's a max heap)
         // according to Criterion, the difference between Reversed and actually reversing the order
         // (if any) is usually within noise threshold
-        (self.cost).cmp(&(other.cost))
+        (self.0.cost).cmp(&(other.0.cost))
     }
 }
 
-impl<'a> PartialEq for SearchNode<'a> {
+impl<'a> PartialEq for CostComparator<'a> {
     fn eq(&self, other: &Self) -> bool {
-        self.state == other.state
+        self.0.cost == other.0.cost
     }
 }
 
-impl<'a> Eq for SearchNode<'a> {}
+impl<'a> Eq for CostComparator<'a> {}
