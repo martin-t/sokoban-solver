@@ -259,9 +259,8 @@ trait SolverTrait {
         let mut to_visit = BinaryHeap::new();
         let mut prevs = FnvHashMap::default();
 
-        // FIXME comment
         // this might be more trouble than it's worth, we avoid expanding a whole *one* extra state
-        // but it'll look cleaner if i ever get around to printing graphs of the state space
+        // but it looks cleaner when printing graphs of the state space
         let norm_initial_state = GL::preprocess_state(&self.sd().map, &self.sd().initial_state);
         let start = SearchNode::new(
             &norm_initial_state,
