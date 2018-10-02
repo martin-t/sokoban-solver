@@ -244,12 +244,8 @@ mod tests {
         prevs.insert(&level3.state, &level2.state);
         prevs.insert(&level4.state, &level3.state);
 
-        let moves = reconstruct_moves(
-            &level1.map,
-            real_initial_level.state.player_pos,
-            &prevs,
-            &level4.state,
-        );
+        let states = backtrack_prevs(&prevs, &level4.state);
+        let moves = reconstruct_moves(&level1.map, real_initial_level.state.player_pos, &states);
         let _ = format!(
             "{}",
             real_initial_level.format_solution(Format::Xsb, &moves, false)
