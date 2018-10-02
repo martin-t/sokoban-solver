@@ -122,7 +122,7 @@ impl Display for Stats {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 crate struct SearchNode<'a> {
     crate state: &'a State,
     crate prev: Option<&'a State>,

@@ -26,6 +26,9 @@ use crate::Solve;
 
 use self::a_star::{CostComparator, SearchNode, Stats};
 
+#[cfg(feature = "graph")]
+use self::graph::Graph;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SolverErr {
     IncompleteBorder,
@@ -248,15 +251,18 @@ trait SolverTrait {
             return SolverOk::new(Some(Moves::default()), stats);
         }
 
-        // this might be more trouble than it's worth, we avoid expanding a whole *one* extra state
-        // but it'll look cleaner if i ever get around to printing graphs of the state space
-        let norm_initial_state = GL::preprocess_state(&self.sd().map, &self.sd().initial_state);
-
         let states = Arena::new();
+
+        #[cfg(feature = "graph")]
+        let mut graph = Graph::new(&self.sd().map);
 
         let mut to_visit = BinaryHeap::new();
         let mut prevs = FnvHashMap::default();
 
+        // FIXME comment
+        // this might be more trouble than it's worth, we avoid expanding a whole *one* extra state
+        // but it'll look cleaner if i ever get around to printing graphs of the state space
+        let norm_initial_state = GL::preprocess_state(&self.sd().map, &self.sd().initial_state);
         let start = SearchNode::new(
             &norm_initial_state,
             None,
@@ -265,6 +271,9 @@ trait SolverTrait {
         );
         stats.add_created(&start);
         to_visit.push(Reverse(CostComparator(start)));
+
+        #[cfg(feature = "graph")]
+        graph.add(start, None);
 
         //let mut counter = 0;
         while let Some(Reverse(CostComparator(cur_node))) = to_visit.pop() {
@@ -277,12 +286,19 @@ trait SolverTrait {
 
             if prevs.contains_key(cur_node.state) {
                 stats.add_reached_duplicate(&cur_node);
+
+                #[cfg(feature = "graph")]
+                graph.mark_duplicate(cur_node);
+
                 continue;
             }
             if stats.add_unique_visited(&cur_node) && print_status {
                 println!("Visited new depth: {}", cur_node.dist);
                 println!("{:?}", stats);
             }
+
+            #[cfg(feature = "graph")]
+            graph.mark_unique(cur_node);
 
             // insert when expanding and not when generating
             // otherwise we might overwrite the shortest path with longer ones
@@ -296,8 +312,9 @@ trait SolverTrait {
             if cur_node.cost == cur_node.dist {
                 // heuristic is 0 so level is solved
                 debug!("Solved, backtracking path");
+
                 #[cfg(feature = "graph")]
-                graph::draw_states(&self.sd().map, &prevs);
+                graph.draw_states(&prevs);
 
                 let moves = backtracking::reconstruct_moves(
                     &self.sd().map,
@@ -318,6 +335,9 @@ trait SolverTrait {
                 // Also might wanna try https://crates.io/crates/priority-queue for changing priorities
                 // instead of adding duplicates.
 
+                // If it's possible to insert states into prevs when expanding (might need updating when a better prev is found),
+                // we could reduce the size of SearchNode by removing prev.
+
                 let next_node = SearchNode::new(
                     neighbor_state,
                     Some(&cur_node.state),
@@ -326,6 +346,9 @@ trait SolverTrait {
                 );
                 stats.add_created(&next_node);
                 to_visit.push(Reverse(CostComparator(next_node)));
+
+                #[cfg(feature = "graph")]
+                graph.add(next_node, Some(cur_node));
             }
         }
 
