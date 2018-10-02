@@ -312,14 +312,15 @@ trait SolverTrait {
                 // heuristic is 0 so level is solved
                 debug!("Solved, backtracking path");
 
+                let solution_states = backtracking::backtrack_prevs(&prevs, &cur_node.state);
+
                 #[cfg(feature = "graph")]
-                graph.draw_states(&prevs);
+                graph.draw_states(&solution_states);
 
                 let moves = backtracking::reconstruct_moves(
                     &self.sd().map,
                     self.sd().initial_state.player_pos,
-                    &prevs,
-                    &cur_node.state,
+                    &solution_states,
                 );
                 return SolverOk::new(Some(moves), stats);
             }

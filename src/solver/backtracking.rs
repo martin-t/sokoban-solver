@@ -12,15 +12,29 @@ use crate::state::State;
 // push = a move that changes a box position
 // step = a move that doesn't change a box position
 
+crate fn backtrack_prevs<T: Clone + Eq + Hash + Borrow<T>, H: BuildHasher>(
+    prevs: &HashMap<T, T, H>,
+    final_state: T,
+) -> Vec<T> {
+    let mut states = Vec::new();
+    let mut cur = &final_state;
+    loop {
+        states.push(cur.clone());
+        let prev = &prevs[&cur];
+        if prev == cur {
+            states.reverse();
+            return states;
+        }
+        cur = prev;
+    }
+}
+
 // dynamic dispatch has no perf impact here
-crate fn reconstruct_moves<H: BuildHasher>(
+crate fn reconstruct_moves(
     map: &dyn Map,
     real_initial_player_pos: Pos,
-    prevs: &HashMap<&State, &State, H>,
-    final_state: &State,
+    states: &[&State],
 ) -> Moves {
-    let states = backtrack_prevs(prevs, final_state);
-
     let mut moves = Moves::default();
     let mut iter = states.iter();
     let mut cur_state = iter.next().expect("There must be at least one state");
@@ -129,23 +143,6 @@ fn player_steps(map: &dyn Map, state: &State, src_pos: Pos, dest_pos: Pos) -> Mo
     }
 
     moves
-}
-
-fn backtrack_prevs<T: Clone + Eq + Hash + Borrow<T>, H: BuildHasher>(
-    prevs: &HashMap<T, T, H>,
-    final_state: T,
-) -> Vec<T> {
-    let mut states = Vec::new();
-    let mut cur = &final_state;
-    loop {
-        states.push(cur.clone());
-        let prev = &prevs[&cur];
-        if prev == cur {
-            states.reverse();
-            return states;
-        }
-        cur = prev;
-    }
 }
 
 #[cfg(test)]

@@ -1,7 +1,7 @@
-use std::{borrow::Cow, collections::HashMap, fs, hash::BuildHasher, process::Command};
+use std::{borrow::Cow, fs, process::Command};
 
 use dot::{self, Edges, GraphWalk, Id, LabelText, Labeller, Nodes, Style};
-use fnv::FnvHashMap;
+use fnv::{FnvHashMap, FnvHashSet};
 
 use crate::{map::Map, solver::a_star::SearchNode, state::State};
 
@@ -22,6 +22,7 @@ crate struct Graph<'a> {
     node_to_index: FnvHashMap<SearchNode<'a>, usize>,
     nodes: Vec<(SearchNode<'a>, Type)>,
     edges: Vec<(usize, usize)>,
+    solution_states: FnvHashSet<&'a State>,
 }
 
 impl<'a> Graph<'a> {
@@ -31,6 +32,7 @@ impl<'a> Graph<'a> {
             node_to_index: FnvHashMap::default(),
             nodes: Vec::new(),
             edges: Vec::new(),
+            solution_states: FnvHashSet::default(),
         }
     }
 
@@ -56,8 +58,8 @@ impl<'a> Graph<'a> {
         self.nodes[self.node_to_index[&node]].1 = Type::Unique;
     }
 
-    crate fn draw_states<H: BuildHasher>(&self, _prevs: &HashMap<&State, &State, H>) {
-        // TODO prevs
+    crate fn draw_states(&mut self, solution_states: &'a [&'a State]) {
+        self.solution_states = solution_states.iter().map(|&s| s).collect();
 
         let mut writer = Vec::new();
         dot::render(self, &mut writer).unwrap();
@@ -104,7 +106,8 @@ impl<'a> Labeller<'a, Nd, Ed> for Graph<'a> {
         let node = self.nodes[*n].0;
         LabelText::EscStr(
             format!(
-                "d: {}, h: {}\ncost: {}\n{}",
+                "{}\nd: {}, h: {}\ncost: {}\n{}",
+                n,
                 node.dist,
                 node.cost - node.dist,
                 node.cost,
@@ -124,14 +127,40 @@ impl<'a> Labeller<'a, Nd, Ed> for Graph<'a> {
     }
 
     fn node_color(&'a self, n: &Nd) -> Option<LabelText<'a>> {
+        let state = self.nodes[*n].0.state;
         let node_type = self.nodes[*n].1;
-        Some(LabelText::LabelStr(
-            match node_type {
-                Type::Unique => "red",
-                Type::Duplicate => "gray",
-                Type::Queued => return None,
+        let color_name = match node_type {
+            Type::Unique => {
+                if self.solution_states.contains(state) {
+                    "red"
+                } else {
+                    "orange"
+                }
             }
-            .into(),
-        ))
+            Type::Duplicate => "gray",
+            Type::Queued => return None,
+        };
+        Some(LabelText::LabelStr(color_name.into()))
+    }
+
+    // TODO this also highlights edges to dups
+    fn edge_style(&'a self, e: &Ed) -> Style {
+        let state0 = self.nodes[e.0].0.state;
+        let state1 = self.nodes[e.1].0.state;
+        if self.solution_states.contains(state0) && self.solution_states.contains(state1) {
+            Style::Bold
+        } else {
+            Style::Solid
+        }
+    }
+
+    fn edge_color(&'a self, e: &Ed) -> Option<LabelText<'a>> {
+        let state0 = self.nodes[e.0].0.state;
+        let state1 = self.nodes[e.1].0.state;
+        if self.solution_states.contains(state0) && self.solution_states.contains(state1) {
+            Some(LabelText::LabelStr("red".into()))
+        } else {
+            None
+        }
     }
 }
