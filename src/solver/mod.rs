@@ -435,7 +435,7 @@ where
         let mut reachable = sd.map.grid().scratchpad();
         reachable[cur_state.player_pos] = true;
 
-        // Vec is noticeably faster than VecDeque on some levels
+        // this needs to be a BFS because we need the actual move cost
         let mut to_visit = VecDeque::new();
         to_visit.push_back((cur_state.player_pos, 0));
 
