@@ -10,6 +10,7 @@ pub enum Format {
 pub enum Method {
     MoveOptimal,
     PushOptimal,
+    PushOptimalMinMoves,
 }
 
 impl Display for Method {
@@ -17,6 +18,7 @@ impl Display for Method {
         match *self {
             Method::MoveOptimal => write!(f, "move-optimal"),
             Method::PushOptimal => write!(f, "push-optimal"),
+            Method::PushOptimalMinMoves => write!(f, "push-optimal-min-moves"),
         }
     }
 }

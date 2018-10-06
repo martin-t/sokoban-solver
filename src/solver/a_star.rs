@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter, Result};
+use std::ops::Add;
 
 use separator::Separatable;
 
@@ -33,27 +34,28 @@ impl Stats {
         self.duplicate_states.iter().sum::<i32>()
     }
 
-    pub(super) fn add_created(&mut self, state: &SearchNode<'_>) -> bool {
-        Self::add(&mut self.created_states, state)
+    pub(super) fn add_created(&mut self, depth: u16) -> bool {
+        Self::add(&mut self.created_states, depth)
     }
 
-    pub(super) fn add_unique_visited(&mut self, state: &SearchNode<'_>) -> bool {
-        Self::add(&mut self.visited_states, state)
+    pub(super) fn add_unique_visited(&mut self, depth: u16) -> bool {
+        Self::add(&mut self.visited_states, depth)
     }
 
-    pub(super) fn add_reached_duplicate(&mut self, state: &SearchNode<'_>) -> bool {
-        Self::add(&mut self.duplicate_states, state)
+    pub(super) fn add_reached_duplicate(&mut self, depth: u16) -> bool {
+        Self::add(&mut self.duplicate_states, depth)
     }
 
-    fn add(counts: &mut Vec<i32>, state: &SearchNode<'_>) -> bool {
+    fn add(counts: &mut Vec<i32>, depth: u16) -> bool {
         let mut ret = false;
 
         // `while` because some depths might be skipped - duplicates or tunnel optimizations (NYI)
-        while state.dist as usize >= counts.len() {
+        let depth: usize = depth.into();
+        while depth >= counts.len() {
             counts.push(0);
             ret = true;
         }
-        counts[state.dist as usize] += 1;
+        counts[depth] += 1;
         ret
     }
 }
@@ -123,15 +125,15 @@ impl Display for Stats {
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
-crate struct SearchNode<'a> {
+crate struct SearchNode<'a, C: Cost + Add<Output = C>> {
     crate state: &'a State,
     crate prev: Option<&'a State>,
-    crate dist: u16,
-    crate cost: u16,
+    crate dist: C,
+    crate cost: C,
 }
 
-impl<'a> SearchNode<'a> {
-    crate fn new(state: &'a State, prev: Option<&'a State>, dist: u16, heuristic: u16) -> Self {
+impl<'a, C: Cost + Add<Output = C>> SearchNode<'a, C> {
+    crate fn new(state: &'a State, prev: Option<&'a State>, dist: C, heuristic: C) -> Self {
         Self {
             state,
             prev,
@@ -141,15 +143,41 @@ impl<'a> SearchNode<'a> {
     }
 }
 
-crate struct CostComparator<'a>(crate SearchNode<'a>);
+crate trait Cost: Sized + Copy + Ord + Eq + Add {
+    fn depth(&self) -> u16;
+}
 
-impl<'a> PartialOrd for CostComparator<'a> {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+crate struct PushCost(crate u16);
+
+impl Add for PushCost {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        PushCost(self.0 + other.0)
+    }
+}
+
+impl Cost for PushCost {
+    fn depth(&self) -> u16 {
+        self.0
+    }
+}
+
+// FIXME
+//crate struct PushMoveCost(crate u16, crate u16);
+//crate struct MoveCost(crate u16);
+//crate struct MovePushCost(crate u16, crate u16);
+
+crate struct CostComparator<'a, C: Cost + Add<Output = C>>(crate SearchNode<'a, C>);
+
+impl<'a, C: Cost + Add<Output = C>> PartialOrd for CostComparator<'a, C> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<'a> Ord for CostComparator<'a> {
+impl<'a, C: Cost + Add<Output = C>> Ord for CostComparator<'a, C> {
     fn cmp(&self, other: &Self) -> Ordering {
         // orders acording to cost lowest to highest
         // needs std::cmp::Reverse when using BinaryHeap (it's a max heap)
@@ -159,10 +187,10 @@ impl<'a> Ord for CostComparator<'a> {
     }
 }
 
-impl<'a> PartialEq for CostComparator<'a> {
+impl<'a, C: Cost + Add<Output = C>> PartialEq for CostComparator<'a, C> {
     fn eq(&self, other: &Self) -> bool {
         self.0.cost == other.0.cost
     }
 }
 
-impl<'a> Eq for CostComparator<'a> {}
+impl<'a, C: Cost + Add<Output = C>> Eq for CostComparator<'a, C> {}

@@ -91,6 +91,7 @@ impl Solve for Level {
                 match method {
                     Method::MoveOptimal => Ok(solver.search(print_status, MoveLogic)),
                     Method::PushOptimal => Ok(solver.search(print_status, PushLogic)),
+                    Method::PushOptimalMinMoves => Ok(solver.search(print_status, PushLogic)),
                 }
             }
             MapType::Remover(ref remover_map) => {
@@ -101,6 +102,7 @@ impl Solve for Level {
                 match method {
                     Method::MoveOptimal => Ok(solver.search(print_status, MoveLogic)),
                     Method::PushOptimal => Ok(solver.search(print_status, PushLogic)),
+                    Method::PushOptimalMinMoves => unimplemented!(),
                 }
             }
         }
@@ -256,6 +258,8 @@ trait SolverTrait {
         #[cfg(feature = "graph")]
         let mut graph = Graph::new(&self.sd().map);
 
+        use self::a_star::{Cost, PushCost};
+
         let mut to_visit = BinaryHeap::new();
         let mut prevs = FnvHashMap::default();
 
@@ -265,10 +269,10 @@ trait SolverTrait {
         let start = SearchNode::new(
             &norm_initial_state,
             None,
-            0,
-            GL::heuristic(self.sd(), &norm_initial_state),
+            PushCost(0),
+            PushCost(GL::heuristic(self.sd(), &norm_initial_state)),
         );
-        stats.add_created(&start);
+        stats.add_created(start.dist.depth());
         to_visit.push(Reverse(CostComparator(start)));
 
         #[cfg(feature = "graph")]
@@ -284,15 +288,15 @@ trait SolverTrait {
             }*/
 
             if prevs.contains_key(cur_node.state) {
-                stats.add_reached_duplicate(&cur_node);
+                stats.add_reached_duplicate(cur_node.dist.depth());
 
                 #[cfg(feature = "graph")]
                 graph.mark_duplicate(cur_node);
 
                 continue;
             }
-            if stats.add_unique_visited(&cur_node) && print_status {
-                println!("Visited new depth: {}", cur_node.dist);
+            if stats.add_unique_visited(cur_node.dist.depth()) && print_status {
+                println!("Visited new depth: {}", cur_node.dist.depth());
                 println!("{:?}", stats);
             }
 
@@ -341,10 +345,10 @@ trait SolverTrait {
                 let next_node = SearchNode::new(
                     neighbor_state,
                     Some(&cur_node.state),
-                    cur_node.dist + cost,
-                    h,
+                    cur_node.dist + PushCost(cost),
+                    PushCost(h),
                 );
-                stats.add_created(&next_node);
+                stats.add_created(next_node.dist.depth());
                 to_visit.push(Reverse(CostComparator(next_node)));
 
                 #[cfg(feature = "graph")]
