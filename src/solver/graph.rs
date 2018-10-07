@@ -3,7 +3,11 @@ use std::{borrow::Cow, fs, process::Command};
 use dot::{self, Edges, GraphWalk, Id, LabelText, Labeller, Nodes, Style};
 use fnv::{FnvHashMap, FnvHashSet};
 
-use crate::{map::Map, solver::a_star::SearchNode, state::State};
+use crate::{
+    map::Map,
+    solver::a_star::{Cost, SearchNode},
+    state::State,
+};
 
 type Nd = usize;
 type Ed = (usize, usize);
@@ -17,15 +21,15 @@ enum Type {
 
 // TODO merge nodes with the same state?
 #[derive(Debug)]
-crate struct Graph<'a> {
+crate struct Graph<'a, C: Cost> {
     map: &'a dyn Map,
-    node_to_index: FnvHashMap<SearchNode<'a>, usize>,
-    nodes: Vec<(SearchNode<'a>, Type)>,
+    node_to_index: FnvHashMap<SearchNode<'a, C>, usize>,
+    nodes: Vec<(SearchNode<'a, C>, Type)>,
     edges: Vec<(usize, usize)>,
     solution_states: FnvHashSet<&'a State>,
 }
 
-impl<'a> Graph<'a> {
+impl<'a, C: Cost> Graph<'a, C> {
     crate fn new(map: &'a dyn Map) -> Self {
         Self {
             map,
@@ -36,7 +40,7 @@ impl<'a> Graph<'a> {
         }
     }
 
-    crate fn add(&mut self, node: SearchNode<'a>, prev: Option<SearchNode<'a>>) {
+    crate fn add(&mut self, node: SearchNode<'a, C>, prev: Option<SearchNode<'a, C>>) {
         assert!(!self.node_to_index.contains_key(&node));
 
         let node_index = self.nodes.len();
@@ -50,11 +54,11 @@ impl<'a> Graph<'a> {
         }
     }
 
-    crate fn mark_duplicate(&mut self, node: SearchNode<'a>) {
+    crate fn mark_duplicate(&mut self, node: SearchNode<'a, C>) {
         self.nodes[self.node_to_index[&node]].1 = Type::Duplicate;
     }
 
-    crate fn mark_unique(&mut self, node: SearchNode<'a>) {
+    crate fn mark_unique(&mut self, node: SearchNode<'a, C>) {
         self.nodes[self.node_to_index[&node]].1 = Type::Unique;
     }
 
@@ -75,7 +79,7 @@ impl<'a> Graph<'a> {
     }
 }
 
-impl<'a> GraphWalk<'a, Nd, Ed> for Graph<'a> {
+impl<'a, C: Cost> GraphWalk<'a, Nd, Ed> for Graph<'a, C> {
     fn nodes(&'a self) -> Nodes<'a, Nd> {
         (0..self.nodes.len()).collect()
     }
@@ -93,7 +97,7 @@ impl<'a> GraphWalk<'a, Nd, Ed> for Graph<'a> {
     }
 }
 
-impl<'a> Labeller<'a, Nd, Ed> for Graph<'a> {
+impl<'a, C: Cost> Labeller<'a, Nd, Ed> for Graph<'a, C> {
     fn graph_id(&'a self) -> Id<'a> {
         Id::new("G").unwrap()
     }
@@ -106,7 +110,7 @@ impl<'a> Labeller<'a, Nd, Ed> for Graph<'a> {
         let node = self.nodes[*n].0;
         LabelText::EscStr(
             format!(
-                "{}\nd: {}, h: {}\ncost: {}\n{}",
+                "{}\nd: {:?}, h: {:?}\ncost: {:?}\n{}",
                 n,
                 node.dist,
                 node.cost - node.dist,

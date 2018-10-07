@@ -1,5 +1,6 @@
-state-space.dot
-state-space.dot.svg
+*.dot
+*.dot.svg
+*.dot.png
 callgrind.out.*
 
 # old results from built-in bencher

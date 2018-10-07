@@ -68,6 +68,7 @@ fn main() {
     } else {
         Format::Xsb
     };
+    // TODO all methods
     let method = if matches.is_present("move-optimal") {
         Method::MoveOptimal
     } else {
