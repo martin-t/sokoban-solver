@@ -8,20 +8,20 @@ pub enum Format {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Method {
-    MoveOptimalMinPushes,
-    MoveOptimal,
-    PushOptimalMinMoves,
-    PushOptimal,
+    MovesPushes,
+    Moves,
+    PushesMoves,
+    Pushes,
     Any,
 }
 
 impl Display for Method {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match *self {
-            Method::MoveOptimalMinPushes => write!(f, "move-optimal-min-pushes"),
-            Method::MoveOptimal => write!(f, "move-optimal"),
-            Method::PushOptimalMinMoves => write!(f, "push-optimal-min-moves"),
-            Method::PushOptimal => write!(f, "push-optimal"),
+            Method::MovesPushes => write!(f, "moves-pushes"),
+            Method::Moves => write!(f, "moves"),
+            Method::PushesMoves => write!(f, "pushes-moves"),
+            Method::Pushes => write!(f, "pushes"),
             Method::Any => write!(f, "any"),
         }
     }

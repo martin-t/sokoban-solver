@@ -59,7 +59,7 @@ mod tests {
     use difference::Changeset;
     use separator::Separatable;
 
-    use crate::config::Method::{self, MoveOptimal, PushOptimal};
+    use crate::config::Method::{self, Moves, Pushes};
 
     use super::*;
 
@@ -96,217 +96,217 @@ mod tests {
 
         #[cfg_attr(rustfmt, rustfmt_skip)]
         let levels = [
-            (PushOptimal, "custom", "00-empty.txt", OK),
-            (PushOptimal, "custom", "00-solved.txt", OK),
-            (PushOptimal, "custom", "01-simplest-custom.txt", OK),
-            (PushOptimal, "custom", "01-simplest-xsb.txt", OK),
-            (PushOptimal, "custom", "02-one-way-xsb.txt", OK),
-            (PushOptimal, "custom", "02-one-way.txt", OK),
-            (PushOptimal, "custom", "03-long-way.txt", OK),
-            (PushOptimal, "custom", "03-two-ways.txt", OK),
-            (PushOptimal, "custom", "04-two-boxes-no-packing.txt", OK),
-            (PushOptimal, "custom", "04-two-boxes.txt", OK),
-            (PushOptimal, "custom", "05-same-moves-diff-pushes.txt", OK),
-            (PushOptimal, "custom", "05-same-pushes-diff-moves.txt", OK),
-            (PushOptimal, "custom", "deadlock-cell-on-dead-end.txt", OK),
-            (PushOptimal, "custom", "deadlock-original-28.txt", UNSOLVED),
-            (PushOptimal, "custom", "no-solution-parking.txt", OK),
-            (PushOptimal, "custom", "remover-00-solved.txt", OK),
-            (PushOptimal, "custom", "remover-01-simplest-custom.txt", OK),
-            (PushOptimal, "custom", "remover-01-simplest-xsb.txt", OK),
-            (PushOptimal, "custom", "remover-02-one-way-xsb.txt", OK),
-            (PushOptimal, "custom", "remover-02-one-way.txt", OK),
-            (PushOptimal, "custom", "remover-03-long-way.txt", OK),
-            (PushOptimal, "custom", "remover-04-two-boxes.txt", OK),
-            (PushOptimal, "custom", "remover-original-01.txt", OK),
-            (PushOptimal, "custom", "remover-original-02.txt", SLOW),
-            (PushOptimal, "custom", "remover-original-03.txt", SLOW),
-            (PushOptimal, "custom", "remover-original-04.txt", UNSOLVED),
-            (PushOptimal, "custom", "supaplex-remover.txt", VERY_SLOW_IN_DEBUG),
-            (PushOptimal, "custom", "supaplex-goals.txt", VERY_SLOW),
-            (PushOptimal, "696", "1.txt", OK),
-            (PushOptimal, "696", "2.txt", OK),
-            (PushOptimal, "696", "3.txt", OK),
-            (PushOptimal, "696", "4.txt", OK),
-            (PushOptimal, "696", "5.txt", OK),
-            (PushOptimal, "696", "6.txt", OK),
-            (PushOptimal, "696", "7.txt", OK),
-            (PushOptimal, "696", "8.txt", OK),
-            (PushOptimal, "696", "9.txt", OK),
-            (PushOptimal, "696", "10.txt", OK),
-            (PushOptimal, "696", "11.txt", OK),
-            (PushOptimal, "696", "12.txt", OK),
-            (PushOptimal, "696", "13.txt", OK),
-            (PushOptimal, "696", "14.txt", OK),
-            (PushOptimal, "696", "15.txt", OK),
-            (PushOptimal, "696", "16.txt", OK),
-            (PushOptimal, "696", "17.txt", OK),
-            (PushOptimal, "696", "18.txt", OK),
-            (PushOptimal, "696", "19.txt", OK),
-            (PushOptimal, "696", "20.txt", OK),
-            (PushOptimal, "696", "21.txt", OK),
-            (PushOptimal, "696", "22.txt", OK),
-            (PushOptimal, "696", "23.txt", OK),
-            (PushOptimal, "696", "24.txt", OK),
-            (PushOptimal, "696", "25.txt", OK),
-            (PushOptimal, "696", "26.txt", OK),
-            (PushOptimal, "696", "27.txt", OK),
-            (PushOptimal, "696", "28.txt", OK),
-            (PushOptimal, "696", "29.txt", OK),
-            (PushOptimal, "696", "30.txt", OK),
-            (PushOptimal, "696", "31.txt", OK),
-            (PushOptimal, "696", "32.txt", OK),
-            (PushOptimal, "696", "33.txt", OK),
-            (PushOptimal, "696", "34.txt", OK),
-            (PushOptimal, "696", "35.txt", OK),
-            (PushOptimal, "696", "36.txt", OK),
-            (PushOptimal, "696", "37.txt", OK),
-            (PushOptimal, "696", "38.txt", OK),
-            (PushOptimal, "696", "39.txt", OK),
-            (PushOptimal, "696", "40.txt", OK),
-            (PushOptimal, "696", "41.txt", OK),
-            (PushOptimal, "696", "42.txt", OK),
-            (PushOptimal, "696", "43.txt", OK),
-            (PushOptimal, "696", "44.txt", OK),
-            (PushOptimal, "696", "45.txt", OK),
-            (PushOptimal, "696", "46.txt", OK),
-            (PushOptimal, "696", "47.txt", OK),
-            (PushOptimal, "696", "48.txt", OK),
-            (PushOptimal, "696", "49.txt", OK),
-            (PushOptimal, "696", "50.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "51.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "52.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "53.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "54.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "55.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "56.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "57.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "58.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "59.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "60.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "61.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "62.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "63.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "64.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "65.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "66.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "67.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "68.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "69.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "70.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "71.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "72.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "73.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "74.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "75.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "76.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "77.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "78.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "79.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "80.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "81.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "82.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "83.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "84.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "85.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "86.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "87.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "88.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "89.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "90.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "91.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "92.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "93.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "94.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "95.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "96.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "97.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "98.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "696", "99.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "boxxle1", "1.txt", OK),
-            (PushOptimal, "boxxle1", "2.txt", OK),
-            (PushOptimal, "boxxle1", "3.txt", OK),
-            (PushOptimal, "boxxle1", "4.txt", OK),
-            (PushOptimal, "boxxle1", "5.txt", OK),
-            (PushOptimal, "boxxle1", "6.txt", VERY_SLOW_IN_DEBUG),
-            (PushOptimal, "boxxle1", "7.txt", OK),
-            (PushOptimal, "boxxle1", "8.txt", OK),
-            (PushOptimal, "boxxle1", "9.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "boxxle1", "10.txt", OK),
-            (PushOptimal, "boxxle1", "11.txt", OK),
-            (PushOptimal, "boxxle1", "12.txt", VERY_SLOW),
-            (PushOptimal, "boxxle1", "13.txt", OK),
-            (PushOptimal, "boxxle1", "14.txt", UNSOLVED),
-            (PushOptimal, "boxxle1", "15.txt", OK),
-            (PushOptimal, "boxxle1", "16.txt", UNSOLVED),
-            (PushOptimal, "boxxle1", "17.txt", VERY_SLOW_IN_DEBUG),
-            (PushOptimal, "boxxle1", "18.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "boxxle1", "19.txt", OK),
-            (PushOptimal, "boxxle1", "20.txt", OK),
-            (PushOptimal, "boxxle1", "21.txt", OK),
-            (PushOptimal, "boxxle1", "22.txt", UNSOLVED),
-            (PushOptimal, "boxxle1", "23.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "boxxle1", "24.txt", UNSOLVED),
-            (PushOptimal, "boxxle1", "25.txt", SLOW),
-            (PushOptimal, "boxxle1", "26.txt", UNSOLVED),
-            (PushOptimal, "boxxle1", "27.txt", OK),
-            (PushOptimal, "boxxle1", "28.txt", SLOW_IN_DEBUG),
-            (PushOptimal, "boxxle1", "29.txt", SLOW),
-            (PushOptimal, "boxxle1", "30.txt", UNSOLVED),
-            (PushOptimal, "boxxle1", "108.txt", OK),
-            (PushOptimal, "boxxle2", "1.txt", OK),
-            (PushOptimal, "boxxle2", "2.txt", OK),
-            (PushOptimal, "boxxle2", "3.txt", OK),
-            (PushOptimal, "boxxle2", "4.txt", OK),
-            (PushOptimal, "boxxle2", "5.txt", UNSOLVED),
-            (PushOptimal, "boxxle2", "6.txt", VERY_SLOW_IN_DEBUG),
-            (PushOptimal, "boxxle2", "7.txt", SLOW),
-            (PushOptimal, "boxxle2", "8.txt", UNSOLVED),
-            (PushOptimal, "boxxle2", "9.txt", UNSOLVED),
-            (PushOptimal, "boxxle2", "10.txt", UNSOLVED),
-            (PushOptimal, "original-and-extra", "1.txt", VERY_SLOW),
-            (MoveOptimal, "custom", "00-empty.txt", OK),
-            (MoveOptimal, "custom", "00-solved.txt", OK),
-            (MoveOptimal, "custom", "01-simplest-custom.txt", OK),
-            (MoveOptimal, "custom", "01-simplest-xsb.txt", OK),
-            (MoveOptimal, "custom", "02-one-way-xsb.txt", OK),
-            (MoveOptimal, "custom", "02-one-way.txt", OK),
-            (MoveOptimal, "custom", "03-long-way.txt", OK),
-            (MoveOptimal, "custom", "03-two-ways.txt", OK),
-            (MoveOptimal, "custom", "04-two-boxes-no-packing.txt", OK),
-            (MoveOptimal, "custom", "04-two-boxes.txt", OK),
-            (MoveOptimal, "custom", "05-same-moves-diff-pushes.txt", OK),
-            (MoveOptimal, "custom", "05-same-pushes-diff-moves.txt", OK),
-            (MoveOptimal, "custom", "deadlock-cell-on-dead-end.txt", OK),
-            (MoveOptimal, "custom", "deadlock-original-28.txt", UNSOLVED),
-            (MoveOptimal, "custom", "no-solution-parking.txt", OK),
-            (MoveOptimal, "custom", "remover-00-solved.txt", OK),
-            (MoveOptimal, "custom", "remover-01-simplest-custom.txt", OK),
-            (MoveOptimal, "custom", "remover-01-simplest-xsb.txt", OK),
-            (MoveOptimal, "custom", "remover-02-one-way-xsb.txt", OK),
-            (MoveOptimal, "custom", "remover-02-one-way.txt", OK),
-            (MoveOptimal, "custom", "remover-03-long-way.txt", OK),
-            (MoveOptimal, "custom", "remover-04-two-boxes.txt", OK),
-            (MoveOptimal, "custom", "remover-original-01.txt", VERY_SLOW),
-            (MoveOptimal, "custom", "remover-original-02.txt", UNSOLVED),
-            (MoveOptimal, "custom", "remover-original-03.txt", UNSOLVED),
-            (MoveOptimal, "custom", "remover-original-04.txt", UNSOLVED),
-            (MoveOptimal, "custom", "supaplex-remover.txt", VERY_SLOW),
-            (MoveOptimal, "custom", "supaplex-goals.txt", VERY_SLOW),
-            (MoveOptimal, "boxxle1", "1.txt", OK),
-            (MoveOptimal, "boxxle1", "2.txt", SLOW_IN_DEBUG),
-            (MoveOptimal, "boxxle1", "3.txt", OK),
-            (MoveOptimal, "boxxle1", "4.txt", OK),
-            (MoveOptimal, "boxxle1", "5.txt", OK),
-            (MoveOptimal, "boxxle1", "6.txt", SLOW),
-            (MoveOptimal, "boxxle1", "7.txt", SLOW_IN_DEBUG),
-            (MoveOptimal, "boxxle1", "8.txt", OK),
+            (Pushes, "custom", "00-empty.txt", OK),
+            (Pushes, "custom", "00-solved.txt", OK),
+            (Pushes, "custom", "01-simplest-custom.txt", OK),
+            (Pushes, "custom", "01-simplest-xsb.txt", OK),
+            (Pushes, "custom", "02-one-way-xsb.txt", OK),
+            (Pushes, "custom", "02-one-way.txt", OK),
+            (Pushes, "custom", "03-long-way.txt", OK),
+            (Pushes, "custom", "03-two-ways.txt", OK),
+            (Pushes, "custom", "04-two-boxes-no-packing.txt", OK),
+            (Pushes, "custom", "04-two-boxes.txt", OK),
+            (Pushes, "custom", "05-same-moves-diff-pushes.txt", OK),
+            (Pushes, "custom", "05-same-pushes-diff-moves.txt", OK),
+            (Pushes, "custom", "deadlock-cell-on-dead-end.txt", OK),
+            (Pushes, "custom", "deadlock-original-28.txt", UNSOLVED),
+            (Pushes, "custom", "no-solution-parking.txt", OK),
+            (Pushes, "custom", "remover-00-solved.txt", OK),
+            (Pushes, "custom", "remover-01-simplest-custom.txt", OK),
+            (Pushes, "custom", "remover-01-simplest-xsb.txt", OK),
+            (Pushes, "custom", "remover-02-one-way-xsb.txt", OK),
+            (Pushes, "custom", "remover-02-one-way.txt", OK),
+            (Pushes, "custom", "remover-03-long-way.txt", OK),
+            (Pushes, "custom", "remover-04-two-boxes.txt", OK),
+            (Pushes, "custom", "remover-original-01.txt", OK),
+            (Pushes, "custom", "remover-original-02.txt", SLOW),
+            (Pushes, "custom", "remover-original-03.txt", SLOW),
+            (Pushes, "custom", "remover-original-04.txt", UNSOLVED),
+            (Pushes, "custom", "supaplex-remover.txt", VERY_SLOW_IN_DEBUG),
+            (Pushes, "custom", "supaplex-goals.txt", VERY_SLOW),
+            (Pushes, "696", "1.txt", OK),
+            (Pushes, "696", "2.txt", OK),
+            (Pushes, "696", "3.txt", OK),
+            (Pushes, "696", "4.txt", OK),
+            (Pushes, "696", "5.txt", OK),
+            (Pushes, "696", "6.txt", OK),
+            (Pushes, "696", "7.txt", OK),
+            (Pushes, "696", "8.txt", OK),
+            (Pushes, "696", "9.txt", OK),
+            (Pushes, "696", "10.txt", OK),
+            (Pushes, "696", "11.txt", OK),
+            (Pushes, "696", "12.txt", OK),
+            (Pushes, "696", "13.txt", OK),
+            (Pushes, "696", "14.txt", OK),
+            (Pushes, "696", "15.txt", OK),
+            (Pushes, "696", "16.txt", OK),
+            (Pushes, "696", "17.txt", OK),
+            (Pushes, "696", "18.txt", OK),
+            (Pushes, "696", "19.txt", OK),
+            (Pushes, "696", "20.txt", OK),
+            (Pushes, "696", "21.txt", OK),
+            (Pushes, "696", "22.txt", OK),
+            (Pushes, "696", "23.txt", OK),
+            (Pushes, "696", "24.txt", OK),
+            (Pushes, "696", "25.txt", OK),
+            (Pushes, "696", "26.txt", OK),
+            (Pushes, "696", "27.txt", OK),
+            (Pushes, "696", "28.txt", OK),
+            (Pushes, "696", "29.txt", OK),
+            (Pushes, "696", "30.txt", OK),
+            (Pushes, "696", "31.txt", OK),
+            (Pushes, "696", "32.txt", OK),
+            (Pushes, "696", "33.txt", OK),
+            (Pushes, "696", "34.txt", OK),
+            (Pushes, "696", "35.txt", OK),
+            (Pushes, "696", "36.txt", OK),
+            (Pushes, "696", "37.txt", OK),
+            (Pushes, "696", "38.txt", OK),
+            (Pushes, "696", "39.txt", OK),
+            (Pushes, "696", "40.txt", OK),
+            (Pushes, "696", "41.txt", OK),
+            (Pushes, "696", "42.txt", OK),
+            (Pushes, "696", "43.txt", OK),
+            (Pushes, "696", "44.txt", OK),
+            (Pushes, "696", "45.txt", OK),
+            (Pushes, "696", "46.txt", OK),
+            (Pushes, "696", "47.txt", OK),
+            (Pushes, "696", "48.txt", OK),
+            (Pushes, "696", "49.txt", OK),
+            (Pushes, "696", "50.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "51.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "52.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "53.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "54.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "55.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "56.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "57.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "58.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "59.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "60.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "61.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "62.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "63.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "64.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "65.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "66.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "67.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "68.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "69.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "70.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "71.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "72.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "73.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "74.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "75.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "76.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "77.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "78.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "79.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "80.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "81.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "82.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "83.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "84.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "85.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "86.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "87.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "88.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "89.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "90.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "91.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "92.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "93.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "94.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "95.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "96.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "97.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "98.txt", SLOW_IN_DEBUG),
+            (Pushes, "696", "99.txt", SLOW_IN_DEBUG),
+            (Pushes, "boxxle1", "1.txt", OK),
+            (Pushes, "boxxle1", "2.txt", OK),
+            (Pushes, "boxxle1", "3.txt", OK),
+            (Pushes, "boxxle1", "4.txt", OK),
+            (Pushes, "boxxle1", "5.txt", OK),
+            (Pushes, "boxxle1", "6.txt", VERY_SLOW_IN_DEBUG),
+            (Pushes, "boxxle1", "7.txt", OK),
+            (Pushes, "boxxle1", "8.txt", OK),
+            (Pushes, "boxxle1", "9.txt", SLOW_IN_DEBUG),
+            (Pushes, "boxxle1", "10.txt", OK),
+            (Pushes, "boxxle1", "11.txt", OK),
+            (Pushes, "boxxle1", "12.txt", VERY_SLOW),
+            (Pushes, "boxxle1", "13.txt", OK),
+            (Pushes, "boxxle1", "14.txt", UNSOLVED),
+            (Pushes, "boxxle1", "15.txt", OK),
+            (Pushes, "boxxle1", "16.txt", UNSOLVED),
+            (Pushes, "boxxle1", "17.txt", VERY_SLOW_IN_DEBUG),
+            (Pushes, "boxxle1", "18.txt", SLOW_IN_DEBUG),
+            (Pushes, "boxxle1", "19.txt", OK),
+            (Pushes, "boxxle1", "20.txt", OK),
+            (Pushes, "boxxle1", "21.txt", OK),
+            (Pushes, "boxxle1", "22.txt", UNSOLVED),
+            (Pushes, "boxxle1", "23.txt", SLOW_IN_DEBUG),
+            (Pushes, "boxxle1", "24.txt", UNSOLVED),
+            (Pushes, "boxxle1", "25.txt", SLOW),
+            (Pushes, "boxxle1", "26.txt", UNSOLVED),
+            (Pushes, "boxxle1", "27.txt", OK),
+            (Pushes, "boxxle1", "28.txt", SLOW_IN_DEBUG),
+            (Pushes, "boxxle1", "29.txt", SLOW),
+            (Pushes, "boxxle1", "30.txt", UNSOLVED),
+            (Pushes, "boxxle1", "108.txt", OK),
+            (Pushes, "boxxle2", "1.txt", OK),
+            (Pushes, "boxxle2", "2.txt", OK),
+            (Pushes, "boxxle2", "3.txt", OK),
+            (Pushes, "boxxle2", "4.txt", OK),
+            (Pushes, "boxxle2", "5.txt", UNSOLVED),
+            (Pushes, "boxxle2", "6.txt", VERY_SLOW_IN_DEBUG),
+            (Pushes, "boxxle2", "7.txt", SLOW),
+            (Pushes, "boxxle2", "8.txt", UNSOLVED),
+            (Pushes, "boxxle2", "9.txt", UNSOLVED),
+            (Pushes, "boxxle2", "10.txt", UNSOLVED),
+            (Pushes, "original-and-extra", "1.txt", VERY_SLOW),
+            (Moves, "custom", "00-empty.txt", OK),
+            (Moves, "custom", "00-solved.txt", OK),
+            (Moves, "custom", "01-simplest-custom.txt", OK),
+            (Moves, "custom", "01-simplest-xsb.txt", OK),
+            (Moves, "custom", "02-one-way-xsb.txt", OK),
+            (Moves, "custom", "02-one-way.txt", OK),
+            (Moves, "custom", "03-long-way.txt", OK),
+            (Moves, "custom", "03-two-ways.txt", OK),
+            (Moves, "custom", "04-two-boxes-no-packing.txt", OK),
+            (Moves, "custom", "04-two-boxes.txt", OK),
+            (Moves, "custom", "05-same-moves-diff-pushes.txt", OK),
+            (Moves, "custom", "05-same-pushes-diff-moves.txt", OK),
+            (Moves, "custom", "deadlock-cell-on-dead-end.txt", OK),
+            (Moves, "custom", "deadlock-original-28.txt", UNSOLVED),
+            (Moves, "custom", "no-solution-parking.txt", OK),
+            (Moves, "custom", "remover-00-solved.txt", OK),
+            (Moves, "custom", "remover-01-simplest-custom.txt", OK),
+            (Moves, "custom", "remover-01-simplest-xsb.txt", OK),
+            (Moves, "custom", "remover-02-one-way-xsb.txt", OK),
+            (Moves, "custom", "remover-02-one-way.txt", OK),
+            (Moves, "custom", "remover-03-long-way.txt", OK),
+            (Moves, "custom", "remover-04-two-boxes.txt", OK),
+            (Moves, "custom", "remover-original-01.txt", VERY_SLOW),
+            (Moves, "custom", "remover-original-02.txt", UNSOLVED),
+            (Moves, "custom", "remover-original-03.txt", UNSOLVED),
+            (Moves, "custom", "remover-original-04.txt", UNSOLVED),
+            (Moves, "custom", "supaplex-remover.txt", VERY_SLOW),
+            (Moves, "custom", "supaplex-goals.txt", VERY_SLOW),
+            (Moves, "boxxle1", "1.txt", OK),
+            (Moves, "boxxle1", "2.txt", SLOW_IN_DEBUG),
+            (Moves, "boxxle1", "3.txt", OK),
+            (Moves, "boxxle1", "4.txt", OK),
+            (Moves, "boxxle1", "5.txt", OK),
+            (Moves, "boxxle1", "6.txt", SLOW),
+            (Moves, "boxxle1", "7.txt", SLOW_IN_DEBUG),
+            (Moves, "boxxle1", "8.txt", OK),
             // TODO jsoko says it's solvable in 170 moves and 41 pushes (not 43)
             // jsoko: ldldlluurDldRurrurrdLLLDlluullldRddDrdrRRdrruUUUddddlluRlllluluuuRurDurDlDRurrurrdLLLrrdddlddrUUUUdddllllluluuuurrrDrrurrdLddddllllldlUUUUdddrrrrruruuuLLLDuulDullldRRRurD
             // this: ldldlluurDDldRuurrurrdLLLLulDullldRddDrdrRRdrruUUUddddlluRlllluluuuRRurDlDRurrurrdLLLrrdddlddrUUUUddldlllluluuururrDrrurrdLdddldlllldlUUUUddrdrrrruruuuLLLDuulDlulldRRRurD
             // supaplex-remover can also be solved move optimally with fewer pushes
-            (MoveOptimal, "boxxle1", "9.txt", SLOW),
-            (MoveOptimal, "boxxle1", "10.txt", OK),
+            (Moves, "boxxle1", "9.txt", SLOW),
+            (Moves, "boxxle1", "10.txt", OK),
         ];
 
         let levels: Vec<_> = levels
@@ -322,7 +322,7 @@ mod tests {
     fn test_696() {
         let levels: Vec<_> = (100..=696)
             .filter(|&i| i != 250 && i != 693) // currently can't solve these two
-            .map(|num| (Method::PushOptimal, "696", format!("{}.txt", num)))
+            .map(|num| (Method::Pushes, "696", format!("{}.txt", num)))
             .collect();
         test_and_time_levels(&levels);
     }
@@ -331,41 +331,23 @@ mod tests {
     #[ignore]
     fn test_aymeric() {
         let levels: Vec<_> = (1..=20)
-            .map(|num| {
-                (
-                    Method::PushOptimal,
-                    "aymeric-cosmonotes",
-                    format!("{}.txt", num),
-                )
-            })
+            .map(|num| (Method::Pushes, "aymeric-cosmonotes", format!("{}.txt", num)))
             .chain((1..=40).map(|num| {
                 (
-                    Method::PushOptimal,
+                    Method::Pushes,
                     "aymeric-microcosmos",
                     format!("{}.txt", num),
                 )
             }))
-            .chain((1..=40).map(|num| {
-                (
-                    Method::PushOptimal,
-                    "aymeric-minicosmos",
-                    format!("{}.txt", num),
-                )
-            }))
-            .chain((1..=40).map(|num| {
-                (
-                    Method::PushOptimal,
-                    "aymeric-nabocosmos",
-                    format!("{}.txt", num),
-                )
-            }))
-            .chain((1..=20).map(|num| {
-                (
-                    Method::PushOptimal,
-                    "aymeric-picocosmos",
-                    format!("{}.txt", num),
-                )
-            }))
+            .chain(
+                (1..=40).map(|num| (Method::Pushes, "aymeric-minicosmos", format!("{}.txt", num))),
+            )
+            .chain(
+                (1..=40).map(|num| (Method::Pushes, "aymeric-nabocosmos", format!("{}.txt", num))),
+            )
+            .chain(
+                (1..=20).map(|num| (Method::Pushes, "aymeric-picocosmos", format!("{}.txt", num))),
+            )
             .collect();
         test_and_time_levels(&levels);
     }
@@ -375,7 +357,7 @@ mod tests {
     fn test_microban1() {
         let levels: Vec<_> = (1..=155)
             .filter(|&num| num != 93 && num != 144 && num != 153)
-            .map(|num| (Method::PushOptimal, "microban1", format!("{}.txt", num)))
+            .map(|num| (Method::Pushes, "microban1", format!("{}.txt", num)))
             .collect();
         test_and_time_levels(&levels);
     }
@@ -385,7 +367,7 @@ mod tests {
     fn test_microban2() {
         let levels: Vec<_> = (1..=135)
             .filter(|&num| num != 66 && num != 102 && num != 104 && num < 100)
-            .map(|num| (Method::PushOptimal, "microban2", format!("{}.txt", num)))
+            .map(|num| (Method::Pushes, "microban2", format!("{}.txt", num)))
             .collect();
         test_and_time_levels(&levels);
     }
@@ -489,7 +471,7 @@ mod tests {
         }
         writeln!(out, "{}", solution.stats).unwrap();
         if let Some(ref moves) = solution.moves {
-            let include_steps = method == Method::MoveOptimal;
+            let include_steps = method == Method::Moves;
             write!(out, "{}", level.xsb_solution(moves, include_steps)).unwrap();
         }
 
@@ -603,34 +585,34 @@ mod tests {
     #[ignore]
     fn bench_boxxle1_001(b: &mut Bencher) {
         // 3 goals in a row
-        bench_level("levels/boxxle1/1.txt", Method::PushOptimal, b);
+        bench_level("levels/boxxle1/1.txt", Method::Pushes, b);
     }
 
     #[bench]
     #[ignore]
     fn bench_boxxle1_005(b: &mut Bencher) {
         // 4 boxes goal room
-        bench_level("levels/boxxle1/5.txt", Method::PushOptimal, b);
+        bench_level("levels/boxxle1/5.txt", Method::Pushes, b);
     }
 
     #[bench]
     #[ignore]
     fn bench_boxxle1_018(b: &mut Bencher) {
         // 6 boxes - tiny goalroom
-        bench_level("levels/boxxle1/18.txt", Method::PushOptimal, b);
+        bench_level("levels/boxxle1/18.txt", Method::Pushes, b);
     }
 
     #[bench]
     #[ignore]
     fn bench_boxxle1_108(b: &mut Bencher) {
         // 6 boxes in the middle
-        bench_level("levels/boxxle1/108.txt", Method::PushOptimal, b);
+        bench_level("levels/boxxle1/108.txt", Method::Pushes, b);
     }
 
     #[bench]
     #[ignore]
     fn bench_boxxle1_001_moves(b: &mut Bencher) {
-        bench_level("levels/boxxle1/1.txt", Method::MoveOptimal, b);
+        bench_level("levels/boxxle1/1.txt", Method::Moves, b);
     }
 
     fn bench_level(level_path: &str, method: Method, b: &mut Bencher) {

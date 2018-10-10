@@ -108,13 +108,13 @@ fn main() {
     };
 
     let method = if matches.is_present(MOVES_PUSHES) {
-        Method::MoveOptimalMinPushes
+        Method::MovesPushes
     } else if matches.is_present(MOVES) {
-        Method::MoveOptimal
+        Method::Moves
     } else if matches.is_present(PUSHES_MOVES) {
-        Method::PushOptimalMinMoves
+        Method::PushesMoves
     } else if matches.is_present(PUSHES) {
-        Method::PushOptimal
+        Method::Pushes
     } else {
         Method::Any
     };
@@ -149,7 +149,7 @@ fn main() {
         match solver_ok.moves {
             None => println!("No solution"),
             Some(moves) => {
-                let include_steps = method == Method::MoveOptimal;
+                let include_steps = method == Method::Moves;
                 println!("Found solution:");
                 print!("{}", level.format_solution(format, &moves, include_steps));
                 println!("{}", moves);

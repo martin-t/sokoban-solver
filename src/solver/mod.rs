@@ -87,10 +87,10 @@ impl Solve for Level {
                 let solver = Solver::new_with_goals(goals_map, &self.state)?;
 
                 match method {
-                    Method::MoveOptimalMinPushes => Ok(solver.search(print_status, MovePushLogic)),
-                    Method::MoveOptimal => Ok(solver.search(print_status, MoveLogic)),
-                    Method::PushOptimalMinMoves => Ok(solver.search(print_status, PushMoveLogic)),
-                    Method::PushOptimal => Ok(solver.search(print_status, PushLogic)),
+                    Method::MovesPushes => Ok(solver.search(print_status, MovePushLogic)),
+                    Method::Moves => Ok(solver.search(print_status, MoveLogic)),
+                    Method::PushesMoves => Ok(solver.search(print_status, PushMoveLogic)),
+                    Method::Pushes => Ok(solver.search(print_status, PushLogic)),
                     Method::Any => Ok(solver.search(print_status, PushLogic)),
                 }
             }
@@ -98,10 +98,10 @@ impl Solve for Level {
                 let solver = Solver::new_with_remover(remover_map, &self.state)?;
 
                 match method {
-                    Method::MoveOptimalMinPushes => Ok(solver.search(print_status, MovePushLogic)),
-                    Method::MoveOptimal => Ok(solver.search(print_status, MoveLogic)),
-                    Method::PushOptimalMinMoves => Ok(solver.search(print_status, PushMoveLogic)),
-                    Method::PushOptimal => Ok(solver.search(print_status, PushLogic)),
+                    Method::MovesPushes => Ok(solver.search(print_status, MovePushLogic)),
+                    Method::Moves => Ok(solver.search(print_status, MoveLogic)),
+                    Method::PushesMoves => Ok(solver.search(print_status, PushMoveLogic)),
+                    Method::Pushes => Ok(solver.search(print_status, PushLogic)),
                     Method::Any => Ok(solver.search(print_status, PushLogic)),
                 }
             }
