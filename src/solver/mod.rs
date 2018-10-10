@@ -219,7 +219,7 @@ impl Solver<RemoverMap> {
 }
 
 trait SolverTrait {
-    type M: Map + Clone;
+    type M: Map;
 
     fn sd(&self) -> &StaticData<Self::M>;
 
@@ -402,7 +402,7 @@ impl SolverTrait for Solver<RemoverMap> {
 
 trait GameLogic<M>
 where
-    M: Map + Clone,
+    M: Map,
     Solver<M>: SolverTrait,
 {
     type C: Cost;
@@ -432,7 +432,7 @@ struct MovePushLogic;
 
 impl<M> GameLogic<M> for MovePushLogic
 where
-    M: Map + Clone,
+    M: Map,
     Solver<M>: SolverTrait<M = M>,
 {
     type C = ComplexCost;
@@ -453,7 +453,7 @@ struct MoveLogic;
 
 impl<M> GameLogic<M> for MoveLogic
 where
-    M: Map + Clone,
+    M: Map,
     Solver<M>: SolverTrait<M = M>,
 {
     type C = SimpleCost;
@@ -483,7 +483,7 @@ struct PushMoveLogic;
 
 impl<M> GameLogic<M> for PushMoveLogic
 where
-    M: Map + Clone,
+    M: Map,
     Solver<M>: SolverTrait<M = M>,
 {
     type C = ComplexCost;
@@ -504,7 +504,7 @@ struct PushLogic;
 
 impl<M> GameLogic<M> for PushLogic
 where
-    M: Map + Clone,
+    M: Map,
     Solver<M>: SolverTrait<M = M>,
 {
     type C = SimpleCost;
@@ -534,7 +534,7 @@ fn expand_bfs<'a, M>(
     arena: &'a Arena<State>,
 ) -> Vec<(&'a State, u16, u16)>
 where
-    M: Map + Clone, // TODO make Clone part of Map?
+    M: Map,
     Solver<M>: SolverTrait<M = M>,
 {
     let mut new_states = Vec::new();
@@ -584,7 +584,7 @@ fn expand_dfs<'a, M>(
     arena: &'a Arena<State>,
 ) -> Vec<(&'a State, u16)>
 where
-    M: Map + Clone, // TODO make Clone part of Map?
+    M: Map,
     Solver<M>: SolverTrait<M = M>,
 {
     let mut new_states = Vec::new();
