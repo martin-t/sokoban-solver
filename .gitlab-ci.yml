@@ -6,7 +6,8 @@ variables:
   RUSTFLAGS: --deny warnings
 
 before_script:
-  - apt-get update && apt-get -y install cmake  # needed for cargo audit
+  # cmake is needed for cargo audit
+  - apt-get update && apt-get -y install cmake graphviz
 
 tests:
   #cache:
@@ -23,9 +24,16 @@ tests:
     - cargo build --verbose
     - cargo build --release --verbose
 
-    - cargo fmt -- --check
+    - cargo fmt -- --check  # formats all features
     - cargo clippy -- --deny warnings  # clipy doesn't use RUSTFLAGS
     - cargo audit
     - cargo test --all --verbose
     - cargo test --release --all --verbose
     - cargo bench --verbose --no-run  # make sure benches compile
+
+    - cargo build --features graph --verbose
+    - cargo build --features graph --release --verbose
+
+    - cargo clippy --features graph -- --deny warnings  # clipy doesn't use RUSTFLAGS
+    - cargo run --features graph -- levels/custom/04-two-boxes-no-packing.txt
+    - test -f state-space.dot.png  # -f == regular file exists (yes, i actively (if that's even possible) refuse to remember this)

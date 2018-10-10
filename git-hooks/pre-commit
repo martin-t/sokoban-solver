@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-cargo fmt -- --check && cargo clippy -- --deny warnings && cargo audit
+# technically --all-features doesn't check all code when something is *disabled* by a feature
+# but currently no such feature exists
+cargo fmt -- --check && cargo clippy --all-features -- --deny warnings && cargo audit

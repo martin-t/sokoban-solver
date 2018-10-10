@@ -21,7 +21,6 @@ use log;
 use sokoban_solver::config::{Format, Method};
 use sokoban_solver::{LoadLevel, Solve};
 
-// TODO run clippy/fmt with graph feature too
 // TODO update readme (4/5 methods, a pic of the state space)
 // TODO test all methods
 
