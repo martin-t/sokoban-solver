@@ -17,7 +17,7 @@ tests:
     - rustc --version && cargo --version  # Print version info for debugging
     - rustup component add rustfmt-preview
     # apparently clippy is sometimes missing from nightly, remove the other two commands when it's no longer preview
-    - rustup component add clippy-preview || cargo install clippy --force || cargo install --git https://github.com/rust-lang-nursery/rust-clippy/ --force clippy
+    - rustup component add clippy-preview || cargo install --git https://github.com/rust-lang-nursery/rust-clippy/ --force clippy
     - cargo install cargo-audit #--force  # need force when using cache because there's no --update
 
     - cargo build --verbose

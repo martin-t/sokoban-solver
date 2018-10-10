@@ -128,7 +128,7 @@ Pushes: 2
 
     Command::main_binary()
         .unwrap()
-        .arg("--move-optimal")
+        .arg("--moves")
         .arg("--custom")
         .arg("levels/custom/02-one-way-xsb.txt")
         .assert()

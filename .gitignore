@@ -1,5 +1,6 @@
 *.dot
 *.dot.svg
+*.dot.png
 callgrind.out.*
 
 # old results from built-in bencher

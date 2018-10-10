@@ -318,37 +318,41 @@ mod tests {
     #[test]
     #[ignore] // pretty slow even in release mode
     fn push_distances() {
+        use crate::solver::a_star::SimpleCost;
+
         struct FakePushLogic;
 
         impl GameLogic<GoalMap> for FakePushLogic {
+            type C = SimpleCost;
+
             fn expand<'a>(
                 sd: &StaticData<GoalMap>,
                 state: &State,
                 arena: &'a Arena<State>,
-            ) -> Vec<(&'a State, u16, u16)> {
+            ) -> Vec<(&'a State, Self::C, Self::C)> {
                 let mut new_states = PushLogic::expand(sd, state, arena);
                 for (new_state, _, h) in &mut new_states {
-                    *h = Self::heuristic(sd, new_state);
+                    *h = SimpleCost(manhattan_heuristic(sd, new_state));
                 }
                 new_states
             }
+        }
 
-            fn heuristic(sd: &StaticData<GoalMap>, state: &State) -> u16 {
-                let mut goal_dist_sum = 0;
+        fn manhattan_heuristic(sd: &StaticData<GoalMap>, state: &State) -> u16 {
+            let mut goal_dist_sum = 0;
 
-                for box_pos in &state.boxes {
-                    let mut min = u16::max_value();
-                    for goal in &sd.map.goals {
-                        let dist = box_pos.dist(*goal);
-                        if dist < min {
-                            min = dist;
-                        }
+            for box_pos in &state.boxes {
+                let mut min = u16::max_value();
+                for goal in &sd.map.goals {
+                    let dist = box_pos.dist(*goal);
+                    if dist < min {
+                        min = dist;
                     }
-                    goal_dist_sum += min;
                 }
-
-                goal_dist_sum
+                goal_dist_sum += min;
             }
+
+            goal_dist_sum
         }
 
         let level0 = r"

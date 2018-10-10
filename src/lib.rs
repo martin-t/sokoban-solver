@@ -79,6 +79,8 @@ mod tests {
 
     #[test]
     fn test_levels() {
+        // Note: this test (and the other level tests) will likely break if implementation details of the containers used in the solver change.
+
         const UNSOLVED: i32 = 5;
         const VERY_SLOW: i32 = 4;
         const SLOW: i32 = 3;
@@ -104,6 +106,8 @@ mod tests {
             (PushOptimal, "custom", "03-two-ways.txt", OK),
             (PushOptimal, "custom", "04-two-boxes-no-packing.txt", OK),
             (PushOptimal, "custom", "04-two-boxes.txt", OK),
+            (PushOptimal, "custom", "05-same-moves-diff-pushes.txt", OK),
+            (PushOptimal, "custom", "05-same-pushes-diff-moves.txt", OK),
             (PushOptimal, "custom", "deadlock-cell-on-dead-end.txt", OK),
             (PushOptimal, "custom", "deadlock-original-28.txt", UNSOLVED),
             (PushOptimal, "custom", "no-solution-parking.txt", OK),
@@ -271,6 +275,8 @@ mod tests {
             (MoveOptimal, "custom", "03-two-ways.txt", OK),
             (MoveOptimal, "custom", "04-two-boxes-no-packing.txt", OK),
             (MoveOptimal, "custom", "04-two-boxes.txt", OK),
+            (MoveOptimal, "custom", "05-same-moves-diff-pushes.txt", OK),
+            (MoveOptimal, "custom", "05-same-pushes-diff-moves.txt", OK),
             (MoveOptimal, "custom", "deadlock-cell-on-dead-end.txt", OK),
             (MoveOptimal, "custom", "deadlock-original-28.txt", UNSOLVED),
             (MoveOptimal, "custom", "no-solution-parking.txt", OK),

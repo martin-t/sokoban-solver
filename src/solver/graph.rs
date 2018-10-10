@@ -3,7 +3,11 @@ use std::{borrow::Cow, fs, process::Command};
 use dot::{self, Edges, GraphWalk, Id, LabelText, Labeller, Nodes, Style};
 use fnv::{FnvHashMap, FnvHashSet};
 
-use crate::{map::Map, solver::a_star::SearchNode, state::State};
+use crate::{
+    map::Map,
+    solver::a_star::{Cost, SearchNode},
+    state::State,
+};
 
 type Nd = usize;
 type Ed = (usize, usize);
@@ -15,17 +19,18 @@ enum Type {
     Unique,
 }
 
-// TODO merge nodes with the same state?
+// TODO merge nodes with the same state? (make sure visited stays correct)
 #[derive(Debug)]
-crate struct Graph<'a> {
+crate struct Graph<'a, C: Cost> {
     map: &'a dyn Map,
-    node_to_index: FnvHashMap<SearchNode<'a>, usize>,
-    nodes: Vec<(SearchNode<'a>, Type)>,
+    node_to_index: FnvHashMap<SearchNode<'a, C>, usize>,
+    nodes: Vec<(SearchNode<'a, C>, usize, Type)>,
     edges: Vec<(usize, usize)>,
     solution_states: FnvHashSet<&'a State>,
+    visited_counter: usize,
 }
 
-impl<'a> Graph<'a> {
+impl<'a, C: Cost> Graph<'a, C> {
     crate fn new(map: &'a dyn Map) -> Self {
         Self {
             map,
@@ -33,16 +38,17 @@ impl<'a> Graph<'a> {
             nodes: Vec::new(),
             edges: Vec::new(),
             solution_states: FnvHashSet::default(),
+            visited_counter: 0,
         }
     }
 
-    crate fn add(&mut self, node: SearchNode<'a>, prev: Option<SearchNode<'a>>) {
+    crate fn add(&mut self, node: SearchNode<'a, C>, prev: Option<SearchNode<'a, C>>) {
         assert!(!self.node_to_index.contains_key(&node));
 
         let node_index = self.nodes.len();
 
         self.node_to_index.insert(node, node_index);
-        self.nodes.push((node, Type::Queued));
+        self.nodes.push((node, 0, Type::Queued));
 
         if let Some(prev) = prev {
             let prev_index = self.node_to_index[&prev];
@@ -50,12 +56,18 @@ impl<'a> Graph<'a> {
         }
     }
 
-    crate fn mark_duplicate(&mut self, node: SearchNode<'a>) {
-        self.nodes[self.node_to_index[&node]].1 = Type::Duplicate;
+    crate fn mark_duplicate(&mut self, node: SearchNode<'a, C>) {
+        let index = self.node_to_index[&node];
+        self.nodes[index].1 = self.visited_counter;
+        self.visited_counter += 1;
+        self.nodes[index].2 = Type::Duplicate;
     }
 
-    crate fn mark_unique(&mut self, node: SearchNode<'a>) {
-        self.nodes[self.node_to_index[&node]].1 = Type::Unique;
+    crate fn mark_unique(&mut self, node: SearchNode<'a, C>) {
+        let index = self.node_to_index[&node];
+        self.nodes[index].1 = self.visited_counter;
+        self.visited_counter += 1;
+        self.nodes[index].2 = Type::Unique;
     }
 
     crate fn draw_states(&mut self, solution_states: &'a [&'a State]) {
@@ -68,14 +80,15 @@ impl<'a> Graph<'a> {
         fs::write("state-space.dot", &s).unwrap();
 
         let status = Command::new("dot")
-            .args(&["-Tsvg", "-O", "state-space.dot"])
+            // PNG is bigger on disk but takes less memory to load than SVG
+            .args(&["-Tpng", "-O", "state-space.dot"])
             .status()
             .unwrap();
         assert!(status.success());
     }
 }
 
-impl<'a> GraphWalk<'a, Nd, Ed> for Graph<'a> {
+impl<'a, C: Cost> GraphWalk<'a, Nd, Ed> for Graph<'a, C> {
     fn nodes(&'a self) -> Nodes<'a, Nd> {
         (0..self.nodes.len()).collect()
     }
@@ -93,7 +106,7 @@ impl<'a> GraphWalk<'a, Nd, Ed> for Graph<'a> {
     }
 }
 
-impl<'a> Labeller<'a, Nd, Ed> for Graph<'a> {
+impl<'a, C: Cost> Labeller<'a, Nd, Ed> for Graph<'a, C> {
     fn graph_id(&'a self) -> Id<'a> {
         Id::new("G").unwrap()
     }
@@ -106,8 +119,9 @@ impl<'a> Labeller<'a, Nd, Ed> for Graph<'a> {
         let node = self.nodes[*n].0;
         LabelText::EscStr(
             format!(
-                "{}\nd: {}, h: {}\ncost: {}\n{}",
+                "c/v: {}/{}\nd: {:?}, h: {:?}\ncost: {:?}\n{}",
                 n,
+                self.nodes[*n].1,
                 node.dist,
                 node.cost - node.dist,
                 node.cost,
@@ -118,7 +132,7 @@ impl<'a> Labeller<'a, Nd, Ed> for Graph<'a> {
     }
 
     fn node_style(&'a self, n: &Nd) -> Style {
-        let node_type = self.nodes[*n].1;
+        let node_type = self.nodes[*n].2;
         if node_type == Type::Queued {
             Style::Solid
         } else {
@@ -128,13 +142,13 @@ impl<'a> Labeller<'a, Nd, Ed> for Graph<'a> {
 
     fn node_color(&'a self, n: &Nd) -> Option<LabelText<'a>> {
         let state = self.nodes[*n].0.state;
-        let node_type = self.nodes[*n].1;
+        let node_type = self.nodes[*n].2;
         let color_name = match node_type {
             Type::Unique => {
                 if self.solution_states.contains(state) {
                     "red"
                 } else {
-                    "orange"
+                    "gold"
                 }
             }
             Type::Duplicate => "gray",

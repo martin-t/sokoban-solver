@@ -1,0 +1,40 @@
+ddllllluuLurrrrR
+Moves: 16
+Pushes: 2
+States created total: 19
+Unique visited total: 4
+Reached duplicates total: 0
+Created but not reached total: 15
+
+Depth          Created        Unique         Duplicates     Unknown (not reached)
+0:             1              1              0              0
+1:             6              2              0              4
+2:             12             1              0              11
+
+############
+#      #   #
+#      #   #
+#      $.  #
+#.$ ####@  #
+#   #      #
+#          #
+############
+
+############
+#      #   #
+#      #   #
+#      $.  #
+#*@ ####   #
+#   #      #
+#          #
+############
+
+############
+#      #   #
+#      #   #
+#      @*  #
+#*  ####   #
+#   #      #
+#          #
+############
+
