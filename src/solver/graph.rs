@@ -119,7 +119,7 @@ impl<'a, C: Cost> Labeller<'a, Nd, Ed> for Graph<'a, C> {
         let node = self.nodes[*n].0;
         LabelText::EscStr(
             format!(
-                "c/v: {}/{}\nd: {:?}, h: {:?}\ncost: {:?}\n{}",
+                "c/v: {}/{}\nd: {}, h: {}\ncost: {}\n{}",
                 n,
                 self.nodes[*n].1,
                 node.dist,

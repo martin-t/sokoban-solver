@@ -144,9 +144,8 @@ impl<'a, C: Cost + Add<Output = C>> SearchNode<'a, C> {
     }
 }
 
-// TODO switch to display
 crate trait Cost:
-    Sized + Debug + Copy + Ord + Eq + Hash + Add<Output = Self> + Sub<Output = Self>
+    Sized + Display + Copy + Ord + Eq + Hash + Add<Output = Self> + Sub<Output = Self>
 {
     fn zero() -> Self;
     fn one() -> Self;
@@ -156,9 +155,15 @@ crate trait Cost:
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 crate struct SimpleCost(crate u16);
 
-impl Debug for SimpleCost {
+impl Display for SimpleCost {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+impl Debug for SimpleCost {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self)
     }
 }
 
@@ -195,9 +200,15 @@ impl Cost for SimpleCost {
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 crate struct ComplexCost(crate u16, crate u16);
 
-impl Debug for ComplexCost {
+impl Display for ComplexCost {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}/{}", self.0, self.1)
+    }
+}
+
+impl Debug for ComplexCost {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self)
     }
 }
 
