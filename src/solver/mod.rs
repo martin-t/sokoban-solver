@@ -329,8 +329,8 @@ trait SolverTrait {
 
             for (neighbor_state, cost, h) in GL::expand(self.sd(), &cur_node.state, &states) {
                 // Insert everything and ignore duplicates when popping. This wastes memory
-                // but when I filter them out here using a HashMap, push-optimal/boxxle2/4 becomes 8x slower
-                // and generates much more states (although push-optimal/original/1 becomes about 2x faster).
+                // but when I filter them out here using a HashMap, pushes/boxxle2/4 becomes 8x slower
+                // and generates much more states (although pushes/original/1 becomes about 2x faster).
                 // I might have done something wrong, might wanna try again when i have better debugging tools
                 // to look at the generated states.
 
