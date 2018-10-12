@@ -254,18 +254,16 @@ trait SolverTrait {
         }
 
         let states = Arena::new();
-        //let states = Arena::with_capacity(1_000_000_000);
 
         #[cfg(feature = "graph")]
         let mut graph = Graph::new(&self.sd().map);
 
-        // TODO with_capacity(total_memory) abusing overcommit to avoid realloc?
+        // technically, by using overcommit, we could avoid reallocation and the associated RAM usage spike
+        // but most of the memory is used by the arena which doesn't realloc
+        // so the spike is tiny there's not much benefit to it right now
         let mut to_visit = BinaryHeap::new();
-        //let mut to_visit = BinaryHeap::with_capacity(1_000_000_000);
-        //use fnv::*;
-        //use std::collections::HashMap;
-        // can't set capacity - it'll hit all the pages randomly and get killed
-        //let mut prevs = HashMap::with_capacity_and_hasher(1_000_000, FnvBuildHasher::default());
+
+        // note to future self: if experimenting with overcommit, a hashmap will use all the capacity it's given
         let mut prevs = FnvHashMap::default();
 
         // this might be more trouble than it's worth, we avoid expanding a whole *one* extra state
