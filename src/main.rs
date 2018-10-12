@@ -7,8 +7,6 @@
 #![warn(trivial_numeric_casts)]
 #![warn(unreachable_pub)]
 #![warn(unused)]
-// Clippy
-#![feature(tool_lints)]
 #![warn(clippy::clippy)]
 
 #[cfg(unix)]

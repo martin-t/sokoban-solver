@@ -11,8 +11,6 @@
 #![warn(trivial_numeric_casts)]
 #![warn(unreachable_pub)]
 #![warn(unused)]
-// Clippy
-#![feature(tool_lints)]
 #![warn(clippy::all)]
 // Stuff for testing
 #![cfg_attr(test, feature(duration_as_u128))]
