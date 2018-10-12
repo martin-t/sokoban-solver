@@ -11,6 +11,8 @@
 #![feature(tool_lints)]
 #![warn(clippy::clippy)]
 
+#[cfg(unix)]
+use std::fs;
 use std::process;
 
 use clap::{crate_authors, crate_version};
@@ -25,6 +27,14 @@ use sokoban_solver::{LoadLevel, Solve};
 // TODO test all methods
 
 fn main() {
+    // Chrome uses 300 (which means vscode does too) and gets killed when trying to solve hard levels.
+    #[cfg(unix)]
+    fs::write(
+        &format!("/proc/{}/oom_score_adj", process::id()),
+        500.to_string(),
+    )
+    .unwrap_or_else(|_| eprintln!("Couldn't change oom_score_adj"));
+
     // if anybody thinks this is overkill, i made a typo twice already
     const CUSTOM: &str = "custom";
     const XSB: &str = "xsb";

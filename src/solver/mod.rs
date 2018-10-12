@@ -254,11 +254,18 @@ trait SolverTrait {
         }
 
         let states = Arena::new();
+        //let states = Arena::with_capacity(1_000_000_000);
 
         #[cfg(feature = "graph")]
         let mut graph = Graph::new(&self.sd().map);
 
-        let mut to_visit = BinaryHeap::new(); // TODO with_capacity(total_memory) abusing overcommit to avoid realloc?
+        // TODO with_capacity(total_memory) abusing overcommit to avoid realloc?
+        let mut to_visit = BinaryHeap::new();
+        //let mut to_visit = BinaryHeap::with_capacity(1_000_000_000);
+        //use fnv::*;
+        //use std::collections::HashMap;
+        // can't set capacity - it'll hit all the pages randomly and get killed
+        //let mut prevs = HashMap::with_capacity_and_hasher(1_000_000, FnvBuildHasher::default());
         let mut prevs = FnvHashMap::default();
 
         // this might be more trouble than it's worth, we avoid expanding a whole *one* extra state
