@@ -22,7 +22,6 @@ use sokoban_solver::config::{Format, Method};
 use sokoban_solver::{LoadLevel, Solve};
 
 // TODO update readme (4/5 methods, a pic of the state space)
-// TODO test all methods
 
 fn main() {
     // Chrome uses 300 (which means vscode does too) and gets killed when trying to solve hard levels.
