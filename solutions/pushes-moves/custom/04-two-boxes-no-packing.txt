@@ -1,0 +1,50 @@
+LdlUddlUU
+Moves: 9
+Pushes: 4
+States created total: 18
+Unique visited total: 10
+Reached duplicates total: 0
+Created but not reached total: 8
+
+Depth          Created        Unique         Duplicates     Unknown (not reached)
+0:             1              1              0              0
+1:             2              2              0              0
+2:             6              3              0              3
+3:             4              3              0              1
+4:             5              1              0              4
+
+########
+###..###
+###  $@#
+###$   #
+###  ###
+########
+
+########
+###..###
+### $@ #
+###$   #
+###  ###
+########
+
+########
+###.*###
+### @  #
+###$   #
+###  ###
+########
+
+########
+###.*###
+###$   #
+###@   #
+###  ###
+########
+
+########
+###**###
+###@   #
+###    #
+###  ###
+########
+

@@ -272,18 +272,11 @@ mod tests {
             ("boxxle2", "4.txt", [UNSOLVED, UNSOLVED, SLOW, RELEASE]),
             ("boxxle2", "5.txt", ALL_UNSOLVED),
             ("boxxle2", "6.txt", [SLOW, SLOW, SLOW, RELEASE]),
-            ("boxxle2", "7.txt", ALL_SLOW),
+            ("boxxle2", "7.txt", [UNSOLVED, UNSOLVED, SLOW, SLOW]),
             ("boxxle2", "8.txt", ALL_UNSOLVED),
             ("boxxle2", "9.txt", ALL_UNSOLVED),
             ("boxxle2", "10.txt", ALL_UNSOLVED),
             ("original-and-extra", "1.txt", ALL_SLOW),
-
-            // TODO set max difficulty to slow and update/add results
-            // jsoko says 9 is solvable in 170 moves and 41 pushes (not 43)
-            // jsoko: ldldlluurDldRurrurrdLLLDlluullldRddDrdrRRdrruUUUddddlluRlllluluuuRurDurDlDRurrurrdLLLrrdddlddrUUUUdddllllluluuuurrrDrrurrdLddddllllldlUUUUdddrrrrruruuuLLLDuulDullldRRRurD
-            // this: ldldlluurDDldRuurrurrdLLLLulDullldRddDrdrRRdrruUUUddddlluRlllluluuuRRurDlDRurrurrdLLLrrdddlddrUUUUddldlllluluuururrDrrurrdLdddldlllldlUUUUddrdrrrruruuuLLLDuulDlulldRRRurD
-            // -M: ldldlluurDldRurrurrdLLLDlluullldRddDrdrRRdrruUUUddddlluRlllluluuuRurrDDurrurrdLLLrrdddlddrUUUUdddllllluluuuurrDurDlDRurrurrdLddddllllldlUUUUddrdrrrruruuuLLLulDullldRRRurD
-            // supaplex-remover can also be solved move optimally with fewer pushes
         ];
 
         let levels: Vec<_> = levels
