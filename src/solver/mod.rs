@@ -262,6 +262,7 @@ trait SolverTrait {
         // but most of the memory is used by the arena which doesn't realloc
         // so the spike is tiny there's not much benefit to it right now
         let mut to_visit = BinaryHeap::new();
+        let mut in_queue = FnvHashMap::default();
 
         // note to future self: if experimenting with overcommit, a hashmap will use all the capacity it's given
         let mut prevs = FnvHashMap::default();
@@ -277,6 +278,7 @@ trait SolverTrait {
         );
         stats.add_created(start.dist.depth());
         to_visit.push(Reverse(CostComparator(start)));
+        in_queue.insert(start.state, start.dist); // using dist or cost is the same because h is the same
 
         #[cfg(feature = "graph")]
         graph.add(start, None);
@@ -352,10 +354,26 @@ trait SolverTrait {
                     h,
                 );
                 stats.add_created(next_node.dist.depth());
-                to_visit.push(Reverse(CostComparator(next_node)));
 
-                #[cfg(feature = "graph")]
-                graph.add(next_node, Some(cur_node));
+                use std::collections::hash_map::Entry;
+                match in_queue.entry(&next_node.state) {
+                    Entry::Occupied(mut o) => {
+                        if next_node.dist <= *o.get() {
+                            to_visit.push(Reverse(CostComparator(next_node)));
+                            o.insert(next_node.dist);
+
+                            #[cfg(feature = "graph")]
+                            graph.add(next_node, Some(cur_node));
+                        }
+                    }
+                    Entry::Vacant(v) => {
+                        to_visit.push(Reverse(CostComparator(next_node)));
+                        v.insert(next_node.dist);
+
+                        #[cfg(feature = "graph")]
+                        graph.add(next_node, Some(cur_node));
+                    }
+                }
             }
         }
 

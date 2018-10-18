@@ -61,27 +61,27 @@ mod tests {
 
     use super::*;
 
-    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    #[derive(Debug, Clone, Copy, PartialEq)]
     struct TestResult {
         /// move_cnt, push_cnt
         counts: Option<(i32, i32)>,
         comparison: TestComparison,
     }
 
-    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    #[derive(Debug, Clone, Copy, PartialEq)]
     enum TestComparison {
         Ok,
         /// moves, pushes, stats
-        Changed(Change, Change, Change),
+        Changed((i32, i32), (i32, i32), (i32, i32), (i32, i32)),
         SolvabilityChanged,
     }
 
-    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    /*#[derive(Debug, Clone, Copy, PartialEq, Eq)]
     enum Change {
         Worse,
         Equal,
         Better,
-    }
+    }*/
 
     #[test]
     fn test_levels() {
@@ -292,6 +292,7 @@ mod tests {
         test_and_time_levels(&levels);
     }
 
+    // TODO merge these tests
     #[test]
     #[ignore] // most are simple but there's so many of them that testing all of them takes too long
     fn test_696() {
@@ -385,6 +386,9 @@ mod tests {
 
     fn test_and_time_levels<L: AsRef<str> + Display>(levels: &[(&str, L, Vec<bool>)]) {
         #![allow(clippy::cast_lossless)]
+        #![allow(clippy::cyclomatic_complexity)]
+
+        use self::Method::*;
 
         let started = Instant::now();
 
@@ -434,6 +438,7 @@ mod tests {
         );
 
         let mut all_levels_passed = true;
+        let mut report = String::new();
 
         // verify that methods which minimize moves/pushes actually produce
         // better or equal numbers than methods which don't
@@ -467,64 +472,98 @@ mod tests {
                 .iter()
                 .any(|(m1, m2, is_optimal)| not_optimal(method_results, *m1, *m2, is_optimal))
             {
-                println!("Optimality broken: {}/{}", pack, name);
+                writeln!(report, "Optimality broken: {}/{}", pack, name);
                 all_levels_passed = false;
             }
         }
 
         // print levels that differ from the saved results
-        let mut print_bad = |msg, is_bad: fn(TestComparison) -> bool| {
-            use self::Method::*;
+        macro_rules! print_bad_matching {
+            ($msg:expr, $moves:pat, $pushes:pat, $created:pat, $visited:pat, $bad_cond:expr, $stat:expr) => {
+                let mut bad_levels = Vec::new();
 
-            let mut bad_levels = Vec::new();
-            for &(pack, name, method_results) in &results {
-                for (&mres, method) in
-                    method_results
-                        .iter()
-                        .zip(&[MovesPushes, Moves, PushesMoves, Pushes])
-                {
-                    if let Some(mres) = mres {
-                        if is_bad(mres.comparison) {
-                            bad_levels.push((pack, name, method))
+                for &(pack, name, method_results) in &results {
+                    for (&mres, method) in
+                        method_results
+                            .iter()
+                            .zip(&[MovesPushes, Moves, PushesMoves, Pushes])
+                    {
+                        if let Some(mres) = mres {
+                            if let TestComparison::Changed($moves, $pushes, $created, $visited) =
+                                mres.comparison
+                            {
+                                if $bad_cond {
+                                    bad_levels.push((pack, name, method, $stat));
+                                }
+                            }
                         }
                     }
                 }
-            }
-            if !bad_levels.is_empty() {
-                all_levels_passed = false;
-                println!("{} ({}):", msg, bad_levels.len());
-                for (pack, name, method) in bad_levels {
-                    println!("\t{}/{} method {}", pack, name, method);
-                }
-            }
-        };
 
-        macro_rules! level_list {
-            ($msg:expr, $moves:pat, $pushes:pat, $stats:pat) => {
-                print_bad($msg, |cmp| {
-                    if let TestComparison::Changed($moves, $pushes, $stats) = cmp {
-                        true
-                    } else {
-                        false
-                    }
+                bad_levels.sort_by(|l, r| {
+                    let lc = f64::from((l.3).0) / f64::from((l.3).1);
+                    let rc = f64::from((r.3).0) / f64::from((r.3).1);
+                    lc.partial_cmp(&rc).unwrap()
                 });
+
+                if !bad_levels.is_empty() {
+                    all_levels_passed = false;
+
+                    let total_out: i32 = bad_levels.iter().map(|l| (l.3).0).sum();
+                    let total_expected: i32 = bad_levels.iter().map(|l| (l.3).1).sum();
+                    let total_coef = f64::from(total_out) / f64::from(total_expected);
+                    writeln!(
+                        report,
+                        "{} ({}, total {:.2}x):",
+                        $msg,
+                        bad_levels.len(),
+                        total_coef
+                    );
+                    for (pack, name, method, (out, expected)) in bad_levels {
+                        let coef = f64::from(out) / f64::from(expected);
+                        writeln!(
+                            report,
+                            "\t{}/{} method {} ({:.2}x)",
+                            pack, name, method, coef
+                        );
+                    }
+                }
             };
         }
 
-        level_list!("Better moves", Change::Better, _, _);
-        level_list!("Equal moves", Change::Equal, _, _);
-        level_list!("Worse moves", Change::Worse, _, _);
-        level_list!("Better pushes", _, Change::Better, _);
-        level_list!("Equal pushes", _, Change::Equal, _);
-        level_list!("Worse pushes", _, Change::Worse, _);
-        level_list!("Better stats", _, _, Change::Better);
-        level_list!("Equal stats", _, _, Change::Equal);
-        level_list!("Worse stats", _, _, Change::Worse);
+        print_bad_matching!("Better moves", m, _, _, _, m.0 < m.1, m);
+        print_bad_matching!("Worse moves", m, _, _, _, m.0 > m.1, m);
+        print_bad_matching!("Better pushes", _, p, _, _, p.0 < p.1, p);
+        print_bad_matching!("Worse pushes", _, p, _, _, p.0 > p.1, p);
+        print_bad_matching!("Better created", _, _, c, _, c.0 < c.1, c);
+        print_bad_matching!("Worse created", _, _, c, _, c.0 > c.1, c);
+        print_bad_matching!("Better visited", _, _, _, v, v.0 < v.1, v);
+        print_bad_matching!("Worse visited", _, _, _, v, v.0 > v.1, v);
 
-        print_bad("Solvability changed", |cmp| {
-            cmp == TestComparison::SolvabilityChanged
-        });
+        let mut bad_levels = Vec::new();
+        for &(pack, name, method_results) in &results {
+            for (&mres, method) in
+                method_results
+                    .iter()
+                    .zip(&[MovesPushes, Moves, PushesMoves, Pushes])
+            {
+                if let Some(mres) = mres {
+                    if mres.comparison == TestComparison::SolvabilityChanged {
+                        bad_levels.push((pack, name, method))
+                    }
+                }
+            }
+        }
+        if !bad_levels.is_empty() {
+            all_levels_passed = false;
+            writeln!(report, "Solvability changed ({}):", bad_levels.len());
+            for (pack, name, method) in bad_levels {
+                writeln!(report, "\t{}/{} method {}", pack, name, method);
+            }
+        }
 
+        print!("{}", report);
+        fs::write("test-report.txt", report).unwrap();
         assert!(all_levels_passed);
     }
 
@@ -604,38 +643,23 @@ mod tests {
         let (out_moves, out_pushes) = maybe_out_lens.unwrap_or((-1, -1));
         let (expected_moves, expected_pushes) = maybe_expected_lens.unwrap_or((-1, -1));
 
-        let moves_change = if out_moves > expected_moves {
-            println!("\t>>> WORSE MOVES <<<");
-            Change::Worse
-        } else if out_moves == expected_moves {
-            println!("\t>>> EQUAL MOVES <<<");
-            Change::Equal
-        } else {
-            println!("\t>>> BETTER MOVES <<<");
-            Change::Better
-        };
+        let m = (out_moves, expected_moves);
+        let p = (out_pushes, expected_pushes);
+        let c = (out_created, expected_created);
+        let v = (out_visited, expected_visited);
 
-        let pushes_change = if out_pushes > expected_pushes {
-            println!("\t>>> WORSE PUSHES <<<");
-            Change::Worse
-        } else if out_pushes == expected_pushes {
-            println!("\t>>> EQUAL PUSHES <<<");
-            Change::Equal
-        } else {
-            println!("\t>>> BETTER PUSHES <<<");
-            Change::Better
-        };
-
-        let stats_change = if out_created > expected_created || out_visited > expected_visited {
-            println!("\t>>> WORSE STATS <<<");
-            Change::Worse
-        } else if out_created == expected_created && out_visited == expected_visited {
-            println!("\t>>> EQUAL STATS <<<");
-            Change::Equal
-        } else {
-            println!("\t>>> BETTER STATS <<<");
-            Change::Better
-        };
+        let stats = ["MOVES", "PUSHES", "CREATED", "VISITED"];
+        let coefs = [m, p, c, v];
+        for (&stat, &(out, expected)) in stats.iter().zip(&coefs) {
+            let coef = f64::from(out) / f64::from(expected);
+            if out > expected {
+                println!(">>> WORSE {} ({:.2}x) <<<", stat, coef);
+            } else if out == expected {
+                println!(">>> EQUAL {} <<<", stat);
+            } else {
+                println!(">>> BETTER {} ({:.2}x) <<<", stat, coef);
+            }
+        }
 
         println!();
         println!();
@@ -645,7 +669,7 @@ mod tests {
 
         TestResult {
             counts: maybe_out_lens,
-            comparison: TestComparison::Changed(moves_change, pushes_change, stats_change),
+            comparison: TestComparison::Changed(m, p, c, v),
         }
     }
 
