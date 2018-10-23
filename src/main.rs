@@ -152,13 +152,16 @@ fn main() {
             process::exit(1);
         });
 
-        println!("{}", solver_ok.stats);
         match solver_ok.moves {
-            None => println!("No solution"),
+            None => {
+                println!("No solution");
+                println!("{}", solver_ok.stats);
+            }
             Some(moves) => {
                 let include_steps = method == Method::Moves;
                 println!("Found solution:");
                 print!("{}", level.format_solution(format, &moves, include_steps));
+                println!("{}", solver_ok.stats);
                 println!("{}", moves);
                 println!("Moves: {}", moves.move_cnt());
                 println!("Pushes: {}", moves.push_cnt());

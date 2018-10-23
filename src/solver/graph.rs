@@ -24,6 +24,7 @@ enum Type {
 crate struct Graph<'a, C: Cost> {
     map: &'a dyn Map,
     node_to_index: FnvHashMap<SearchNode<'a, C>, usize>,
+    /// node, visited counter, visited type
     nodes: Vec<(SearchNode<'a, C>, usize, Type)>,
     edges: Vec<(usize, usize)>,
     solution_states: FnvHashSet<&'a State>,
@@ -47,8 +48,20 @@ impl<'a, C: Cost> Graph<'a, C> {
 
         let node_index = self.nodes.len();
 
+        let mut node_type = Type::Queued;
+        for &(search_node, _, _) in &self.nodes {
+            if node.state == search_node.state && node.dist >= search_node.dist {
+                node_type = Type::Duplicate;
+                /*println!(
+                    "adding worse or equal dupe:\n{}",
+                    self.map.xsb_with_state(node.state)
+                );*/
+                break;
+            }
+        }
+
         self.node_to_index.insert(node, node_index);
-        self.nodes.push((node, 0, Type::Queued));
+        self.nodes.push((node, 0, node_type));
 
         if let Some(prev) = prev {
             let prev_index = self.node_to_index[&prev];
@@ -58,6 +71,9 @@ impl<'a, C: Cost> Graph<'a, C> {
 
     crate fn mark_duplicate(&mut self, node: SearchNode<'a, C>) {
         let index = self.node_to_index[&node];
+        /*if self.nodes[index].2 != Type::Duplicate {
+            println!("should be dupe:\n{}", self.map.xsb_with_state(node.state));
+        }*/
         self.nodes[index].1 = self.visited_counter;
         self.visited_counter += 1;
         self.nodes[index].2 = Type::Duplicate;

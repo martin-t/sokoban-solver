@@ -20,17 +20,6 @@ Visited new depth: 3
 total created / unique visited / reached duplicates:
 4               4                0
 
-States created total: 4
-Unique visited total: 4
-Reached duplicates total: 0
-Created but not reached total: 0
-
-Depth          Created        Unique         Duplicates     Unknown (not reached)
-0:             1              1              0              0
-1:             1              1              0              0
-2:             1              1              0              0
-3:             1              1              0              0
-
 Found solution:
 ###
 #.#
@@ -64,6 +53,17 @@ Found solution:
 # #
 ###
 
+States created total: 4
+Unique visited total: 4
+Reached duplicates total: 0
+Created but not reached total: 0
+
+Depth          Created        Unique         Duplicates     Unknown (not reached)
+0:             1              1              0              0
+1:             1              1              0              0
+2:             1              1              0              0
+3:             1              1              0              0
+
 UUU
 Moves: 3
 Pushes: 3
@@ -93,17 +93,6 @@ Visited new depth: 3
 total created / unique visited / reached duplicates:
 3               3                0
 
-States created total: 3
-Unique visited total: 3
-Reached duplicates total: 0
-Created but not reached total: 0
-
-Depth          Created        Unique         Duplicates     Unknown (not reached)
-0:             1              1              0              0
-1:             0              0              0              0
-2:             1              1              0              0
-3:             1              1              0              0
-
 Found solution:
 <><><><><><><><><>
 <>  P   B    _  <>
@@ -120,6 +109,17 @@ Found solution:
 <><><><><><><><><>
 <>        P B_  <>
 <><><><><><><><><>
+
+States created total: 3
+Unique visited total: 3
+Reached duplicates total: 0
+Created but not reached total: 0
+
+Depth          Created        Unique         Duplicates     Unknown (not reached)
+0:             1              1              0              0
+1:             0              0              0              0
+2:             1              1              0              0
+3:             1              1              0              0
 
 rRR
 Moves: 3
