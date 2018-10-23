@@ -285,12 +285,11 @@ mod tests {
         test_and_time_levels(&levels);
     }
 
-    // TODO merge these tests
     #[test]
-    #[ignore] // most are simple but there's so many of them that testing all of them takes too long
-    fn test_696() {
-        let levels: Vec<_> = (100..=696)
-            .filter(|&i| i != 250 && i != 693) // currently can't solve these two
+    #[ignore]
+    fn test_more_levels() {
+        let levels: Vec<_> = (100..=696) // most are simple but there's so many of them that testing all of them takes too long
+            .filter(|&i| i != 250 && i != 693) // currently can't solve only these two
             .map(|num| {
                 (
                     "696",
@@ -298,21 +297,13 @@ mod tests {
                     vec![false, false, false, true],
                 )
             })
-            .collect();
-        test_and_time_levels(&levels);
-    }
-
-    #[test]
-    #[ignore]
-    fn test_aymeric() {
-        let levels: Vec<_> = (1..=20)
-            .map(|num| {
+            .chain((1..=20).map(|num| {
                 (
                     "aymeric-cosmonotes",
                     format!("{}.txt", num),
                     vec![false, false, false, true],
                 )
-            })
+            }))
             .chain((1..=40).map(|num| {
                 (
                     "aymeric-microcosmos",
@@ -341,38 +332,28 @@ mod tests {
                     vec![false, false, false, true],
                 )
             }))
-            .collect();
-        test_and_time_levels(&levels);
-    }
-
-    #[test]
-    #[ignore]
-    fn test_microban1() {
-        let levels: Vec<_> = (1..=155)
-            .filter(|&num| num != 93 && num != 144 && num != 153)
-            .map(|num| {
-                (
-                    "microban1",
-                    format!("{}.txt", num),
-                    vec![false, false, false, true],
-                )
-            })
-            .collect();
-        test_and_time_levels(&levels);
-    }
-
-    #[test]
-    #[ignore]
-    fn test_microban2() {
-        let levels: Vec<_> = (1..=135)
-            .filter(|&num| num != 66 && num != 102 && num != 104 && num < 100)
-            .map(|num| {
-                (
-                    "microban2",
-                    format!("{}.txt", num),
-                    vec![false, false, false, true],
-                )
-            })
+            .chain(
+                (1..=155)
+                    .filter(|&num| num != 93 && num != 144 && num != 153)
+                    .map(|num| {
+                        (
+                            "microban1",
+                            format!("{}.txt", num),
+                            vec![false, false, false, true],
+                        )
+                    }),
+            )
+            .chain(
+                (1..=135)
+                    .filter(|&num| num != 66 && num != 102 && num != 104 && num < 100)
+                    .map(|num| {
+                        (
+                            "microban2",
+                            format!("{}.txt", num),
+                            vec![false, false, false, true],
+                        )
+                    }),
+            )
             .collect();
         test_and_time_levels(&levels);
     }
