@@ -263,6 +263,7 @@ trait SolverTrait {
         // so the spike is tiny and there's not much benefit to it right now
         let mut to_visit = BinaryHeap::new();
         //let mut in_queue = FnvHashMap::default();
+        //let mut biggest = 0;
 
         // note to future self: if experimenting with overcommit, a hashmap will use all the capacity it's given
         let mut prevs = FnvHashMap::default();
@@ -326,6 +327,8 @@ trait SolverTrait {
                 #[cfg(feature = "graph")]
                 graph.draw_states(&solution_states);
 
+                //println!("biggest queue: {}", biggest);
+
                 let moves = backtracking::reconstruct_moves(
                     &self.sd().map,
                     self.sd().initial_state.player_pos,
@@ -361,7 +364,8 @@ trait SolverTrait {
                 graph.add(next_node, Some(cur_node));
 
                 // this ignores duplicates that can be detected during creation and avoids queuing them
-                // but the improvementis only a couple percent
+                // but the improvementis in created/visited nodes are only a couple percent total (and sometimes worse)
+                // to_visit size on supaplex-goals goes from 1.5M to 400k, memory usage is similar since we don't prune in_queue
                 // TODO try enabling this after detecting dead ends works to see if the improvement is better
 
                 /*use std::collections::hash_map::Entry;
@@ -383,6 +387,8 @@ trait SolverTrait {
                         graph.add(next_node, Some(cur_node));
                     }
                 }*/
+
+                //biggest = biggest.max(to_visit.len());
             }
         }
 

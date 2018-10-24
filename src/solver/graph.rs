@@ -15,6 +15,7 @@ type Ed = (usize, usize);
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Type {
     Queued,
+    AvoidableDuplicate,
     Duplicate,
     Unique,
 }
@@ -51,11 +52,7 @@ impl<'a, C: Cost> Graph<'a, C> {
         let mut node_type = Type::Queued;
         for &(search_node, _, _) in &self.nodes {
             if node.state == search_node.state && node.dist >= search_node.dist {
-                node_type = Type::Duplicate;
-                /*println!(
-                    "adding worse or equal dupe:\n{}",
-                    self.map.xsb_with_state(node.state)
-                );*/
+                node_type = Type::AvoidableDuplicate;
                 break;
             }
         }
@@ -71,12 +68,11 @@ impl<'a, C: Cost> Graph<'a, C> {
 
     crate fn mark_duplicate(&mut self, node: SearchNode<'a, C>) {
         let index = self.node_to_index[&node];
-        /*if self.nodes[index].2 != Type::Duplicate {
-            println!("should be dupe:\n{}", self.map.xsb_with_state(node.state));
-        }*/
+        if self.nodes[index].2 != Type::AvoidableDuplicate {
+            self.nodes[index].2 = Type::Duplicate;
+        }
         self.nodes[index].1 = self.visited_counter;
         self.visited_counter += 1;
-        self.nodes[index].2 = Type::Duplicate;
     }
 
     crate fn mark_unique(&mut self, node: SearchNode<'a, C>) {
@@ -167,6 +163,7 @@ impl<'a, C: Cost> Labeller<'a, Nd, Ed> for Graph<'a, C> {
                     "gold"
                 }
             }
+            Type::AvoidableDuplicate => "green",
             Type::Duplicate => "gray",
             Type::Queued => return None,
         };
