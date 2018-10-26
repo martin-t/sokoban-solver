@@ -345,7 +345,9 @@ mod tests {
             )
             .chain(
                 (1..=135)
-                    .filter(|&num| num != 66 && num != 102 && num != 104 && num < 100)
+                    .filter(|&num| {
+                        num != 66 && num != 102 && num != 104 && (num <= 108 || num >= 132)
+                    })
                     .map(|num| {
                         (
                             "microban2",
