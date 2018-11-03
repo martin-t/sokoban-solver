@@ -2,6 +2,7 @@ Sokoban solver
 ==============
 
 [![pipeline status](https://gitlab.com/martin-t/sokoban-solver/badges/master/pipeline.svg)](https://gitlab.com/martin-t/sokoban-solver/commits/master)
+[![dependency status](https://deps.rs/repo/gitlab/martin-t/sokoban-solver/status.svg)](https://deps.rs/repo/gitlab/martin-t/sokoban-solver)
 
 So far can't do much, I am more playing with the language than trying to write a good solver. It can currently solve only level 1 of the original Sokoban levels.
 
