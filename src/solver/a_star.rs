@@ -86,7 +86,7 @@ impl Display for Stats {
         let duplicates = self.total_reached_duplicates();
         let left = created - visited - duplicates;
 
-        #[cfg_attr(rustfmt, rustfmt_skip)]
+        #[rustfmt::skip]
         {
             writeln!(f, "States created total: {}", created.separated_string())?;
             writeln!(f, "Unique visited total: {}", visited.separated_string())?;

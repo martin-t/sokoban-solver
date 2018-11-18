@@ -2,6 +2,8 @@
 #![feature(crate_visibility_modifier)]
 // https://github.com/rust-lang/rust/issues/31844
 #![feature(specialization)]
+// https://github.com/rust-lang/rust/issues/15701
+#![feature(stmt_expr_attributes)]
 // Opt in to warnings about new 2018 idioms
 #![warn(rust_2018_idioms)]
 // Additional warnings that are allow by default (`rustc -W help`)
@@ -99,7 +101,7 @@ mod tests {
 
         // elastic tabstops would make this readable but humanity has yet to achieve
         // that level of sophistication in an editor that is also able to automatically save when it loses focus :(
-        #[cfg_attr(rustfmt, rustfmt_skip)]
+        #[rustfmt::skip]
         let levels = [
             ("custom", "00-empty.txt", ALL_OK),
             ("custom", "00-solved.txt", ALL_OK),
@@ -519,7 +521,7 @@ mod tests {
 
                 false
             };
-        #[cfg_attr(rustfmt, rustfmt_skip)]
+        #[rustfmt::skip]
         let comparisons: &[(_, _, &OptimalityPred)] = &[
             (0, 1, &|(mp_m, mp_p), (m_m, m_p)| mp_m == m_m && mp_p <= m_p),
             (0, 2, &|(mp_m, mp_p), (pm_m, pm_p)| mp_m <= pm_m && mp_p >= pm_p),

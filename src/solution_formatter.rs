@@ -74,7 +74,7 @@ impl Display for SolutionFormatter<'_> {
             let new_state = State::new(new_player_pos, new_boxes);
 
             if mov.is_push || self.include_steps {
-                writeln!(f, "{}", self.map.format_with_state(self.format, &new_state));
+                writeln!(f, "{}", self.map.format_with_state(self.format, &new_state))?;
             }
 
             last_state = new_state;

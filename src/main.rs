@@ -7,7 +7,6 @@
 #![warn(trivial_numeric_casts)]
 #![warn(unreachable_pub)]
 #![warn(unused)]
-#![warn(clippy::clippy)]
 
 #[cfg(unix)]
 use std::fs;
