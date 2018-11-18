@@ -47,7 +47,6 @@ pub trait Solve {
 
 #[cfg(test)]
 mod tests {
-    #[allow(unused)] // needed for latest nightly
     extern crate test;
     use self::test::Bencher;
 
@@ -459,14 +458,16 @@ mod tests {
                         $msg,
                         bad_levels.len(),
                         total_coef
-                    );
+                    )
+                    .unwrap();
                     for (pack, name, method, (out, expected)) in bad_levels {
                         let coef = f64::from(out) / f64::from(expected);
                         writeln!(
                             report,
                             "\t{}/{} method {} ({:.2}x)",
                             pack, name, method, coef
-                        );
+                        )
+                        .unwrap();
                     }
                 }
             };
@@ -497,9 +498,9 @@ mod tests {
         }
         if !bad_levels.is_empty() {
             all_levels_passed = false;
-            writeln!(report, "Solvability changed ({}):", bad_levels.len());
+            writeln!(report, "Solvability changed ({}):", bad_levels.len()).unwrap();
             for (pack, name, method) in bad_levels {
-                writeln!(report, "\t{}/{} method {}", pack, name, method);
+                writeln!(report, "\t{}/{} method {}", pack, name, method).unwrap();
             }
         }
 
@@ -535,7 +536,7 @@ mod tests {
                 .iter()
                 .any(|(m1, m2, is_optimal)| not_optimal(method_results, *m1, *m2, is_optimal))
             {
-                writeln!(report, "Optimality broken: {}/{}", pack, name);
+                writeln!(report, "Optimality broken: {}/{}", pack, name).unwrap();
                 all_levels_passed = false;
             }
         }
@@ -572,7 +573,7 @@ mod tests {
         match solution.moves {
             None => writeln!(out, "No solution").unwrap(),
             Some(ref moves) => {
-                writeln!(out, "{}", moves);
+                writeln!(out, "{}", moves).unwrap();
                 writeln!(out, "Moves: {}", moves.move_cnt()).unwrap();
                 writeln!(out, "Pushes: {}", moves.push_cnt()).unwrap();
             }
