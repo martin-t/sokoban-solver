@@ -30,7 +30,7 @@ graph = ["dot"]
 
 [dev-dependencies]
 criterion = { version = "0.2.4", features = ['real_blackbox'] }
-assert_cmd = "0.9"
+assert_cmd = "0.10.1"
 difference = "2.0.0"
 
 [[bench]]
@@ -41,8 +41,8 @@ harness = false
 clap = "2.32.0"
 separator = "0.3.1"
 log = { version = "0.4.3", features = ["release_max_level_info"] }
-env_logger = "0.5.12"
+env_logger = "0.6.0"
 fnv = "1.0.6"
-prettytable-rs = "0.7.0"
+prettytable-rs = "0.8.0"
 typed-arena = "1.4.1"
 dot = { version = "0.1.4", optional = true }
