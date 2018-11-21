@@ -15,24 +15,26 @@ tests:
   #    - cargo/
   #    - target/
   script:
-    - rustc --version && cargo --version  # Print version info for debugging
+    - rustc --version && cargo --version
     - rustup component add rustfmt-preview
-    # apparently clippy is sometimes missing from nightly, remove the other two commands when it's no longer preview
+    # apparently clippy is sometimes missing from nightly, remove the other command when it's no longer preview
     - rustup component add clippy-preview || cargo install --git https://github.com/rust-lang-nursery/rust-clippy/ --force clippy
-    - cargo install cargo-audit #--force  # need force when using cache because there's no --update
+    # --debug is faster
+    # need force when using cache because there's no --update
+    - cargo install --debug cargo-audit  #--force
 
     - cargo build --verbose
-    - cargo build --release --verbose
+    - cargo build --verbose --release
 
     - cargo fmt -- --check  # formats all features
     - cargo clippy -- --deny warnings  # clipy doesn't use RUSTFLAGS
     - cargo audit
     - cargo test --all --verbose
-    - cargo test --release --all --verbose
+    - cargo test --all --verbose --release
     - cargo bench --verbose --no-run  # make sure benches compile
 
     - cargo build --features graph --verbose
-    - cargo build --features graph --release --verbose
+    - cargo build --features graph --verbose --release
 
     - cargo clippy --features graph -- --deny warnings  # clipy doesn't use RUSTFLAGS
     - cargo run --features graph -- levels/custom/04-two-boxes-no-packing.txt
