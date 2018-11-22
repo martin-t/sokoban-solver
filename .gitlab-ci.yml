@@ -36,6 +36,6 @@ tests:
     - cargo build --features graph --verbose
     - cargo build --features graph --verbose --release
 
-    - cargo clippy --features graph -- --deny warnings  # clipy doesn't use RUSTFLAGS
+    - cargo clippy --features graph -- --deny warnings  # clippy doesn't use RUSTFLAGS
     - cargo run --features graph -- levels/custom/04-two-boxes-no-packing.txt
     - test -f state-space.dot.png  # -f == regular file exists (yes, i actively (if that's even possible) refuse to remember this)
