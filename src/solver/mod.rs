@@ -374,7 +374,7 @@ trait SolverTrait {
                         if next_node.dist < *o.get() {
                             to_visit.push(Reverse(CostComparator(next_node)));
                             o.insert(next_node.dist);
-                
+
                             #[cfg(feature = "graph")]
                             graph.add(next_node, Some(cur_node));
                         }
@@ -382,7 +382,7 @@ trait SolverTrait {
                     Entry::Vacant(v) => {
                         to_visit.push(Reverse(CostComparator(next_node)));
                         v.insert(next_node.dist);
-                
+
                         #[cfg(feature = "graph")]
                         graph.add(next_node, Some(cur_node));
                     }
