@@ -16,7 +16,7 @@ tests:
   #    - target/
   script:
     - rustc --version && cargo --version
-    - rustup component add rustfmt-preview || cargo install --git https://github.com/rust-lang/rustfmt/ --force; fi
+    - rustup component add rustfmt-preview || cargo install --git https://github.com/rust-lang/rustfmt/ --force
     # apparently clippy is sometimes missing from nightly, remove the other command when it's no longer preview
     - rustup component add clippy-preview || cargo install --git https://github.com/rust-lang/rust-clippy/ --force clippy
     # --debug is faster
