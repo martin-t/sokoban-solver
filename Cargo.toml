@@ -39,7 +39,7 @@ harness = false
 
 [dependencies]
 clap = "2.32.0"
-separator = "0.3.1"
+separator = "0.4"
 log = { version = "0.4.3", features = ["release_max_level_info"] }
 env_logger = "0.6.0"
 fnv = "1.0.6"
