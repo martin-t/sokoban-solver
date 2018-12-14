@@ -1,4 +1,4 @@
-// https://github.com/rust-lang/rust/issues/45388
+// https://github.com/rust-lang/rust/issues/53120
 #![feature(crate_visibility_modifier)]
 // https://github.com/rust-lang/rust/issues/31844
 #![feature(specialization)]
