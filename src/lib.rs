@@ -411,7 +411,7 @@ mod tests {
             "Tested {} levels using on average {:.2} methods per level in {} ms",
             results.len(),
             (total_methods as f64) / (results.len() as f64),
-            (started.elapsed().as_millis() as u64).separated_string() // separator doesn't support u128
+            started.elapsed().as_millis().separated_string(),
         );
 
         let mut all_levels_passed = true;
@@ -566,7 +566,7 @@ mod tests {
         // innacurate, only useful to quickly see which levels are difficult
         println!(
             "Finished in approximately {} ms",
-            (started.elapsed().as_millis() as u64).separated_string(), // separator doesn't support u128
+            started.elapsed().as_millis().separated_string(),
         );
 
         let mut out = String::new();
