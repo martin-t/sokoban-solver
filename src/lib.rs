@@ -4,8 +4,6 @@
 #![feature(specialization)]
 // https://github.com/rust-lang/rust/issues/15701
 #![feature(stmt_expr_attributes)]
-// Opt in to warnings about new 2018 idioms
-#![warn(rust_2018_idioms)]
 // Additional warnings that are allow by default (`rustc -W help`)
 #![warn(missing_copy_implementations)]
 #![warn(missing_debug_implementations)]
