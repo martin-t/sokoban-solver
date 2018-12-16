@@ -170,7 +170,7 @@ mod tests {
 #         #
 ###########
 "
-        .trim_left_matches('\n');
+        .trim_start_matches('\n');
 
         let level1 = r"
 ###########
@@ -186,7 +186,7 @@ mod tests {
 #         #
 ###########
 "
-        .trim_left_matches('\n');
+        .trim_start_matches('\n');
         let level2 = r"
 ###########
 #@$     $.#
@@ -201,7 +201,7 @@ mod tests {
 #         #
 ###########
 "
-        .trim_left_matches('\n');
+        .trim_start_matches('\n');
         let level3 = r"
 ###########
 #$@     $.#
@@ -216,7 +216,7 @@ mod tests {
 #         #
 ###########
 "
-        .trim_left_matches('\n');
+        .trim_start_matches('\n');
         let level4 = r"
 ###########
 #$      @*#
@@ -231,7 +231,7 @@ mod tests {
 #         #
 ###########
 "
-        .trim_left_matches('\n');
+        .trim_start_matches('\n');
         let real_initial_level: Level = real_initial_level.parse().unwrap();
         let level1: Level = level1.parse().unwrap();
         let level2: Level = level2.parse().unwrap();

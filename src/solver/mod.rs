@@ -934,7 +934,7 @@ mod tests {
 #@$.*#
 *####*#
 "
-        .trim_left_matches('\n');
+        .trim_start_matches('\n');
 
         let level: Level = level.parse().unwrap();
         let solver = Solver::new_with_goals(level.goal_map(), &level.state).unwrap();
@@ -944,7 +944,7 @@ mod tests {
 #  ..##
 #######
 "
-        .trim_left_matches('\n');
+        .trim_start_matches('\n');
         assert_eq!(solver.sd.map.to_string(), processed_empty_level);
 
         assert_eq!(solver.sd.initial_state.player_pos, Pos { r: 1, c: 1 });

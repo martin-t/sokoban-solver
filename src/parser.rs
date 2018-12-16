@@ -69,7 +69,7 @@ type ParseResult = Result<
 >;
 
 fn parse(level: &str) -> Result<Level, ParserErr> {
-    if level.trim_left().contains('<') {
+    if level.trim_start().contains('<') {
         parse_format(level, Format::Custom)
     } else {
         parse_format(level, Format::Xsb)
@@ -78,7 +78,7 @@ fn parse(level: &str) -> Result<Level, ParserErr> {
 
 fn parse_format(level: &str, format: Format) -> Result<Level, ParserErr> {
     // trim so we can specify levels using raw strings more easily
-    let level = level.trim_matches('\n').trim_right();
+    let level = level.trim_matches('\n').trim_end();
 
     let (grid, goals, remover, boxes, player_pos) = match format {
         Format::Custom => parse_custom(level)?,
@@ -383,12 +383,12 @@ mod tests {
         let level = parse_format(input_level, Format::Custom).unwrap();
         assert_eq!(
             level.custom().to_string(),
-            input_level.trim_left_matches('\n')
+            input_level.trim_start_matches('\n')
         );
     }
 
     fn assert_success_xsb(input_level: &str) {
         let level = parse_format(input_level, Format::Xsb).unwrap();
-        assert_eq!(level.to_string(), input_level.trim_left_matches('\n'));
+        assert_eq!(level.to_string(), input_level.trim_start_matches('\n'));
     }
 }

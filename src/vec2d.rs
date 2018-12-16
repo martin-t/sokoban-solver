@@ -205,14 +205,14 @@ mod tests {
 #@$.*#
 *####*#
 "
-        .trim_left_matches('\n');
+        .trim_start_matches('\n');
         // the `\n\` is necessary because intellij removes trailing whitespace
         let xsb_grid: &str = "
 .####. \n\
 #  ..# \n\
 .####.#
 "
-        .trim_left_matches('\n');
+        .trim_start_matches('\n');
         let level: Level = xsb_level.parse().unwrap();
 
         assert_eq!(format!("{}", level.map().grid()), xsb_grid);
