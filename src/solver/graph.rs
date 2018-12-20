@@ -21,65 +21,87 @@ enum Type {
 }
 
 // TODO merge nodes with the same state? (make sure visited stays correct)
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 crate struct Graph<'a, C: Cost> {
     map: &'a dyn Map,
-    node_to_index: FnvHashMap<SearchNode<'a, C>, usize>,
-    /// node, visited counter, visited type
-    nodes: Vec<(SearchNode<'a, C>, usize, Type)>,
+    state_to_index: FnvHashMap<&'a State, usize>,
+    nodes: Vec<Node<'a, C>>,
     edges: Vec<(usize, usize)>,
-    solution_states: FnvHashSet<&'a State>,
-    visited_counter: usize,
+    solution_states: Vec<&'a State>,
+    time: usize,
+}
+
+#[derive(Debug, Clone)]
+crate struct Node<'a, C: Cost> {
+    state: &'a State,
+    queue_nodes: Vec<QueueNode<'a, C>>,
+}
+
+#[derive(Debug, Clone)]
+crate struct QueueNode<'a, C: Cost> {
+    search_node: SearchNode<'a, C>,
+    add_time: usize,
+    visit_time: Option<usize>,
+    visit_type: Type,
 }
 
 impl<'a, C: Cost> Graph<'a, C> {
     crate fn new(map: &'a dyn Map) -> Self {
         Self {
             map,
-            node_to_index: FnvHashMap::default(),
+            state_to_index: FnvHashMap::default(),
             nodes: Vec::new(),
             edges: Vec::new(),
-            solution_states: FnvHashSet::default(),
-            visited_counter: 0,
+            solution_states: Vec::new(),
+            time: 0,
         }
     }
 
-    crate fn add(&mut self, node: SearchNode<'a, C>, prev: Option<SearchNode<'a, C>>) {
-        assert!(!self.node_to_index.contains_key(&node));
+    crate fn add(&mut self, search_node: SearchNode<'a, C>, prev: Option<SearchNode<'a, C>>) {
+        let index = if self.state_to_index.contains_key(&search_node.state) {
+            self.state_to_index[search_node.state]
+        } else {
+            let index = self.nodes.len();
+            self.state_to_index.insert(search_node.state, index);
+            self.nodes.push(Node {
+                state: search_node.state,
+                queue_nodes: Vec::new(),
+            });
+            index
+        };
 
-        let node_index = self.nodes.len();
+        let qn = QueueNode {
+            search_node,
+            add_time: self.time,
+            visit_time: None,
+            visit_type: Type::Queued,
+        };
+        self.time += 1;
 
-        let mut node_type = Type::Queued;
-        for &(search_node, _, _) in &self.nodes {
-            if node.state == search_node.state && node.dist >= search_node.dist {
-                node_type = Type::AvoidableDuplicate;
-                break;
-            }
-        }
-
-        self.node_to_index.insert(node, node_index);
-        self.nodes.push((node, 0, node_type));
+        self.nodes[index].queue_nodes.push(qn);
 
         if let Some(prev) = prev {
-            let prev_index = self.node_to_index[&prev];
-            self.edges.push((prev_index, node_index));
+            let prev_index = self.state_to_index[&prev.state];
+            self.edges.push((prev_index, index));
         }
     }
 
     crate fn mark_duplicate(&mut self, node: SearchNode<'a, C>) {
-        let index = self.node_to_index[&node];
-        if self.nodes[index].2 != Type::AvoidableDuplicate {
-            self.nodes[index].2 = Type::Duplicate;
+        let index = self.state_to_index[&node.state];
+        for qn in &mut self.nodes[index].queue_nodes {
+            qn.visit_time = Some(self.time);
+            self.time += 1;
+            qn.visit_type = Type::Duplicate;
         }
-        self.nodes[index].1 = self.visited_counter;
-        self.visited_counter += 1;
     }
 
     crate fn mark_unique(&mut self, node: SearchNode<'a, C>) {
-        let index = self.node_to_index[&node];
-        self.nodes[index].1 = self.visited_counter;
-        self.visited_counter += 1;
-        self.nodes[index].2 = Type::Unique;
+        let index = self.state_to_index[&node.state];
+        for qn in &mut self.nodes[index].queue_nodes {
+            qn.visit_time = Some(self.time);
+            self.time += 1;
+            qn.visit_type = Type::Unique;
+        }
     }
 
     crate fn draw_states(&mut self, solution_states: &'a [&'a State]) {
@@ -88,9 +110,11 @@ impl<'a, C: Cost> Graph<'a, C> {
         let mut writer = Vec::new();
         dot::render(self, &mut writer).unwrap();
         let s = String::from_utf8(writer).unwrap();
+        // use a monospace font
         let s = s.replace("digraph G {", "digraph G {\n    graph [fontname = \"hack\"];\n    node [fontname = \"hack\"];\n    edge [fontname = \"hack\"];");
         fs::write("state-space.dot", &s).unwrap();
 
+        println!("Generating graph...");
         let status = Command::new("dot")
             // PNG is bigger on disk but takes less memory to load than SVG
             .args(&["-Tpng", "-O", "state-space.dot"])
@@ -127,23 +151,27 @@ impl<'a, C: Cost> Labeller<'a, Nd, Ed> for Graph<'a, C> {
         Id::new(format!("N{}", n)).unwrap()
     }
 
-    fn node_label(&'a self, n: &Nd) -> LabelText<'a> {
-        let node = self.nodes[*n].0;
-        LabelText::EscStr(
-            format!(
-                "c/v: {}/{}\nd: {}, h: {}\ncost: {}\n{}",
-                n,
-                self.nodes[*n].1,
-                node.dist,
-                node.cost - node.dist,
-                node.cost,
-                self.map.xsb_with_state(node.state)
-            )
-            .into(),
-        )
+    fn node_label(&'a self, &n: &Nd) -> LabelText<'a> {
+        let mut s = String::new();
+        for qn in &self.nodes[n].queue_nodes {
+            let v = qn
+                .visit_time
+                .map(|t| t.to_string())
+                .unwrap_or_else(|| "-".to_owned());
+            s.push_str(&format!(
+                "c/v: {}/{}\nd: {}, h: {}\ncost: {}\n",
+                qn.add_time,
+                v,
+                qn.search_node.dist,
+                qn.search_node.cost - qn.search_node.dist,
+                qn.search_node.cost,
+            ))
+        }
+        s.push_str(&self.map.xsb_with_state(self.nodes[n].state).to_string());
+        LabelText::EscStr(s.into())
     }
 
-    fn node_style(&'a self, n: &Nd) -> Style {
+    /*fn node_style(&'a self, n: &Nd) -> Style {
         let node_type = self.nodes[*n].2;
         if node_type == Type::Queued {
             Style::Solid
@@ -151,7 +179,7 @@ impl<'a, C: Cost> Labeller<'a, Nd, Ed> for Graph<'a, C> {
             Style::Filled
         }
     }
-
+    
     fn node_color(&'a self, n: &Nd) -> Option<LabelText<'a>> {
         let state = self.nodes[*n].0.state;
         let node_type = self.nodes[*n].2;
@@ -168,13 +196,18 @@ impl<'a, C: Cost> Labeller<'a, Nd, Ed> for Graph<'a, C> {
             Type::Queued => return None,
         };
         Some(LabelText::LabelStr(color_name.into()))
-    }
+    }*/
 
-    // TODO this also highlights edges to dups
     fn edge_style(&'a self, e: &Ed) -> Style {
-        let state0 = self.nodes[e.0].0.state;
-        let state1 = self.nodes[e.1].0.state;
-        if self.solution_states.contains(state0) && self.solution_states.contains(state1) {
+        let state0 = self.nodes[e.0].state;
+        let state1 = self.nodes[e.1].state;
+
+        let dest_pos = self.solution_states.iter().position(|&s| s == state1);
+        if dest_pos.is_none() || dest_pos.unwrap() == 0 {
+            return Style::Solid;
+        }
+        let dest_pos = dest_pos.unwrap();
+        if self.solution_states[dest_pos - 1] == state0 {
             Style::Bold
         } else {
             Style::Solid
@@ -182,9 +215,15 @@ impl<'a, C: Cost> Labeller<'a, Nd, Ed> for Graph<'a, C> {
     }
 
     fn edge_color(&'a self, e: &Ed) -> Option<LabelText<'a>> {
-        let state0 = self.nodes[e.0].0.state;
-        let state1 = self.nodes[e.1].0.state;
-        if self.solution_states.contains(state0) && self.solution_states.contains(state1) {
+        let state0 = self.nodes[e.0].state;
+        let state1 = self.nodes[e.1].state;
+
+        let dest_pos = self.solution_states.iter().position(|&s| s == state1);
+        if dest_pos.is_none() || dest_pos.unwrap() == 0 {
+            return None;
+        }
+        let dest_pos = dest_pos.unwrap();
+        if self.solution_states[dest_pos - 1] == state0 {
             Some(LabelText::LabelStr("red".into()))
         } else {
             None
