@@ -18,7 +18,7 @@ fn bench_pushes_boxxle1_1(c: &mut Criterion) {
 
 #[allow(unused)]
 fn bench_pushes_boxxle1_5(c: &mut Criterion) {
-    // 4 boxes goal room
+    // 4 box goal room
     bench_level(c, Method::Pushes, "levels/boxxle1/5.txt", 75);
 }
 
@@ -26,6 +26,18 @@ fn bench_pushes_boxxle1_5(c: &mut Criterion) {
 fn bench_pushes_boxxle1_18(c: &mut Criterion) {
     // 6 boxes - tiny goalroom with 2 entrances
     bench_level(c, Method::Pushes, "levels/boxxle1/18.txt", 15);
+}
+
+#[allow(unused)]
+fn bench_pushes_boxxle1_25(c: &mut Criterion) {
+    // 7 box goal room
+    bench_level(c, Method::Pushes, "levels/boxxle1/25.txt", 10);
+}
+
+#[allow(unused)]
+fn bench_pushes_boxxle1_29(c: &mut Criterion) {
+    // 8 boxes - goal area with 4 entrances
+    bench_level(c, Method::Pushes, "levels/boxxle1/29.txt", 5);
 }
 
 #[allow(unused)]
@@ -81,6 +93,8 @@ criterion_group!(
     bench_pushes_boxxle1_1,
     bench_pushes_boxxle1_5,
     bench_pushes_boxxle1_18,
+    bench_pushes_boxxle1_25,
+    bench_pushes_boxxle1_29,
     bench_pushes_boxxle1_108,
     bench_pushes_boxxle2_3,
     bench_pushes_boxxle2_4,
