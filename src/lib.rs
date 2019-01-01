@@ -13,7 +13,6 @@
 #![warn(unused)]
 #![warn(clippy::all)]
 // Stuff for testing
-#![cfg_attr(test, feature(duration_as_u128))]
 #![cfg_attr(test, feature(test))]
 
 pub mod config;
