@@ -140,7 +140,7 @@ Pushes: 2
 #[test]
 fn run_bad_formatting_args() {
     // doesn't check stderr - it's not deterministic
-    // it sometimes complains about --xsb and sometimees about --custom
+    // it sometimes complains about --xsb and sometimes about --custom
     // hopefully should be enough to test that it fails and doesn't print to stdout
 
     Command::cargo_bin(env!("CARGO_PKG_NAME"))
