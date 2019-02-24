@@ -420,14 +420,14 @@ mod tests {
                 let mut bad_levels = Vec::new();
 
                 for &(pack, name, method_results) in &results {
-                    for (&mres, method) in
+                    for (&method_res, method) in
                         method_results
                             .iter()
                             .zip(&[MovesPushes, Moves, PushesMoves, Pushes])
                     {
-                        if let Some(mres) = mres {
+                        if let Some(method_res) = method_res {
                             if let TestComparison::Changed($moves, $pushes, $created, $visited) =
-                                mres.comparison
+                                method_res.comparison
                             {
                                 if $bad_cond {
                                     bad_levels.push((pack, name, method, $stat));
@@ -481,13 +481,13 @@ mod tests {
 
         let mut bad_levels = Vec::new();
         for &(pack, name, method_results) in &results {
-            for (&mres, method) in
+            for (&method_res, method) in
                 method_results
                     .iter()
                     .zip(&[MovesPushes, Moves, PushesMoves, Pushes])
             {
-                if let Some(mres) = mres {
-                    if mres.comparison == TestComparison::SolvabilityChanged {
+                if let Some(method_res) = method_res {
+                    if method_res.comparison == TestComparison::SolvabilityChanged {
                         bad_levels.push((pack, name, method))
                     }
                 }
@@ -505,9 +505,9 @@ mod tests {
         // better or equal numbers than methods which don't
         type OptimalityPred = dyn Fn((i32, i32), (i32, i32)) -> bool;
         let not_optimal =
-            |mres: [Option<TestResult>; 4], m1: usize, m2: usize, pred: &OptimalityPred| {
-                if let Some(method_res_1) = mres[m1] {
-                    if let Some(method_res_2) = mres[m2] {
+            |method_res: [Option<TestResult>; 4], m1: usize, m2: usize, pred: &OptimalityPred| {
+                if let Some(method_res_1) = method_res[m1] {
+                    if let Some(method_res_2) = method_res[m2] {
                         let counts1 = method_res_1.counts.unwrap_or((-1, -1));
                         let counts2 = method_res_2.counts.unwrap_or((-1, -1));
 
@@ -560,7 +560,7 @@ mod tests {
         let level = level_path.load_level().unwrap();
         let solution = level.solve(method, false).unwrap();
 
-        // innacurate, only useful to quickly see which levels are difficult
+        // inaccurate, only useful to quickly see which levels are difficult
         println!(
             "Finished in approximately {} ms",
             started.elapsed().as_millis().separated_string(),
