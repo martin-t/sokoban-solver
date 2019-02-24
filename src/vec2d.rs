@@ -21,7 +21,7 @@ impl<T> Vec2d<T> {
     where
         T: Clone + Default,
     {
-        let max_cols = grid.iter().map(|row| row.len()).max().unwrap_or(0);
+        let max_cols = grid.iter().map(Vec::len).max().unwrap_or(0);
         let mut data = Vec::with_capacity(grid.len() * max_cols);
         for row in grid {
             for c in row {
