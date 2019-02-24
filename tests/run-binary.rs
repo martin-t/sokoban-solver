@@ -69,7 +69,7 @@ Moves: 3
 Pushes: 3
 ";
 
-    Command::main_binary()
+    Command::cargo_bin(env!("CARGO_PKG_NAME"))
         .unwrap()
         .arg("levels/custom/02-one-way.txt")
         .assert()
@@ -126,7 +126,7 @@ Moves: 3
 Pushes: 2
 ";
 
-    Command::main_binary()
+    Command::cargo_bin(env!("CARGO_PKG_NAME"))
         .unwrap()
         .arg("--moves")
         .arg("--custom")
@@ -143,7 +143,7 @@ fn run_bad_formatting_args() {
     // it sometimes complains about --xsb and sometimees about --custom
     // hopefully should be enough to test that it fails and doesn't print to stdout
 
-    Command::main_binary()
+    Command::cargo_bin(env!("CARGO_PKG_NAME"))
         .unwrap()
         .arg("--custom")
         .arg("--xsb")
