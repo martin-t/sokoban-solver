@@ -40,7 +40,7 @@ crate fn reconstruct_moves(
     let mut cur_state = iter.next().expect("There must be at least one state");
 
     // the states we're getting here might have been normalized (depending on solving method)
-    // so we need to track the actual player posistions (determined by how boxes are pushed)
+    // so we need to track the actual player positions (determined by how boxes are pushed)
     let mut real_player_pos = real_initial_player_pos;
 
     for next_state in iter {

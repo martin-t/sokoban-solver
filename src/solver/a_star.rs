@@ -252,7 +252,7 @@ impl<'a, C: Cost + Add<Output = C>> PartialOrd for CostComparator<'a, C> {
 
 impl<'a, C: Cost + Add<Output = C>> Ord for CostComparator<'a, C> {
     fn cmp(&self, other: &Self) -> Ordering {
-        // orders acording to cost lowest to highest
+        // orders according to cost lowest to highest
         // needs std::cmp::Reverse when using BinaryHeap (it's a max heap)
         // according to Criterion, the difference between Reversed and actually reversing the order
         // (if any) is usually within noise threshold

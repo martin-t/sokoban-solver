@@ -364,7 +364,7 @@ trait SolverTrait {
                 graph.add(next_node, Some(cur_node));
 
                 // this ignores duplicates that can be detected during creation and avoids queuing them
-                // but the improvementis in created/visited nodes are only a couple percent total (and sometimes worse)
+                // but the improvements in created/visited nodes are only a couple percent total (and sometimes worse)
                 // to_visit size on supaplex-goals goes from 1.5M to 400k, memory usage is similar since we don't prune in_queue
                 // TODO try enabling this after detecting dead ends works to see if the improvement is better
 

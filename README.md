@@ -28,4 +28,4 @@ Use `git config core.hooksPath git-hooks` to check the code before committing.
 License
 -------
 
-Everything except `levels/` is licenced under GPLv3 or later.
+Everything except `levels/` is licensed under GPLv3 or later.

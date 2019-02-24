@@ -268,7 +268,7 @@ mod tests {
         let search_fn = one_box_push_dirs;
 
         // although the function should handle all player positions,
-        // in practise the player will always be next to the box
+        // in practice the player will always be next to the box
         assert_eq!(
             hash_set(search_fn(map, center_box, center_box + Up)),
             hash_set(vec![Down, Left])

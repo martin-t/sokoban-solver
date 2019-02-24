@@ -170,7 +170,7 @@ impl<'a, C: Cost> Labeller<'a, Nd, Ed> for Graph<'a, C> {
         Some(LabelText::LabelStr(color_name.into()))
     }
 
-    // TODO this also highlights edges to dups
+    // TODO this also highlights edges to dupes
     fn edge_style(&'a self, e: &Ed) -> Style {
         let state0 = self.nodes[e.0].0.state;
         let state1 = self.nodes[e.1].0.state;
