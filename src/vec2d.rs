@@ -2,10 +2,8 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Index, IndexMut};
 
-use prettytable::cell::Cell;
 use prettytable::format::{Alignment, FormatBuilder};
-use prettytable::row::Row;
-use prettytable::Table;
+use prettytable::{Cell, Row, Table};
 
 use crate::data::{MapCell, Pos};
 
