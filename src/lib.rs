@@ -360,7 +360,7 @@ mod tests {
 
     fn test_and_time_levels<L: AsRef<str> + Display>(levels: &[(&str, L, Vec<bool>)]) {
         #![allow(clippy::cast_lossless)]
-        #![allow(clippy::cyclomatic_complexity)]
+        #![allow(clippy::cognitive_complexity)]
 
         use self::Method::*;
 
