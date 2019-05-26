@@ -20,7 +20,7 @@ tests:
     - rustup component add clippy
 
     # --debug is faster
-    # need force when using cache because there's no --update
+    # need force when using cache because there's no --update (https://github.com/rust-lang/cargo/issues/6797)
     - cargo install --debug cargo-audit  #--force
     - cargo audit
 
@@ -29,7 +29,7 @@ tests:
     # normal
     - cargo build --verbose
     - cargo build --verbose --release
-    - cargo clippy -- --deny warnings  # clipy doesn't use RUSTFLAGS
+    - cargo clippy -- --deny warnings  # clippy doesn't use RUSTFLAGS
     - cargo test --all --verbose
     - cargo test --all --verbose --release
     - cargo bench --verbose --no-run  # make sure benches compile
