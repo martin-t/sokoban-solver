@@ -10,6 +10,7 @@ use sokoban_solver::{LoadLevel, Solve};
 
 // allowing unused so i can bench just one or a few
 // and still notice other warnings if there are any
+
 #[allow(unused)]
 fn bench_pushes_boxxle1_1(c: &mut Criterion) {
     // 3 goals in a row

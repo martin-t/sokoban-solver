@@ -16,20 +16,15 @@ tests:
   #    - target/
   script:
     - rustc --version && cargo --version
-    - rustup component add rustfmt
-    - rustup component add clippy
 
     # --debug is faster
     # need force when using cache because there's no --update (https://github.com/rust-lang/cargo/issues/6797)
     - cargo install --debug cargo-audit  #--force
     - cargo audit
 
-    - cargo fmt -- --check  # formats all features
-
     # normal
     - cargo build --verbose
     - cargo build --verbose --release
-    - cargo clippy -- --deny warnings  # clippy doesn't use RUSTFLAGS
     - cargo test --all --verbose
     - cargo test --all --verbose --release
     - cargo bench --verbose --no-run  # make sure benches compile
@@ -37,6 +32,19 @@ tests:
     # with graph
     - cargo build --features graph --verbose
     - cargo build --features graph --verbose --release
-    - cargo clippy --features graph -- --deny warnings  # clippy doesn't use RUSTFLAGS
     - cargo run --features graph -- levels/custom/04-two-boxes-no-packing.txt
     - test -f state-space.dot.png  # -f == regular file exists (yes, i actively (if that's even possible) refuse to remember this)
+
+rustfmt:
+  script:
+    - rustup component add rustfmt
+    - cargo fmt -- --check  # formats all features
+  allow_failure: true
+
+clippy:
+  script:
+    - rustup component add clippy
+    # clippy doesn't use RUSTFLAGS
+    - cargo clippy -- --deny warnings
+    - cargo clippy --features graph -- --deny warnings
+  allow_failure: true
