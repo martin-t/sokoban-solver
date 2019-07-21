@@ -21,7 +21,7 @@ Currently uses A* with push distances to nearest goal (or remover) as heuristic.
 Installation
 ------------
 
-Requires nightly (`rustup override add nightly`).
+Requires nightly (will be installed automatically thanks to the `rust-toolchain` file).
 
 Use `git config core.hooksPath git-hooks` to check the code before committing.
 
