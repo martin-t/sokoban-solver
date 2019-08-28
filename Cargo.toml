@@ -29,7 +29,7 @@ graph = ["dot"]
 # note to self: when adding features, update .gitlab.ci and git hooks
 
 [dev-dependencies]
-criterion = { version = "0.2.4", features = ['real_blackbox'] }
+criterion = { version = "0.3.0", features = ['real_blackbox'] }
 assert_cmd = "0.11.0"
 difference = "2.0.0"
 

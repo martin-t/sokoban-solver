@@ -38,7 +38,7 @@ fn bench_pushes_boxxle1_25(c: &mut Criterion) {
 #[allow(unused)]
 fn bench_pushes_boxxle1_29(c: &mut Criterion) {
     // 8 boxes - goal area with 4 entrances
-    bench_level(c, Method::Pushes, "levels/boxxle1/29.txt", 5);
+    bench_level(c, Method::Pushes, "levels/boxxle1/29.txt", 10);
 }
 
 #[allow(unused)]
@@ -71,6 +71,8 @@ fn bench_moves_boxxle1_1(c: &mut Criterion) {
     bench_level(c, Method::Moves, "levels/boxxle1/1.txt", 150);
 }
 
+// TODO increase target time to avoid warnings
+// TODO avoid soft-deprecated functions
 fn bench_level(c: &mut Criterion, method: Method, level_path: &str, samples: usize) {
     let level = level_path.load_level().unwrap();
 
@@ -78,11 +80,11 @@ fn bench_level(c: &mut Criterion, method: Method, level_path: &str, samples: usi
         &format!("{}", method),
         Benchmark::new(level_path, move |b| {
             b.iter(|| {
-                criterion::black_box(Solve::solve(
+                Solve::solve(
                     criterion::black_box(&level),
                     criterion::black_box(method),
                     criterion::black_box(false),
-                ))
+                )
             })
         })
         .sample_size(samples),
