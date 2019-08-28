@@ -431,11 +431,11 @@ mod tests {
         let level: Level = level.parse().unwrap();
 
         let expected = r"
-None None    None    None    None    None None 
-None None    None    None    None    None None 
-None None    None    None    None    None None 
-None None Some(3) Some(2) Some(1) Some(0) None 
-None None    None    None    None    None None 
+    None    None    None    None    None    None    None
+    None    None    None    None    None    None    None
+    None    None    None    None    None    None    None
+    None    None Some(3) Some(2) Some(1) Some(0)    None
+    None    None    None    None    None    None    None
 "
         .trim_start_matches('\n');
 
@@ -455,11 +455,11 @@ None None    None    None    None    None None
         let level: Level = level.parse().unwrap();
 
         let expected = r"
-None None    None    None    None    None None 
-None None    None    None    None    None None 
-None None    None Some(3)    None    None None 
-None None Some(3) Some(2) Some(1) Some(0) None 
-None None    None    None    None    None None 
+    None    None    None    None    None    None    None
+    None    None    None    None    None    None    None
+    None    None    None Some(3)    None    None    None
+    None    None Some(3) Some(2) Some(1) Some(0)    None
+    None    None    None    None    None    None    None
 "
         .trim_start_matches('\n');
 
@@ -485,17 +485,17 @@ None None    None    None    None    None None
         let level: Level = level.parse().unwrap();
 
         let expected = r"
-None    None    None    None    None    None    None     None     None None None 
-None    None    None    None    None    None    None     None     None None None 
-None    None    None    None    None    None    None     None  Some(1) None None 
-None    None    None    None    None    None Some(0)  Some(0)  Some(0) None None 
-None    None Some(5) Some(4) Some(3) Some(2) Some(1)  Some(0)  Some(1) None None 
-None    None Some(5) Some(6) Some(7) Some(8) Some(9) Some(10) Some(11) None None 
-None    None Some(4)    None    None    None    None     None     None None None 
-None Some(0) Some(1) Some(2) Some(3) Some(4) Some(5)  Some(6)     None None None 
-None    None Some(2) Some(3) Some(2) Some(1) Some(2)  Some(3)     None None None 
-None    None    None    None    None Some(0)    None     None     None None None 
-None    None    None    None    None    None    None     None     None None None 
+     None     None     None     None     None     None     None     None     None     None     None
+     None     None     None     None     None     None     None     None     None     None     None
+     None     None     None     None     None     None     None     None  Some(1)     None     None
+     None     None     None     None     None     None  Some(0)  Some(0)  Some(0)     None     None
+     None     None  Some(5)  Some(4)  Some(3)  Some(2)  Some(1)  Some(0)  Some(1)     None     None
+     None     None  Some(5)  Some(6)  Some(7)  Some(8)  Some(9) Some(10) Some(11)     None     None
+     None     None  Some(4)     None     None     None     None     None     None     None     None
+     None  Some(0)  Some(1)  Some(2)  Some(3)  Some(4)  Some(5)  Some(6)     None     None     None
+     None     None  Some(2)  Some(3)  Some(2)  Some(1)  Some(2)  Some(3)     None     None     None
+     None     None     None     None     None  Some(0)     None     None     None     None     None
+     None     None     None     None     None     None     None     None     None     None     None
 "
         .trim_start_matches('\n');
 

@@ -2,9 +2,6 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Index, IndexMut};
 
-use prettytable::format::{Alignment, FormatBuilder};
-use prettytable::{Cell, Row, Table};
-
 use crate::data::{MapCell, Pos};
 
 #[derive(Clone, PartialEq, Eq)]
@@ -101,21 +98,39 @@ impl Iterator for Positions {
 
 impl<T: Display> Display for Vec2d<T> {
     default fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let mut table = Table::new();
-        for row in self.data.chunks(self.cols.into()) {
-            let mut table_cells = Vec::new();
-            for cell in row {
-                table_cells.push(Cell::new_align(&format!("{}", cell), Alignment::RIGHT));
-            }
-            table.add_row(Row::new(table_cells));
-        }
-        table.set_format(FormatBuilder::new().padding(0, 1).build());
-        write!(f, "{}", table)
+        let data: Vec<String> = self.data.iter().map(|t| format!("{}", t)).collect();
+        fmt_t(data, self.cols.into(), f)
     }
+}
+
+impl<T: Debug> Debug for Vec2d<T> {
+    default fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let data: Vec<String> = self.data.iter().map(|t| format!("{:?}", t)).collect();
+        fmt_t(data, self.cols.into(), f)
+    }
+}
+
+fn fmt_t(data: Vec<String>, cols: usize, f: &mut Formatter<'_>) -> fmt::Result {
+    if cols == 0 {
+        // chunk size must be >0
+        return Ok(());
+    }
+    let longest = data.iter().map(|s| s.len()).max().unwrap_or(0);
+    for row in data.chunks(cols) {
+        for cell in row {
+            write!(f, " {:>width$}", cell, width = longest)?;
+        }
+        writeln!(f)?;
+    }
+    Ok(())
 }
 
 impl Display for Vec2d<MapCell> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        if self.cols == 0 {
+            // chunk size must be >0
+            return Ok(());
+        }
         for row in self.data.chunks(self.cols.into()) {
             for &cell in row {
                 write!(f, "{}", cell)?;
@@ -126,8 +141,18 @@ impl Display for Vec2d<MapCell> {
     }
 }
 
+impl Debug for Vec2d<MapCell> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
 impl Display for Vec2d<bool> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        if self.cols == 0 {
+            // chunk size must be >0
+            return Ok(());
+        }
         for row in self.data.chunks(self.cols.into()) {
             for &cell in row {
                 write!(f, "{}", if cell { 1 } else { 0 })?;
@@ -135,27 +160,6 @@ impl Display for Vec2d<bool> {
             writeln!(f)?;
         }
         Ok(())
-    }
-}
-
-impl<T: Debug> Debug for Vec2d<T> {
-    default fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let mut table = Table::new();
-        for row in self.data.chunks(self.cols.into()) {
-            let mut table_cells = Vec::new();
-            for cell in row {
-                table_cells.push(Cell::new_align(&format!("{:?}", cell), Alignment::RIGHT));
-            }
-            table.add_row(Row::new(table_cells));
-        }
-        table.set_format(FormatBuilder::new().padding(0, 1).build());
-        write!(f, "{}", table)
-    }
-}
-
-impl Debug for Vec2d<MapCell> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
     }
 }
 
@@ -197,7 +201,7 @@ mod tests {
     }
 
     #[test]
-    fn formatting_vec2d() {
+    fn formatting_map_cell() {
         let xsb_level: &str = r"
 *####*
 #@$.*#
@@ -213,7 +217,58 @@ mod tests {
         .trim_start_matches('\n');
         let level: Level = xsb_level.parse().unwrap();
 
+        println!("{}", level.map().grid());
+        println!("{:?}", level.map().grid());
+
         assert_eq!(format!("{}", level.map().grid()), xsb_grid);
         assert_eq!(format!("{:?}", level.map().grid()), xsb_grid);
+    }
+
+    #[test]
+    fn formatting_bool() {
+        let v2d = Vec2d::new(&[
+            vec![true, false, true],
+            vec![false, true, false],
+            vec![true, false, true],
+        ]);
+
+        let expected = "101\n010\n101\n";
+
+        assert_eq!(format!("{}", v2d), expected);
+        assert_eq!(format!("{:?}", v2d), expected);
+    }
+
+    #[test]
+    fn formatting_t() {
+        // currently i only care about Ts which print themselves on a single line
+
+        let v2d = Vec2d::new(&[
+            vec![1, 2, 3],
+            vec![42, 1337, 666],
+            vec![4, 5, 6],
+            vec![7, 88, 9],
+        ]);
+
+        let expected = r"
+    1    2    3
+   42 1337  666
+    4    5    6
+    7   88    9
+"
+        .trim_start_matches('\n');
+
+        assert_eq!(format!("{}", v2d), expected);
+        assert_eq!(format!("{:?}", v2d), expected);
+    }
+
+    #[test]
+    fn formatting_empty() {
+        let v2d: Vec2d<bool> = Vec2d::new(&[]);
+        assert_eq!(format!("{}", v2d), "");
+        assert_eq!(format!("{:?}", v2d), "");
+
+        let v2d: Vec2d<&str> = Vec2d::new(&[]);
+        assert_eq!(format!("{}", v2d), "");
+        assert_eq!(format!("{:?}", v2d), "");
     }
 }
