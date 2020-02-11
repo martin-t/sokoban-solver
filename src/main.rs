@@ -13,8 +13,6 @@ use std::process;
 
 use clap::{crate_authors, crate_version};
 use clap::{App, Arg, ArgGroup};
-use env_logger;
-use log;
 
 use sokoban_solver::config::{Format, Method};
 use sokoban_solver::{LoadLevel, Solve};
