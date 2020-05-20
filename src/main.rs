@@ -6,6 +6,8 @@
 #![warn(unreachable_pub)]
 #![warn(unused)]
 #![warn(clippy::all)]
+// Let's see if this gets annoying, I definitely want some of them but maybe not all.
+#![warn(clippy::pedantic)]
 
 #[cfg(unix)]
 use std::fs;
@@ -19,15 +21,8 @@ use sokoban_solver::{LoadLevel, Solve};
 
 // TODO update readme (4/5 methods, a pic of the state space)
 
+#[allow(clippy::too_many_lines)]
 fn main() {
-    // Chrome uses 300 (which means vscode does too) and gets killed when trying to solve hard levels.
-    #[cfg(unix)]
-    fs::write(
-        &format!("/proc/{}/oom_score_adj", process::id()),
-        500.to_string(),
-    )
-    .unwrap_or_else(|_| eprintln!("Couldn't change oom_score_adj"));
-
     // if anybody thinks this is overkill, i made a typo twice already
     const CUSTOM: &str = "custom";
     const XSB: &str = "xsb";
@@ -38,6 +33,14 @@ fn main() {
     const ANY: &str = "any";
     const LEVEL_FILE: &str = "level-file";
     const VERBOSE: &str = "verbose";
+
+    // Chrome uses 300 (which means vscode does too) and gets killed when trying to solve hard levels.
+    #[cfg(unix)]
+    fs::write(
+        &format!("/proc/{}/oom_score_adj", process::id()),
+        500.to_string(),
+    )
+    .unwrap_or_else(|_| eprintln!("Couldn't change oom_score_adj"));
 
     let app = App::new("sokoban-solver")
         .author(crate_authors!())
