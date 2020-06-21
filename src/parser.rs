@@ -88,15 +88,16 @@ fn parse_format(level: &str, format: Format) -> Result<Level, ParserErr> {
     let grid = Vec2d::new(&grid);
 
     if let Some(remover) = remover {
-        if !goals.is_empty() {
-            Err(ParserErr::RemoverAndGoals)
-        } else {
+        if goals.is_empty() {
             Ok(Level::new(
                 MapType::Remover(RemoverMap::new(grid, remover)),
                 State::new(player_pos, boxes),
             ))
+        } else {
+            Err(ParserErr::RemoverAndGoals)
         }
     } else {
+        // goals can be empty - it's handled as already solved later
         Ok(Level::new(
             MapType::Goals(GoalMap::new(grid, goals)),
             State::new(player_pos, boxes),

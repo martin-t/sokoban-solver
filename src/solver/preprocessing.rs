@@ -30,6 +30,7 @@ crate fn check_reachability<M: Map>(map: &M, state: &State) -> Result<Vec2d<MapC
                 return Err(SolverErr::IncompleteBorder);
             }
 
+            #[allow(clippy::cast_sign_loss)]
             let new_pos = Pos::new(nr as u8, nc as u8);
             if !visited[new_pos] && map.grid()[new_pos] != MapCell::Wall {
                 to_visit.push(new_pos);

@@ -4,6 +4,8 @@
 #![feature(min_specialization)]
 // https://github.com/rust-lang/rust/issues/15701
 #![feature(stmt_expr_attributes)]
+// Stuff for testing
+#![cfg_attr(test, feature(test))]
 // Additional warnings that are allow by default (`rustc -W help`)
 #![warn(missing_copy_implementations)]
 #![warn(missing_debug_implementations)]
@@ -12,8 +14,16 @@
 #![warn(unreachable_pub)]
 #![warn(unused)]
 #![warn(clippy::all)]
-// Stuff for testing
-#![cfg_attr(test, feature(test))]
+// Enable pedantic since about two thirds seem useful to me,
+// then disable individual lints which are too strict (some are disabled locally):
+#![warn(clippy::pedantic)]
+#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::must_use_candidate)]
+// would be nice to have document eventually
+#![allow(clippy::missing_errors_doc)]
+// would be nice to have functions for casting that check for truncation in debug mode
+#![allow(clippy::cast_possible_truncation)]
+// ^ End of pedantic overrides
 
 pub mod config;
 pub mod level;

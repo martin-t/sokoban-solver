@@ -66,7 +66,7 @@ impl<'a> MapFormatter<'a> {
                 MapCell::Empty => write!(f, " ")?,
                 MapCell::Goal => write!(f, "_")?,
                 MapCell::Remover => write!(f, "R")?,
-                _ => unreachable!("Wall again"),
+                MapCell::Wall => unreachable!("Wall again"),
             };
         }
         Ok(())

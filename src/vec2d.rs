@@ -99,23 +99,23 @@ impl Iterator for Positions {
 impl<T: Display> Display for Vec2d<T> {
     default fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let data: Vec<String> = self.data.iter().map(|t| format!("{}", t)).collect();
-        fmt_t(data, self.cols.into(), f)
+        fmt_t(&data, self.cols.into(), f)
     }
 }
 
 impl<T: Debug> Debug for Vec2d<T> {
     default fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let data: Vec<String> = self.data.iter().map(|t| format!("{:?}", t)).collect();
-        fmt_t(data, self.cols.into(), f)
+        fmt_t(&data, self.cols.into(), f)
     }
 }
 
-fn fmt_t(data: Vec<String>, cols: usize, f: &mut Formatter<'_>) -> fmt::Result {
+fn fmt_t(data: &[String], cols: usize, f: &mut Formatter<'_>) -> fmt::Result {
     if cols == 0 {
         // chunk size must be >0
         return Ok(());
     }
-    let longest = data.iter().map(|s| s.len()).max().unwrap_or(0);
+    let longest = data.iter().map(String::len).max().unwrap_or(0);
     for row in data.chunks(cols) {
         for cell in row {
             write!(f, " {:>width$}", cell, width = longest)?;

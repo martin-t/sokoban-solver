@@ -90,8 +90,7 @@ impl Solve for Level {
                     Method::MovesPushes => Ok(solver.search(print_status, MovePushLogic)),
                     Method::Moves => Ok(solver.search(print_status, MoveLogic)),
                     Method::PushesMoves => Ok(solver.search(print_status, PushMoveLogic)),
-                    Method::Pushes => Ok(solver.search(print_status, PushLogic)),
-                    Method::Any => Ok(solver.search(print_status, PushLogic)),
+                    Method::Pushes | Method::Any => Ok(solver.search(print_status, PushLogic)),
                 }
             }
             MapType::Remover(ref remover_map) => {
@@ -101,8 +100,7 @@ impl Solve for Level {
                     Method::MovesPushes => Ok(solver.search(print_status, MovePushLogic)),
                     Method::Moves => Ok(solver.search(print_status, MoveLogic)),
                     Method::PushesMoves => Ok(solver.search(print_status, PushMoveLogic)),
-                    Method::Pushes => Ok(solver.search(print_status, PushLogic)),
-                    Method::Any => Ok(solver.search(print_status, PushLogic)),
+                    Method::Pushes | Method::Any => Ok(solver.search(print_status, PushLogic)),
                 }
             }
         }
@@ -577,7 +575,7 @@ where
 {
     let mut new_states = Vec::new();
 
-    let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
+    let mut box_grid = sd.map.grid().scratchpad_with_default(255_u8);
     for (i, b) in cur_state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }
@@ -627,7 +625,7 @@ where
 {
     let mut new_states = Vec::new();
 
-    let mut box_grid = sd.map.grid().scratchpad_with_default(255u8);
+    let mut box_grid = sd.map.grid().scratchpad_with_default(255_u8);
     for (i, b) in cur_state.boxes.iter().enumerate() {
         box_grid[*b] = i as u8;
     }
