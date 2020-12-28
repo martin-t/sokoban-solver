@@ -4,7 +4,7 @@ Sokoban solver
 [![pipeline status](https://gitlab.com/martin-t/sokoban-solver/badges/master/pipeline.svg)](https://gitlab.com/martin-t/sokoban-solver/commits/master)
 [![dependency status](https://deps.rs/repo/gitlab/martin-t/sokoban-solver/status.svg)](https://deps.rs/repo/gitlab/martin-t/sokoban-solver)
 
-So far can't do much, I am more playing with the language than trying to write a good solver. It can currently solve only level 1 of the original Sokoban levels.
+So far can't do much, I am more playing with the language than trying to write a good solver. It can currently solve only level 1 of the original Sokoban levels because they tend to be large and require goalroom optimizations. It, however, chews through even difficult small levels like [microban](https://gitlab.com/martin-t/sokoban-solver/-/tree/master/levels/microban1) faster than any human ever could.
 
 Some parts are intentionally more general than they need to be so that I can properly test Rust's generics:
  - There are 2 level formats (the standard XSB/SOK plus a custom one) for both input and output
