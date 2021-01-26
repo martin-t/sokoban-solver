@@ -635,8 +635,7 @@ where
     reachable[cur_state.player_pos] = true;
 
     // Vec is noticeably faster than VecDeque on some levels
-    let mut to_visit = Vec::new();
-    to_visit.push(cur_state.player_pos);
+    let mut to_visit = vec![cur_state.player_pos];
 
     while let Some(player_pos) = to_visit.pop() {
         for &dir in &DIRECTIONS {
@@ -688,8 +687,7 @@ fn normalized_pos<M: Map>(map: &M, player_pos: Pos, boxes: &[Pos]) -> Pos {
         box_grid[b] = true;
     }
 
-    let mut to_visit = Vec::new();
-    to_visit.push(player_pos);
+    let mut to_visit = vec![player_pos];
 
     let mut visited = map.grid().scratchpad();
     visited[player_pos] = true;
