@@ -17,4 +17,4 @@ find . | grep "\.rs$" | xargs touch
 # but that is discouraged and no such feature existed at the time this was added.
 cargo clippy --all-features -- --deny warnings
 
-cargo audit --deny warnings
+cargo audit --deny warnings --ignore RUSTSEC-2020-0095

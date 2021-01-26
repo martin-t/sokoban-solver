@@ -20,7 +20,8 @@ tests:
     # --debug is faster
     # need force when using cache because there's no --update (https://github.com/rust-lang/cargo/issues/6797)
     - cargo install --debug cargo-audit  #--force
-    - cargo audit --deny warnings  # yanking only gives warn and most crates probably don't bother reporting vulns properly
+    # yanking only gives warn and most crates probably don't bother reporting vulns properly
+    - cargo audit --deny warnings --ignore RUSTSEC-2020-0095
 
     # normal
     - cargo build --verbose
