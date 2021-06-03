@@ -83,7 +83,7 @@ impl<'a, C: Cost> Graph<'a, C> {
     }
 
     crate fn draw_states(&mut self, solution_states: &'a [&'a State]) {
-        self.solution_states = solution_states.iter().cloned().collect();
+        self.solution_states = solution_states.iter().copied().collect();
 
         let mut writer = Vec::new();
         dot::render(self, &mut writer).unwrap();
