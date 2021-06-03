@@ -3,7 +3,7 @@ extern crate criterion;
 
 extern crate sokoban_solver;
 
-use criterion::{Benchmark, Criterion};
+use criterion::Criterion;
 
 use sokoban_solver::config::Method;
 use sokoban_solver::{LoadLevel, Solve};
@@ -72,13 +72,13 @@ fn bench_moves_boxxle1_1(c: &mut Criterion) {
 }
 
 // TODO increase target time to avoid warnings
-// TODO avoid soft-deprecated functions
 fn bench_level(c: &mut Criterion, method: Method, level_path: &str, samples: usize) {
     let level = level_path.load_level().unwrap();
 
-    c.bench(
-        &format!("{}", method),
-        Benchmark::new(level_path, move |b| {
+    let mut group = c.benchmark_group(level_path);
+
+    group
+        .bench_function(level_path, |b| {
             b.iter(|| {
                 Solve::solve(
                     criterion::black_box(&level),
@@ -87,8 +87,9 @@ fn bench_level(c: &mut Criterion, method: Method, level_path: &str, samples: usi
                 )
             })
         })
-        .sample_size(samples),
-    );
+        .sample_size(samples);
+
+    group.finish();
 }
 
 criterion_group!(
