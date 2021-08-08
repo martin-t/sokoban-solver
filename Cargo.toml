@@ -4,7 +4,6 @@ version = "0.1.0"
 authors = ["Martin Taibr <taibr.martin@gmail.com>"]
 edition = '2018'
 
-
 # abort on panic might be better when using threads
 # (https://vorner.github.io/2018/07/22/dont_panic.html)
 
@@ -14,33 +13,30 @@ panic = 'abort'
 # criterion seems to be using profile.release
 [profile.release]
 panic = 'abort'
-
 # makes compilation unacceptably slow (over a minute for simple changes)
 #lto = true
-
 # 5-10% speedup, doesn't seem to affect compile time for simple changes
 codegen-units = 1
-
 # for profiling, doesn't effect performance
 debug = true
-
-[features]
-graph = ["dot"]
-# note to self: when adding features, update .gitlab.ci and git hooks
-
-[dev-dependencies]
-criterion = { version = "0.3.0", features = ['real_blackbox'] }
-assert_cmd = "1.0.0"
 
 [[bench]]
 name = "criterion_benches"
 harness = false
 
+[features]
+graph = ["dot"]
+# note to self: when adding features, update .gitlab.ci and git hooks
+
 [dependencies]
 clap = "2.32.0"
-separator = "0.4"
-log = { version = "0.4.3", features = ["release_max_level_info"] }
+dot = { version = "0.1.4", optional = true }
 env_logger = "0.9.0"
 fnv = "1.0.6"
+log = { version = "0.4.3", features = ["release_max_level_info"] }
+separator = "0.4"
 typed-arena = "2.0.1"
-dot = { version = "0.1.4", optional = true }
+
+[dev-dependencies]
+assert_cmd = "1.0.0"
+criterion = { version = "0.3.0", features = ['real_blackbox'] }
