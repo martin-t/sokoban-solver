@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn one_box_reachability() {
-        use crate::data::Dir::{self, *};
+        use crate::data::Dir::{self, Down, Left, Right, Up};
         use std::collections::HashSet;
 
         let level = r"

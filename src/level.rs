@@ -51,7 +51,7 @@ impl Level {
     }
 
     pub fn format(&self, format: Format) -> MapFormatter<'_> {
-        MapFormatter::new(&self.map().grid(), Some(&self.state), format)
+        MapFormatter::new(self.map().grid(), Some(&self.state), format)
     }
 
     pub fn xsb_solution<'a>(

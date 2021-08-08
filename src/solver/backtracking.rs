@@ -20,7 +20,7 @@ crate fn backtrack_prevs<T: Clone + Eq + Hash + Borrow<T>, H: BuildHasher>(
     let mut cur = &final_state;
     loop {
         states.push(cur.clone());
-        let prev = &prevs[&cur];
+        let prev = &prevs[cur];
         if prev == cur {
             states.reverse();
             return states;

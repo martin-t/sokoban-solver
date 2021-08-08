@@ -320,7 +320,7 @@ trait SolverTrait {
                 // heuristic is 0 so level is solved
                 debug!("Solved, backtracking path");
 
-                let solution_states = backtracking::backtrack_prevs(&prevs, &cur_node.state);
+                let solution_states = backtracking::backtrack_prevs(&prevs, cur_node.state);
 
                 #[cfg(feature = "graph")]
                 graph.draw_states(&solution_states);
@@ -335,7 +335,7 @@ trait SolverTrait {
                 return SolverOk::new(Some(moves), stats);
             }
 
-            for (neighbor_state, cost, h) in GL::expand(self.sd(), &cur_node.state, &states) {
+            for (neighbor_state, cost, h) in GL::expand(self.sd(), cur_node.state, &states) {
                 // Insert everything and ignore duplicates when popping. This wastes memory
                 // but when I filter them out here using a HashMap, pushes/boxxle2/4 becomes 8x slower
                 // and generates much more states (although pushes/original/1 becomes about 2x faster).
@@ -350,7 +350,7 @@ trait SolverTrait {
 
                 let next_node = SearchNode::new(
                     neighbor_state,
-                    Some(&cur_node.state),
+                    Some(cur_node.state),
                     cur_node.dist + cost,
                     h,
                 );
@@ -649,7 +649,7 @@ where
                     let new_boxes = Solver::<M>::push_box(sd, cur_state, box_index, push_dest);
                     let norm_player_pos = normalized_pos(&sd.map, new_player_pos, &new_boxes);
                     let new_state = arena.alloc(State::new(norm_player_pos, new_boxes));
-                    let h = push_dists_heuristic(sd, &new_state);
+                    let h = push_dists_heuristic(sd, new_state);
                     new_states.push((&*new_state, h));
                 }
             } else if sd.map.grid()[new_player_pos] != MapCell::Wall && !reachable[new_player_pos] {

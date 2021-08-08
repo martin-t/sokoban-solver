@@ -24,7 +24,7 @@ crate trait Map {
     }
 
     fn format(&self, format: Format) -> MapFormatter<'_> {
-        MapFormatter::new(&self.grid(), None, format)
+        MapFormatter::new(self.grid(), None, format)
     }
 
     fn xsb_with_state<'a>(&'a self, state: &'a State) -> MapFormatter<'a> {
@@ -36,13 +36,13 @@ crate trait Map {
     }
 
     fn format_with_state<'a>(&'a self, format: Format, state: &'a State) -> MapFormatter<'a> {
-        MapFormatter::new(&self.grid(), Some(state), format)
+        MapFormatter::new(self.grid(), Some(state), format)
     }
 }
 
 impl Display for &dyn Map {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let mf = MapFormatter::new(&self.grid(), None, Format::Xsb);
+        let mf = MapFormatter::new(self.grid(), None, Format::Xsb);
         write!(f, "{}", mf)
     }
 }
@@ -107,7 +107,7 @@ impl Map for GoalMap {
 // https://github.com/rust-lang/rust/issues/48869
 impl Display for GoalMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let mf = MapFormatter::new(&self.grid(), None, Format::Xsb);
+        let mf = MapFormatter::new(self.grid(), None, Format::Xsb);
         write!(f, "{}", mf)
     }
 }
@@ -142,7 +142,7 @@ impl Map for RemoverMap {
 
 impl Display for RemoverMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let mf = MapFormatter::new(&self.grid(), None, Format::Xsb);
+        let mf = MapFormatter::new(self.grid(), None, Format::Xsb);
         write!(f, "{}", mf)
     }
 }

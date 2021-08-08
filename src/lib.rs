@@ -373,7 +373,7 @@ mod tests {
         #![allow(clippy::cast_lossless)]
         #![allow(clippy::cognitive_complexity)]
 
-        use self::Method::*;
+        use self::Method::{Moves, MovesPushes, Pushes, PushesMoves};
 
         let started = Instant::now();
 

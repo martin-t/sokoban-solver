@@ -37,7 +37,7 @@ impl Display for SolutionFormatter<'_> {
         writeln!(
             f,
             "{}",
-            self.map.format_with_state(self.format, &self.initial_state)
+            self.map.format_with_state(self.format, self.initial_state)
         )?;
         let mut last_state = self.initial_state.clone();
         for &mov in self.moves {
