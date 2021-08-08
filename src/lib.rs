@@ -369,10 +369,9 @@ mod tests {
         test_and_time_levels(&levels);
     }
 
+    #[allow(clippy::cast_lossless)]
+    #[allow(clippy::cognitive_complexity)]
     fn test_and_time_levels<L: AsRef<str> + Display>(levels: &[(&str, L, Vec<bool>)]) {
-        #![allow(clippy::cast_lossless)]
-        #![allow(clippy::cognitive_complexity)]
-
         use self::Method::{Moves, MovesPushes, Pushes, PushesMoves};
 
         let started = Instant::now();
