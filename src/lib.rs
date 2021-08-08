@@ -63,7 +63,6 @@ mod tests {
     use std::path::Path;
     use std::time::Instant;
 
-    use difference::Changeset;
     use separator::Separatable;
 
     use crate::config::Method;
@@ -94,20 +93,18 @@ mod tests {
         const RELEASE: i32 = 1; // only in release, too slow in debug
         const OK: i32 = 0;
 
-        // yes, debug actually tests fewer levels because it's really slow
+        // Test fewer levels in debug mode because it's really slow.
         #[cfg(debug_assertions)]
         const MAX_DIFFICULTY: i32 = OK;
 
         #[cfg(not(debug_assertions))]
-        const MAX_DIFFICULTY: i32 = RELEASE; // set to SLOW to update all levels
+        const MAX_DIFFICULTY: i32 = RELEASE; // Set to SLOW to update all levels
 
         const ALL_UNSOLVED: [i32; 4] = [UNSOLVED, UNSOLVED, UNSOLVED, UNSOLVED];
         const ALL_SLOW: [i32; 4] = [SLOW, SLOW, SLOW, SLOW];
         const ALL_RELEASE: [i32; 4] = [RELEASE, RELEASE, RELEASE, RELEASE];
         const ALL_OK: [i32; 4] = [OK, OK, OK, OK];
 
-        // elastic tabstops would make this readable but humanity has yet to achieve
-        // that level of sophistication in an editor that is also able to automatically save when it loses focus :(
         #[rustfmt::skip]
         let levels = [
             ("custom", "00-empty.txt", ALL_OK),
@@ -511,8 +508,8 @@ mod tests {
             }
         }
 
-        // verify that methods which minimize moves/pushes actually produce
-        // better or equal numbers than methods which don't
+        // Verify that methods which minimize moves/pushes actually produce
+        // better or equal numbers than methods which don't.
         type OptimalityPred = dyn Fn((i32, i32), (i32, i32)) -> bool;
         let not_optimal =
             |method_res: [Option<TestResult>; 4], m1: usize, m2: usize, pred: &OptimalityPred| {
@@ -614,9 +611,15 @@ mod tests {
             };
         }
 
-        //print!("\t>>> Expected:\n{}", expected);
-        //print!("\t>>> Got:\n{}", out);
-        print!("{}", Changeset::new(&expected, &out, "\n"));
+        print!("\t>>> Expected:\n{}", expected);
+        print!("\t>>> Got:\n{}", out);
+        // This is commented out because the `difference` crate in unmaintained
+        // (https://rustsec.org/advisories/RUSTSEC-2020-0095.html).
+        // Difference has this nice and simple API which prints the changes with colors.
+        // The alternative crates (dissimilar, similar) seem to require
+        // manually looping through the changes and printing them line by line,
+        // though at least `similar` has an example with colors.
+        //print!("{}", Changeset::new(&expected, &out, "\n"));
 
         if maybe_out_lens.is_some() != maybe_expected_lens.is_some() {
             println!("\t>>> SOLVABILITY CHANGED <<<\n\n");

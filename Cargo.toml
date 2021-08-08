@@ -31,7 +31,6 @@ graph = ["dot"]
 [dev-dependencies]
 criterion = { version = "0.3.0", features = ['real_blackbox'] }
 assert_cmd = "1.0.0"
-difference = "2.0.0" # TODO unmaintained - https://rustsec.org/advisories/RUSTSEC-2020-0095
 
 [[bench]]
 name = "criterion_benches"

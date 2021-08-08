@@ -593,7 +593,6 @@ dependencies = [
  "assert_cmd",
  "clap",
  "criterion",
- "difference",
  "dot",
  "env_logger",
  "fnv",
