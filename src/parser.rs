@@ -246,7 +246,7 @@ fn parse_xsb(level: &str) -> ParseResult {
             };
             line_tiles.push(tile);
         }
-        grid.push(line_tiles)
+        grid.push(line_tiles);
     }
 
     Ok((grid, goals, remover, boxes, player_pos))
