@@ -19,10 +19,19 @@ Method
 
 Currently uses A* with push distances to nearest goal (or remover) as heuristic. The only deadlock detection is a result of this - boxes on dead end cells have no way to reach any goals.
 
+Can generate graphs to visualize the searched state space:
+
+[![media/state-space-microban-79.dot.png](media/state-space-microban-79.dot.png)](media/state-space-microban-79.dot.png)
+
+[![media/state-space-696-1.dot.svg](media/state-space-696-1.dot.svg)](media/state-space-696-1.dot.svg)
+
 Installation
 ------------
 
 Requires nightly (will be installed automatically thanks to the `rust-toolchain` file).
+
+Development
+-----------
 
 Optionally use `git config core.hooksPath git-hooks` to check the code before committing.
 
