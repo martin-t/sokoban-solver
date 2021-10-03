@@ -241,6 +241,7 @@ mod tests {
     use crate::solver::{Solver, SolverTrait, StaticData};
 
     #[test]
+    #[allow(clippy::items_after_statements)]
     fn one_box_reachability() {
         use crate::data::Dir::{self, Down, Left, Right, Up};
         use std::collections::HashSet;
