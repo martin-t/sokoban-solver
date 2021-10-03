@@ -64,6 +64,7 @@ impl Pos {
     }
 
     #[cfg(test)]
+    #[allow(clippy::cast_sign_loss)] // LATER https://github.com/rust-lang/rust/issues/62111
     crate fn dist(self, other: Pos) -> u16 {
         ((i16::from(self.r) - i16::from(other.r)).abs()
             + (i16::from(self.c) - i16::from(other.c)).abs()) as u16
