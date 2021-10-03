@@ -17,12 +17,12 @@ The original goal was to help me with level 100 of the game [Supaplex](https://e
 Can generate graphs to visualize the searched state space:
 
 [![media/state-space-microban-79.dot.png](media/state-space-microban-79.dot.png)](media/state-space-microban-79.dot.png)
-*pack Microban, level 79*
+*Pack Microban, level 79*
 
 ---
 
 [![media/state-space-696-1.dot.svg](media/state-space-696-1.dot.svg)](media/state-space-696-1.dot.svg)
-*pack 696, level 1, older visualization format*
+*Pack 696, level 1, older visualization format*
 
 Method
 ------
