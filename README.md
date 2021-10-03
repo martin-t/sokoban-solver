@@ -14,16 +14,20 @@ Some parts are intentionally more general than they need to be so that I can pro
 
 The original goal was to help me with level 100 of the game [Supaplex](https://en.wikipedia.org/wiki/Supaplex) which is inspired by Sokoban level 43. This is much easier with a remover because there is no need for goalroom optimizations. The version with a remover can be solved in a few seconds, with goals it takes significantly longer and takes much more memory. Similarly, more of the original Sokoban levels can be solved when the goals are replaced with a remover.
 
+Can generate graphs to visualize the searched state space:
+
+[![media/state-space-microban-79.dot.png](media/state-space-microban-79.dot.png)](media/state-space-microban-79.dot.png)
+*pack Microban, level 79*
+
+---
+
+[![media/state-space-696-1.dot.svg](media/state-space-696-1.dot.svg)](media/state-space-696-1.dot.svg)
+*pack 696, level 1, older visualization format*
+
 Method
 ------
 
 Currently uses A* with push distances to nearest goal (or remover) as heuristic. The only deadlock detection is a result of this - boxes on dead end cells have no way to reach any goals.
-
-Can generate graphs to visualize the searched state space:
-
-[![media/state-space-microban-79.dot.png](media/state-space-microban-79.dot.png)](media/state-space-microban-79.dot.png)
-
-[![media/state-space-696-1.dot.svg](media/state-space-696-1.dot.svg)](media/state-space-696-1.dot.svg)
 
 Installation
 ------------
