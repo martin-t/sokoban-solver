@@ -24,6 +24,7 @@
 // would be nice to have functions for casting that check for truncation in debug mode
 #![allow(clippy::cast_possible_truncation)]
 #![allow(clippy::option_if_let_else)]
+#![allow(clippy::items_after_statements)]
 // ^ End of pedantic overrides
 
 pub mod config;
