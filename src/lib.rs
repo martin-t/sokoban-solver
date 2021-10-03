@@ -369,6 +369,8 @@ mod tests {
 
     #[allow(clippy::cast_lossless)]
     #[allow(clippy::cognitive_complexity)]
+    #[allow(clippy::too_many_lines)]
+    // TODO This fn is a hard to understand mess.
     fn test_and_time_levels<L: AsRef<str> + Display>(levels: &[(&str, L, Vec<bool>)]) {
         use self::Method::{Moves, MovesPushes, Pushes, PushesMoves};
 
@@ -496,7 +498,7 @@ mod tests {
             {
                 if let Some(method_res) = method_res {
                     if method_res.comparison == TestComparison::SolvabilityChanged {
-                        bad_levels.push((pack, name, method))
+                        bad_levels.push((pack, name, method));
                     }
                 }
             }
@@ -552,6 +554,7 @@ mod tests {
     }
 
     #[must_use]
+    #[allow(clippy::comparison_chain)]
     fn test_level<L: AsRef<str> + Display>(
         level_pack: &str,
         level_name: L,
