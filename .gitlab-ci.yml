@@ -25,7 +25,8 @@ tests:
     # need force when using cache because there's no --update (https://github.com/rust-lang/cargo/issues/6797)
     - cargo install --debug cargo-audit  #--force
     # yanking only gives warn and most crates probably don't bother reporting vulns properly
-    - cargo audit --deny warnings
+    # RUSTSEC-2021-0127: https://github.com/bheisler/criterion.rs/issues/534
+    - cargo audit --deny warnings --ignore RUSTSEC-2021-0127
 
     # normal
     - cargo build --verbose
