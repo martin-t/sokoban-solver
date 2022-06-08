@@ -15,7 +15,7 @@ pub struct SolutionFormatter<'a> {
 }
 
 impl<'a> SolutionFormatter<'a> {
-    crate fn new(
+    pub(crate) fn new(
         map: &'a dyn Map,
         initial_state: &'a State,
         moves: &'a Moves,

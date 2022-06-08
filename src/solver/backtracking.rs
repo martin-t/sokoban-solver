@@ -12,7 +12,7 @@ use crate::state::State;
 // push = a move that changes a box position
 // step = a move that doesn't change a box position
 
-crate fn backtrack_prevs<T: Clone + Eq + Hash + Borrow<T>, H: BuildHasher>(
+pub(crate) fn backtrack_prevs<T: Clone + Eq + Hash + Borrow<T>, H: BuildHasher>(
     prevs: &HashMap<T, T, H>,
     final_state: T,
 ) -> Vec<T> {
@@ -30,7 +30,7 @@ crate fn backtrack_prevs<T: Clone + Eq + Hash + Borrow<T>, H: BuildHasher>(
 }
 
 // dynamic dispatch has no perf impact here
-crate fn reconstruct_moves(
+pub(crate) fn reconstruct_moves(
     map: &dyn Map,
     real_initial_player_pos: Pos,
     states: &[&State],

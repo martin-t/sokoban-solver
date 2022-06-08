@@ -5,14 +5,14 @@ use std::ops::{Index, IndexMut};
 use crate::data::{MapCell, Pos};
 
 #[derive(Clone, PartialEq, Eq)]
-crate struct Vec2d<T> {
+pub(crate) struct Vec2d<T> {
     data: Vec<T>,
     rows: u8,
     cols: u8,
 }
 
 impl<T> Vec2d<T> {
-    crate fn new(grid: &[Vec<T>]) -> Self
+    pub(crate) fn new(grid: &[Vec<T>]) -> Self
     where
         T: Clone + Default,
     {
@@ -33,15 +33,15 @@ impl<T> Vec2d<T> {
         }
     }
 
-    crate fn rows(&self) -> u8 {
+    pub(crate) fn rows(&self) -> u8 {
         self.rows
     }
 
-    crate fn cols(&self) -> u8 {
+    pub(crate) fn cols(&self) -> u8 {
         self.cols
     }
 
-    crate fn scratchpad_with_default<U>(&self, default: U) -> Vec2d<U>
+    pub(crate) fn scratchpad_with_default<U>(&self, default: U) -> Vec2d<U>
     where
         U: Clone,
     {
@@ -52,14 +52,14 @@ impl<T> Vec2d<T> {
         }
     }
 
-    crate fn scratchpad<U>(&self) -> Vec2d<U>
+    pub(crate) fn scratchpad<U>(&self) -> Vec2d<U>
     where
         U: Clone + Default,
     {
         self.scratchpad_with_default(U::default())
     }
 
-    crate fn positions(&self) -> Positions {
+    pub(crate) fn positions(&self) -> Positions {
         Positions {
             rows: self.rows,
             cols: self.cols,
@@ -69,7 +69,7 @@ impl<T> Vec2d<T> {
     }
 }
 
-crate struct Positions {
+pub(crate) struct Positions {
     rows: u8,
     cols: u8,
     cur_r: u8,

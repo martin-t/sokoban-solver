@@ -1,4 +1,4 @@
-crate mod a_star;
+pub(crate) mod a_star;
 mod backtracking;
 mod preprocessing;
 

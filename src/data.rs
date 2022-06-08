@@ -3,13 +3,13 @@ use std::fmt::{Display, Formatter};
 use std::ops::{Add, Sub};
 
 // FIXME this is fishy - add tests that test both limits
-crate const MAX_SIZE: usize = 255;
-crate const MAX_BOXES: usize = 255;
+pub(crate) const MAX_SIZE: usize = 255;
+pub(crate) const MAX_BOXES: usize = 255;
 
 // TODO considering i made a mistake once already it might be worth
 // trying to split this into two types - one for remover and one for goals
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-crate enum MapCell {
+pub(crate) enum MapCell {
     Empty,
     Wall,
     Goal,
@@ -40,7 +40,7 @@ impl Display for MapCell {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-crate enum Contents {
+pub(crate) enum Contents {
     Empty,
     Box,
     Player,
@@ -53,23 +53,23 @@ impl Default for Contents {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-crate struct Pos {
-    crate r: u8,
-    crate c: u8,
+pub(crate) struct Pos {
+    pub(crate) r: u8,
+    pub(crate) c: u8,
 }
 
 impl Pos {
-    crate fn new(r: u8, c: u8) -> Pos {
+    pub(crate) fn new(r: u8, c: u8) -> Pos {
         Pos { r, c }
     }
 
     #[cfg(test)]
-    crate fn dist(self, other: Pos) -> u16 {
+    pub(crate) fn dist(self, other: Pos) -> u16 {
         ((i16::from(self.r) - i16::from(other.r)).abs()
             + (i16::from(self.c) - i16::from(other.c)).abs()) as u16
     }
 
-    crate fn neighbors(self) -> [Pos; 4] {
+    pub(crate) fn neighbors(self) -> [Pos; 4] {
         [
             Pos {
                 r: self.r - 1,
@@ -90,7 +90,7 @@ impl Pos {
         ]
     }
 
-    crate fn dir_to(self, new_pos: Pos) -> Dir {
+    pub(crate) fn dir_to(self, new_pos: Pos) -> Dir {
         if self.r - 1 == new_pos.r {
             assert_eq!(self.c, new_pos.c);
             Dir::Up
@@ -144,10 +144,10 @@ impl Sub<Dir> for Pos {
     }
 }
 
-crate const DIRECTIONS: [Dir; 4] = [Dir::Up, Dir::Right, Dir::Down, Dir::Left];
+pub(crate) const DIRECTIONS: [Dir; 4] = [Dir::Up, Dir::Right, Dir::Down, Dir::Left];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-crate enum Dir {
+pub(crate) enum Dir {
     Up,
     Right,
     Down,
@@ -155,7 +155,7 @@ crate enum Dir {
 }
 
 impl Dir {
-    crate fn inverse(self) -> Self {
+    pub(crate) fn inverse(self) -> Self {
         match self {
             Dir::Up => Dir::Down,
             Dir::Right => Dir::Left,

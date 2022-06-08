@@ -22,7 +22,7 @@ enum Type {
 
 // TODO merge nodes with the same state? (make sure visited stays correct)
 #[derive(Debug)]
-crate struct Graph<'a, C: Cost> {
+pub(crate) struct Graph<'a, C: Cost> {
     map: &'a dyn Map,
     node_to_index: FnvHashMap<SearchNode<'a, C>, usize>,
     /// node, visited counter, visited type
@@ -33,7 +33,7 @@ crate struct Graph<'a, C: Cost> {
 }
 
 impl<'a, C: Cost> Graph<'a, C> {
-    crate fn new(map: &'a dyn Map) -> Self {
+    pub(crate) fn new(map: &'a dyn Map) -> Self {
         Self {
             map,
             node_to_index: FnvHashMap::default(),
@@ -44,7 +44,7 @@ impl<'a, C: Cost> Graph<'a, C> {
         }
     }
 
-    crate fn add(&mut self, node: SearchNode<'a, C>, prev: Option<SearchNode<'a, C>>) {
+    pub(crate) fn add(&mut self, node: SearchNode<'a, C>, prev: Option<SearchNode<'a, C>>) {
         assert!(!self.node_to_index.contains_key(&node));
 
         let node_index = self.nodes.len();
@@ -66,7 +66,7 @@ impl<'a, C: Cost> Graph<'a, C> {
         }
     }
 
-    crate fn mark_duplicate(&mut self, node: SearchNode<'a, C>) {
+    pub(crate) fn mark_duplicate(&mut self, node: SearchNode<'a, C>) {
         let index = self.node_to_index[&node];
         if self.nodes[index].2 != Type::AvoidableDuplicate {
             self.nodes[index].2 = Type::Duplicate;
@@ -75,14 +75,14 @@ impl<'a, C: Cost> Graph<'a, C> {
         self.visited_counter += 1;
     }
 
-    crate fn mark_unique(&mut self, node: SearchNode<'a, C>) {
+    pub(crate) fn mark_unique(&mut self, node: SearchNode<'a, C>) {
         let index = self.node_to_index[&node];
         self.nodes[index].1 = self.visited_counter;
         self.visited_counter += 1;
         self.nodes[index].2 = Type::Unique;
     }
 
-    crate fn draw_states(&mut self, solution_states: &'a [&'a State]) {
+    pub(crate) fn draw_states(&mut self, solution_states: &'a [&'a State]) {
         self.solution_states = solution_states.iter().copied().collect();
 
         let mut writer = Vec::new();

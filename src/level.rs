@@ -13,21 +13,21 @@ use crate::map::{GoalMap, RemoverMap};
 
 #[derive(Clone)]
 pub struct Level {
-    crate map: MapType,
-    crate state: State,
+    pub(crate) map: MapType,
+    pub(crate) state: State,
 }
 
 impl Level {
-    crate fn new(map: MapType, state: State) -> Self {
+    pub(crate) fn new(map: MapType, state: State) -> Self {
         Level { map, state }
     }
 
-    crate fn map(&self) -> &dyn Map {
+    pub(crate) fn map(&self) -> &dyn Map {
         self.map.map()
     }
 
     #[cfg(test)]
-    crate fn goal_map(&self) -> &GoalMap {
+    pub(crate) fn goal_map(&self) -> &GoalMap {
         match self.map {
             MapType::Goals(ref goal_map) => goal_map,
             MapType::Remover(_) => panic!(),
@@ -35,7 +35,7 @@ impl Level {
     }
 
     #[cfg(test)]
-    crate fn remover_map(&self) -> &RemoverMap {
+    pub(crate) fn remover_map(&self) -> &RemoverMap {
         match self.map {
             MapType::Goals(_) => panic!(),
             MapType::Remover(ref remover_map) => remover_map,

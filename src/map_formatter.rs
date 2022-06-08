@@ -12,7 +12,7 @@ pub struct MapFormatter<'a> {
 }
 
 impl<'a> MapFormatter<'a> {
-    crate fn new(grid: &'a Vec2d<MapCell>, state: Option<&'a State>, format: Format) -> Self {
+    pub(crate) fn new(grid: &'a Vec2d<MapCell>, state: Option<&'a State>, format: Format) -> Self {
         Self {
             grid,
             state,

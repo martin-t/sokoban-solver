@@ -8,7 +8,7 @@ use crate::{
     vec2d::Vec2d,
 };
 
-crate fn check_reachability<M: Map>(map: &M, state: &State) -> Result<Vec2d<MapCell>, SolverErr> {
+pub(crate) fn check_reachability<M: Map>(map: &M, state: &State) -> Result<Vec2d<MapCell>, SolverErr> {
     // make sure the level is surrounded by wall
     let mut visited = map.grid().scratchpad();
 
@@ -51,7 +51,7 @@ crate fn check_reachability<M: Map>(map: &M, state: &State) -> Result<Vec2d<MapC
 }
 
 #[inline(never)] // this is called only once and this way it's easier to see in callgrind
-crate fn push_dists<M: Map>(map: &M) -> Vec2d<[Vec2d<Option<u16>>; 4]> {
+pub(crate) fn push_dists<M: Map>(map: &M) -> Vec2d<[Vec2d<Option<u16>>; 4]> {
     // I don't think distances per direction can be used as a heuristic - example:
     // Center box is pushable only from bottom but shortest solution first pushes the bottom box
     // which would lower the heuristic of the center box by 2 -> the push distance depends
@@ -161,7 +161,7 @@ crate fn push_dists<M: Map>(map: &M) -> Vec2d<[Vec2d<Option<u16>>; 4]> {
 }
 
 /// Finds in which directions the box is pushable
-crate fn one_box_push_dirs<M: Map>(map: &M, box_pos: Pos, player_start_pos: Pos) -> Vec<Dir> {
+pub(crate) fn one_box_push_dirs<M: Map>(map: &M, box_pos: Pos, player_start_pos: Pos) -> Vec<Dir> {
     let mut ret = Vec::new();
 
     let mut touched = map.grid().scratchpad();
@@ -195,7 +195,7 @@ crate fn one_box_push_dirs<M: Map>(map: &M, box_pos: Pos, player_start_pos: Pos)
     ret
 }
 
-crate fn closest_push_dists<M: Map>(
+pub(crate) fn closest_push_dists<M: Map>(
     map: &M,
     push_dists: &Vec2d<[Vec2d<Option<u16>>; 4]>,
 ) -> Vec2d<Option<u16>> {

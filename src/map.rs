@@ -7,7 +7,7 @@ use crate::map_formatter::MapFormatter;
 use crate::state::State;
 use crate::vec2d::Vec2d;
 
-crate trait Map {
+pub(crate) trait Map {
     fn grid(&self) -> &Vec2d<MapCell>;
 
     // this is a hack for things that are not performance critical
@@ -54,13 +54,13 @@ impl Debug for &dyn Map {
 }
 
 #[derive(Debug, Clone)]
-crate enum MapType {
+pub(crate) enum MapType {
     Goals(GoalMap),
     Remover(RemoverMap),
 }
 
 impl MapType {
-    crate fn map(&self) -> &dyn Map {
+    pub(crate) fn map(&self) -> &dyn Map {
         match self {
             MapType::Goals(ref goals_map) => goals_map,
             MapType::Remover(ref remover_map) => remover_map,
@@ -82,13 +82,13 @@ impl Map for MapType {
 }
 
 #[derive(Clone)]
-crate struct GoalMap {
-    crate grid: Vec2d<MapCell>,
-    crate goals: Vec<Pos>,
+pub(crate) struct GoalMap {
+    pub(crate) grid: Vec2d<MapCell>,
+    pub(crate) goals: Vec<Pos>,
 }
 
 impl GoalMap {
-    crate fn new(grid: Vec2d<MapCell>, goals: Vec<Pos>) -> Self {
+    pub(crate) fn new(grid: Vec2d<MapCell>, goals: Vec<Pos>) -> Self {
         GoalMap { grid, goals }
     }
 }
@@ -103,7 +103,7 @@ impl Map for GoalMap {
     }
 }
 
-// can't impl it for M: Map to share it even though Map is crate visible only:
+// can't impl it for M: Map to share it even though Map is pub(crate) visible only:
 // https://github.com/rust-lang/rust/issues/48869
 impl Display for GoalMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
@@ -119,13 +119,13 @@ impl Debug for GoalMap {
 }
 
 #[derive(Clone)]
-crate struct RemoverMap {
-    crate grid: Vec2d<MapCell>,
-    crate remover: Pos,
+pub(crate) struct RemoverMap {
+    pub(crate) grid: Vec2d<MapCell>,
+    pub(crate) remover: Pos,
 }
 
 impl RemoverMap {
-    crate fn new(grid: Vec2d<MapCell>, remover: Pos) -> Self {
+    pub(crate) fn new(grid: Vec2d<MapCell>, remover: Pos) -> Self {
         Self { grid, remover }
     }
 }

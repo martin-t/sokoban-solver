@@ -15,7 +15,7 @@ pub struct Stats {
 }
 
 impl Stats {
-    crate fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Stats {
             created_states: vec![],
             duplicate_states: vec![],
@@ -23,15 +23,15 @@ impl Stats {
         }
     }
 
-    crate fn total_created(&self) -> i32 {
+    pub(crate) fn total_created(&self) -> i32 {
         self.created_states.iter().sum::<i32>()
     }
 
-    crate fn total_unique_visited(&self) -> i32 {
+    pub(crate) fn total_unique_visited(&self) -> i32 {
         self.visited_states.iter().sum::<i32>()
     }
 
-    crate fn total_reached_duplicates(&self) -> i32 {
+    pub(crate) fn total_reached_duplicates(&self) -> i32 {
         self.duplicate_states.iter().sum::<i32>()
     }
 
@@ -126,15 +126,15 @@ impl Display for Stats {
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
-crate struct SearchNode<'a, C: Cost + Add<Output = C>> {
-    crate state: &'a State,
-    crate prev: Option<&'a State>,
-    crate dist: C,
-    crate cost: C,
+pub(crate) struct SearchNode<'a, C: Cost + Add<Output = C>> {
+    pub(crate) state: &'a State,
+    pub(crate) prev: Option<&'a State>,
+    pub(crate) dist: C,
+    pub(crate) cost: C,
 }
 
 impl<'a, C: Cost + Add<Output = C>> SearchNode<'a, C> {
-    crate fn new(state: &'a State, prev: Option<&'a State>, dist: C, heuristic: C) -> Self {
+    pub(crate) fn new(state: &'a State, prev: Option<&'a State>, dist: C, heuristic: C) -> Self {
         Self {
             state,
             prev,
@@ -144,7 +144,7 @@ impl<'a, C: Cost + Add<Output = C>> SearchNode<'a, C> {
     }
 }
 
-crate trait Cost:
+pub(crate) trait Cost:
     Sized + Display + Copy + Ord + Eq + Hash + Add<Output = Self> + Sub<Output = Self>
 {
     fn zero() -> Self;
@@ -153,7 +153,7 @@ crate trait Cost:
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-crate struct SimpleCost(crate u16);
+pub(crate) struct SimpleCost(pub(crate) u16);
 
 impl Display for SimpleCost {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
@@ -198,7 +198,7 @@ impl Cost for SimpleCost {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-crate struct ComplexCost(crate u16, crate u16);
+pub(crate) struct ComplexCost(pub(crate) u16, pub(crate) u16);
 
 impl Display for ComplexCost {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
@@ -242,7 +242,7 @@ impl Cost for ComplexCost {
     }
 }
 
-crate struct CostComparator<'a, C: Cost + Add<Output = C>>(crate SearchNode<'a, C>);
+pub(crate) struct CostComparator<'a, C: Cost + Add<Output = C>>(pub(crate) SearchNode<'a, C>);
 
 impl<'a, C: Cost + Add<Output = C>> PartialOrd for CostComparator<'a, C> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {

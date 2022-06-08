@@ -4,12 +4,12 @@ use crate::data::Dir;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Move {
-    crate dir: Dir,
-    crate is_push: bool,
+    pub(crate) dir: Dir,
+    pub(crate) is_push: bool,
 }
 
 impl Move {
-    crate fn new(dir: Dir, is_push: bool) -> Self {
+    pub(crate) fn new(dir: Dir, is_push: bool) -> Self {
         Move { dir, is_push }
     }
 }
@@ -36,7 +36,7 @@ pub struct Moves(Vec<Move>);
 
 impl Moves {
     #[cfg(test)]
-    crate fn new(moves: Vec<Move>) -> Self {
+    pub(crate) fn new(moves: Vec<Move>) -> Self {
         Moves(moves)
     }
 
@@ -48,21 +48,21 @@ impl Moves {
         self.0.iter().filter(|m| m.is_push).count()
     }
 
-    crate fn add(&mut self, mov: Move) {
+    pub(crate) fn add(&mut self, mov: Move) {
         self.0.push(mov);
     }
 
-    crate fn extend(&mut self, moves: &Moves) {
+    pub(crate) fn extend(&mut self, moves: &Moves) {
         self.0.extend_from_slice(&moves.0);
     }
 
     #[allow(unused)]
-    crate fn into_iter(self) -> ::std::vec::IntoIter<Move> {
+    pub(crate) fn into_iter(self) -> ::std::vec::IntoIter<Move> {
         self.0.into_iter()
     }
 
     #[allow(unused)]
-    crate fn iter(&self) -> ::std::slice::Iter<'_, Move> {
+    pub(crate) fn iter(&self) -> ::std::slice::Iter<'_, Move> {
         self.0.iter()
     }
 }
