@@ -1,5 +1,3 @@
-// https://github.com/rust-lang/rust/issues/53120
-#![feature(crate_visibility_modifier)]
 // https://github.com/rust-lang/rust/issues/31844
 #![feature(min_specialization)]
 // https://github.com/rust-lang/rust/issues/15701
