@@ -8,7 +8,10 @@ use crate::{
     vec2d::Vec2d,
 };
 
-pub(crate) fn check_reachability<M: Map>(map: &M, state: &State) -> Result<Vec2d<MapCell>, SolverErr> {
+pub(crate) fn check_reachability<M: Map>(
+    map: &M,
+    state: &State,
+) -> Result<Vec2d<MapCell>, SolverErr> {
     // make sure the level is surrounded by wall
     let mut visited = map.grid().scratchpad();
 
