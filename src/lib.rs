@@ -24,6 +24,9 @@
 // would be nice to have functions for casting that check for truncation in debug mode
 #![allow(clippy::cast_possible_truncation)]
 #![allow(clippy::option_if_let_else)]
+#![allow(clippy::items_after_statements)]
+// This is a matter of taste and some things are easier to understand as one long function
+#![allow(clippy::too_many_lines)]
 // ^ End of pedantic overrides
 
 pub mod config;
@@ -367,7 +370,10 @@ mod tests {
     }
 
     #[allow(clippy::cast_lossless)]
+    #[allow(clippy::cast_precision_loss)]
+    #[allow(clippy::eval_order_dependence)] // False positive?
     #[allow(clippy::cognitive_complexity)]
+    // TODO This fn is a hard to understand mess.
     fn test_and_time_levels<L: AsRef<str> + Display>(levels: &[(&str, L, Vec<bool>)]) {
         use self::Method::{Moves, MovesPushes, Pushes, PushesMoves};
 
@@ -495,7 +501,7 @@ mod tests {
             {
                 if let Some(method_res) = method_res {
                     if method_res.comparison == TestComparison::SolvabilityChanged {
-                        bad_levels.push((pack, name, method))
+                        bad_levels.push((pack, name, method));
                     }
                 }
             }
@@ -551,6 +557,7 @@ mod tests {
     }
 
     #[must_use]
+    #[allow(clippy::comparison_chain)]
     fn test_level<L: AsRef<str> + Display>(
         level_pack: &str,
         level_name: L,

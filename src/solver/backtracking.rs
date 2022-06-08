@@ -156,7 +156,7 @@ mod tests {
         // this mixes normalized positions with actual ones which can't normally happen
         // but it shouldn't affect anything
 
-        let real_initial_level = r"
+        let level_initial = r"
 ###########
 # $     $.#
 #        .#
@@ -172,7 +172,7 @@ mod tests {
 "
         .trim_start_matches('\n');
 
-        let level1 = r"
+        let level_state1 = r"
 ###########
 # $     $.#
 #        .#
@@ -187,7 +187,8 @@ mod tests {
 ###########
 "
         .trim_start_matches('\n');
-        let level2 = r"
+
+        let level_state2 = r"
 ###########
 #@$     $.#
 #        .#
@@ -202,7 +203,8 @@ mod tests {
 ###########
 "
         .trim_start_matches('\n');
-        let level3 = r"
+
+        let level_state3 = r"
 ###########
 #$@     $.#
 #        .#
@@ -217,7 +219,8 @@ mod tests {
 ###########
 "
         .trim_start_matches('\n');
-        let level4 = r"
+
+        let level_state4 = r"
 ###########
 #$      @*#
 #        .#
@@ -232,24 +235,82 @@ mod tests {
 ###########
 "
         .trim_start_matches('\n');
-        let real_initial_level: Level = real_initial_level.parse().unwrap();
-        let level1: Level = level1.parse().unwrap();
-        let level2: Level = level2.parse().unwrap();
-        let level3: Level = level3.parse().unwrap();
-        let level4: Level = level4.parse().unwrap();
+
+        let expected_pushes = r"
+###########
+# $     $.#
+#        .#
+##$*## #..#
+#    #  ###
+# @  #    #
+#    #    #
+## #### ###
+# $   #   #
+#     #   #
+#         #
+###########
+
+###########
+# $     $.#
+#        .#
+##$*## #..#
+#    #  ###
+#    #    #
+#    #    #
+## #### ###
+# @   #   #
+# $   #   #
+#         #
+###########
+
+###########
+#$@     $.#
+#        .#
+##$*## #..#
+#    #  ###
+#    #    #
+#    #    #
+## #### ###
+#     #   #
+# $   #   #
+#         #
+###########
+
+###########
+#$      @*#
+#        .#
+##$*## #..#
+#    #  ###
+#    #    #
+#    #    #
+## #### ###
+#     #   #
+# $   #   #
+#         #
+###########
+
+"
+        .trim_start_matches('\n');
+
+        let level_initial: Level = level_initial.parse().unwrap();
+        let level_state1: Level = level_state1.parse().unwrap();
+        let level_state2: Level = level_state2.parse().unwrap();
+        let level_state3: Level = level_state3.parse().unwrap();
+        let level_state4: Level = level_state4.parse().unwrap();
 
         let mut prevs = HashMap::new();
-        prevs.insert(&level1.state, &level1.state);
-        prevs.insert(&level2.state, &level1.state);
-        prevs.insert(&level3.state, &level2.state);
-        prevs.insert(&level4.state, &level3.state);
+        prevs.insert(&level_state1.state, &level_state1.state);
+        prevs.insert(&level_state2.state, &level_state1.state);
+        prevs.insert(&level_state3.state, &level_state2.state);
+        prevs.insert(&level_state4.state, &level_state3.state);
 
-        let states = backtrack_prevs(&prevs, &level4.state);
-        let moves = reconstruct_moves(&level1.map, real_initial_level.state.player_pos, &states);
-        let _ = format!(
-            "{}",
-            real_initial_level.format_solution(Format::Xsb, &moves, false)
-        );
+        let states = backtrack_prevs(&prevs, &level_state4.state);
+        let moves = reconstruct_moves(&level_state1.map, level_initial.state.player_pos, &states);
         assert_eq!(moves.to_string(), "ddDrrrddrruuuuuuluuulllLrrrrrR");
+
+        let solution_pushes = level_initial
+            .format_solution(Format::Xsb, &moves, false)
+            .to_string();
+        assert_eq!(solution_pushes, expected_pushes);
     }
 }

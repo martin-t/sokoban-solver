@@ -118,7 +118,6 @@ struct Solver<M: Map> {
 struct StaticData<M: Map> {
     map: M,
     initial_state: State,
-    push_dists: Vec2d<[Vec2d<Option<u16>>; 4]>,
     closest_push_dists: Vec2d<Option<u16>>,
 }
 
@@ -167,7 +166,6 @@ impl Solver<GoalMap> {
             sd: StaticData {
                 map: processed_map,
                 initial_state: clean_state,
-                push_dists,
                 closest_push_dists,
             },
         })
@@ -209,7 +207,6 @@ impl Solver<RemoverMap> {
             sd: StaticData {
                 map: processed_map,
                 initial_state: state.clone(),
-                push_dists,
                 closest_push_dists,
             },
         })

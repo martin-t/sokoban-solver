@@ -31,7 +31,7 @@ impl Debug for Move {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, Default, PartialEq, Eq, Hash)]
 pub struct Moves(Vec<Move>);
 
 impl Moves {
@@ -97,12 +97,6 @@ impl Display for Moves {
 impl Debug for Moves {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self)
-    }
-}
-
-impl Default for Moves {
-    fn default() -> Self {
-        Moves(Vec::new())
     }
 }
 
