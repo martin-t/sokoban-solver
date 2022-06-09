@@ -30,7 +30,9 @@ Sokoban-solver can generate graphs to visualize the searched state space:
 Method
 ------
 
-Currently uses A* with push distances to nearest goal (or remover) as heuristic. The only deadlock detection is a result of this - boxes on dead end cells have no way to reach any goals.
+Currently uses A* with distances to the nearest goal (or remover) as heuristic. The only deadlock detection is a result of this - boxes on dead end cells have no way to reach any goals.
+
+It can optimize for the lowest number of pushes, moves or both (giving priority to one or the other).
 
 Installation
 ------------

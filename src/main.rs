@@ -22,8 +22,6 @@ use clap::{App, Arg, ArgGroup};
 use sokoban_solver::config::{Format, Method};
 use sokoban_solver::{LoadLevel, Solve};
 
-// TODO update readme (4/5 methods, a pic of the state space)
-
 fn main() {
     // if anybody thinks this is overkill, i made a typo twice already
     const CUSTOM: &str = "custom";
