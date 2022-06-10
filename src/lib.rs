@@ -369,7 +369,6 @@ mod tests {
 
     #[allow(clippy::cast_lossless)]
     #[allow(clippy::cast_precision_loss)]
-    #[allow(clippy::eval_order_dependence)] // False positive?
     #[allow(clippy::cognitive_complexity)]
     // TODO This fn is a hard to understand mess.
     fn test_and_time_levels<L: AsRef<str> + Display>(levels: &[(&str, L, Vec<bool>)]) {

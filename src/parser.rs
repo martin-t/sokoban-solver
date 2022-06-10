@@ -13,7 +13,7 @@ use crate::state::State;
 use crate::vec2d::Vec2d;
 use crate::LoadLevel;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ParserErr {
     Pos(usize, usize),
     TooLarge,
