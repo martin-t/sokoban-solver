@@ -13,17 +13,18 @@
 // ^ End of pedantic overrides
 
 #[cfg(unix)]
-use std::fs;
-use std::process;
+use std::{fs, process};
 
-use clap::{crate_authors, crate_version};
-use clap::{App, Arg, ArgGroup};
+use clap::{crate_authors, crate_version, Arg, ArgGroup, Command};
 
-use sokoban_solver::config::{Format, Method};
-use sokoban_solver::{LoadLevel, Solve};
+use sokoban_solver::{
+    config::{Format, Method},
+    LoadLevel, Solve,
+};
 
 fn main() {
-    // if anybody thinks this is overkill, i made a typo twice already
+    // Use consts for strings which appear in multiple places.
+    // If anybody thinks this is overkill, i made a typo twice already.
     const CUSTOM: &str = "custom";
     const XSB: &str = "xsb";
     const MOVES_PUSHES: &str = "moves-pushes";
@@ -34,65 +35,63 @@ fn main() {
     const LEVEL_FILE: &str = "level-file";
     const VERBOSE: &str = "verbose";
 
-    let app = App::new("sokoban-solver")
+    let app = Command::new("sokoban-solver")
         .author(crate_authors!())
         .version(crate_version!())
         .arg(
-            Arg::with_name(CUSTOM)
-                .short("c")
+            Arg::new(CUSTOM)
+                .short('c')
                 .long(CUSTOM)
                 .help("Output in the custom format"),
         )
         .arg(
-            Arg::with_name(XSB)
-                .short("x")
+            Arg::new(XSB)
+                .short('x')
                 .long(XSB)
                 .help("Output in the XSB format (default)"),
         )
-        .group(ArgGroup::with_name("format").args(&[CUSTOM, XSB]))
+        .group(ArgGroup::new("format").args(&[CUSTOM, XSB]))
         .arg(
-            Arg::with_name(MOVES_PUSHES)
-                .short("M")
+            Arg::new(MOVES_PUSHES)
+                .short('M')
                 .long(MOVES_PUSHES)
                 .help("Search for a move-optimal solution with minimal pushes"),
         )
         .arg(
-            Arg::with_name(MOVES)
-                .short("m")
+            Arg::new(MOVES)
+                .short('m')
                 .long(MOVES)
                 .help("Search for a move-optimal solution"),
         )
         .arg(
-            Arg::with_name(PUSHES_MOVES)
-                .short("P")
+            Arg::new(PUSHES_MOVES)
+                .short('P')
                 .long(PUSHES_MOVES)
                 .help("Search for a push-optimal solution with minimal moves"),
         )
         .arg(
-            Arg::with_name(PUSHES)
-                .short("p")
+            Arg::new(PUSHES)
+                .short('p')
                 .long(PUSHES)
                 .help("Search for a push-optimal solution"),
         )
         .arg(
-            Arg::with_name(ANY)
-                .short("a")
+            Arg::new(ANY)
+                .short('a')
                 .long(ANY)
                 .help("Search for any solution (default, currently push optimal)"),
         )
-        .group(ArgGroup::with_name("method").args(&[
-            MOVES_PUSHES,
-            MOVES,
-            PUSHES_MOVES,
-            PUSHES,
-            ANY,
-        ]))
-        .arg(Arg::with_name(LEVEL_FILE).required(true).multiple(true));
+        .group(ArgGroup::new("method").args(&[MOVES_PUSHES, MOVES, PUSHES_MOVES, PUSHES, ANY]))
+        .arg(
+            Arg::new(LEVEL_FILE)
+                .required(true)
+                .multiple_occurrences(true),
+        );
 
     #[cfg(debug_assertions)]
     let app = app.arg(
-        Arg::with_name(VERBOSE)
-            .short("v")
+        Arg::new(VERBOSE)
+            .short('v')
             .long(VERBOSE)
             .help("Print all log levels (only available in debug builds)"),
     );

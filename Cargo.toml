@@ -29,7 +29,7 @@ graph = ["dot"]
 # note to self: when adding features, update .gitlab.ci and git hooks
 
 [dependencies]
-clap = { version = "3.1.18", features = ["derive"] }
+clap = { version = "3.1.18", features = ["cargo"] }
 dot = { version = "0.1.4", optional = true }
 env_logger = "0.9.0"
 fnv = "1.0.6"
