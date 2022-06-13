@@ -84,6 +84,7 @@ fn main() {
         .group(ArgGroup::new("method").args(&[MOVES_PUSHES, MOVES, PUSHES_MOVES, PUSHES, ANY]))
         .arg(
             Arg::new(LEVEL_FILE)
+                .allow_invalid_utf8(true)
                 .required(true)
                 .multiple_occurrences(true),
         );
