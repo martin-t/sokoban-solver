@@ -390,7 +390,7 @@ mod tests {
 
             // put box on every position and try to get it to every position
             for box_pos in level.map.grid().positions() {
-                println!("{:?}", box_pos);
+                println!("{box_pos:?}");
                 if level.map.grid()[box_pos] == MapCell::Wall {
                     continue;
                 }

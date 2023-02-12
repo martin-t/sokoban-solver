@@ -52,7 +52,7 @@ impl Display for SolverErr {
                 "Unreachable goals - some goals don't have a box but can't be reached"
             ),
             SolverErr::UnreachableRemover => write!(f, "Remover is not reachable"),
-            SolverErr::TooMany => write!(f, "More than {} reachable boxes or goals", MAX_BOXES),
+            SolverErr::TooMany => write!(f, "More than {MAX_BOXES} reachable boxes or goals"),
             SolverErr::DiffBoxesGoals => write!(f, "Different number of reachable boxes and goals"),
         }
     }
@@ -298,7 +298,7 @@ trait SolverTrait {
             }
             if stats.add_unique_visited(cur_node.dist.depth()) && print_status {
                 println!("Visited new depth: {}", cur_node.dist.depth());
-                println!("{:?}", stats);
+                println!("{stats:?}");
             }
 
             #[cfg(feature = "graph")]

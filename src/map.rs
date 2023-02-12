@@ -43,13 +43,13 @@ pub(crate) trait Map {
 impl Display for &dyn Map {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mf = MapFormatter::new(self.grid(), None, Format::Xsb);
-        write!(f, "{}", mf)
+        write!(f, "{mf}")
     }
 }
 
 impl Debug for &dyn Map {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }
 
@@ -108,13 +108,13 @@ impl Map for GoalMap {
 impl Display for GoalMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mf = MapFormatter::new(self.grid(), None, Format::Xsb);
-        write!(f, "{}", mf)
+        write!(f, "{mf}")
     }
 }
 
 impl Debug for GoalMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }
 
@@ -143,13 +143,13 @@ impl Map for RemoverMap {
 impl Display for RemoverMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mf = MapFormatter::new(self.grid(), None, Format::Xsb);
-        write!(f, "{}", mf)
+        write!(f, "{mf}")
     }
 }
 
 impl Debug for RemoverMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }
 
@@ -190,8 +190,8 @@ B_<><><><>B_<>
 
         // default
         assert_eq!(map.to_string(), xsb_map);
-        assert_eq!(format!("{}", map), xsb_map);
-        assert_eq!(format!("{:?}", map), xsb_map);
+        assert_eq!(format!("{map}"), xsb_map);
+        assert_eq!(format!("{map:?}"), xsb_map);
 
         // xsb
         assert_eq!(map.xsb().to_string(), xsb_map);

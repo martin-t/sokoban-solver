@@ -48,8 +48,7 @@ impl Display for SolutionFormatter<'_> {
             assert_ne!(
                 self.map.grid()[new_player_pos],
                 MapCell::Wall,
-                "new_player_pos: {:?}",
-                new_player_pos
+                "new_player_pos: {new_player_pos:?}"
             );
 
             let mut new_boxes = last_state.boxes.clone();
@@ -85,6 +84,6 @@ impl Display for SolutionFormatter<'_> {
 
 impl Debug for SolutionFormatter<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }

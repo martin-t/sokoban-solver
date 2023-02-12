@@ -27,7 +27,7 @@ pub enum ParserErr {
 impl Display for ParserErr {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match *self {
-            ParserErr::Pos(r, c) => write!(f, "Invalid cell at pos: [{}, {}]", r, c),
+            ParserErr::Pos(r, c) => write!(f, "Invalid cell at pos: [{r}, {c}]"),
             ParserErr::TooLarge => write!(f, "Map is larger than 255 rows/columns"),
             ParserErr::MultiplePlayers => write!(f, "More than one player"),
             ParserErr::MultipleRemovers => write!(f, "Multiple removers - only one allowed"),

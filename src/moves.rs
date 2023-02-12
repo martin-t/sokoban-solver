@@ -27,7 +27,7 @@ impl Display for Move {
 
 impl Debug for Move {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }
 
@@ -88,7 +88,7 @@ impl<'a> IntoIterator for &'a Moves {
 impl Display for Moves {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         for mov in self {
-            write!(f, "{}", mov)?;
+            write!(f, "{mov}")?;
         }
         Ok(())
     }
@@ -96,7 +96,7 @@ impl Display for Moves {
 
 impl Debug for Moves {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }
 

@@ -300,42 +300,42 @@ mod tests {
             .map(|num| {
                 (
                     "696",
-                    format!("{}.txt", num),
+                    format!("{num}.txt"),
                     vec![false, false, false, true],
                 )
             })
             .chain((1..=20).map(|num| {
                 (
                     "aymeric-cosmonotes",
-                    format!("{}.txt", num),
+                    format!("{num}.txt"),
                     vec![false, false, false, true],
                 )
             }))
             .chain((1..=40).map(|num| {
                 (
                     "aymeric-microcosmos",
-                    format!("{}.txt", num),
+                    format!("{num}.txt"),
                     vec![false, false, false, true],
                 )
             }))
             .chain((1..=40).map(|num| {
                 (
                     "aymeric-minicosmos",
-                    format!("{}.txt", num),
+                    format!("{num}.txt"),
                     vec![false, false, false, true],
                 )
             }))
             .chain((1..=40).map(|num| {
                 (
                     "aymeric-nabocosmos",
-                    format!("{}.txt", num),
+                    format!("{num}.txt"),
                     vec![false, false, false, true],
                 )
             }))
             .chain((1..=20).map(|num| {
                 (
                     "aymeric-picocosmos",
-                    format!("{}.txt", num),
+                    format!("{num}.txt"),
                     vec![false, false, false, true],
                 )
             }))
@@ -345,7 +345,7 @@ mod tests {
                     .map(|num| {
                         (
                             "microban1",
-                            format!("{}.txt", num),
+                            format!("{num}.txt"),
                             vec![false, false, false, true],
                         )
                     }),
@@ -358,7 +358,7 @@ mod tests {
                     .map(|num| {
                         (
                             "microban2",
-                            format!("{}.txt", num),
+                            format!("{num}.txt"),
                             vec![false, false, false, true],
                         )
                     }),
@@ -507,7 +507,7 @@ mod tests {
             all_levels_passed = false;
             writeln!(report, "Solvability changed ({}):", bad_levels.len()).unwrap();
             for (pack, name, method) in bad_levels {
-                writeln!(report, "\t{}/{} method {}", pack, name, method).unwrap();
+                writeln!(report, "\t{pack}/{name} method {method}").unwrap();
             }
         }
 
@@ -543,12 +543,12 @@ mod tests {
                 .iter()
                 .any(|(m1, m2, is_optimal)| not_optimal(method_results, *m1, *m2, is_optimal))
             {
-                writeln!(report, "Optimality broken: {}/{}", pack, name).unwrap();
+                writeln!(report, "Optimality broken: {pack}/{name}").unwrap();
                 all_levels_passed = false;
             }
         }
 
-        print!("{}", report);
+        print!("{report}");
         fs::write("test-report.txt", report).unwrap();
         assert!(all_levels_passed);
     }
@@ -561,11 +561,11 @@ mod tests {
         method: Method,
     ) -> TestResult {
         let method_name = method.to_string();
-        let level_path = format!("levels/{}/{}", level_pack, level_name);
-        let result_dir = format!("solutions/{}/{}", method_name, level_pack);
-        let result_file = format!("{}/{}", result_dir, level_name);
+        let level_path = format!("levels/{level_pack}/{level_name}");
+        let result_dir = format!("solutions/{method_name}/{level_pack}");
+        let result_file = format!("{result_dir}/{level_name}");
 
-        println!("Solving level {} using method {}", level_path, method_name);
+        println!("Solving level {level_path} using method {method_name}");
         let started = Instant::now();
 
         let level = level_path.load_level().unwrap();
@@ -581,7 +581,7 @@ mod tests {
         match solution.moves {
             None => writeln!(out, "No solution").unwrap(),
             Some(ref moves) => {
-                writeln!(out, "{}", moves).unwrap();
+                writeln!(out, "{moves}").unwrap();
                 writeln!(out, "Moves: {}", moves.move_cnt()).unwrap();
                 writeln!(out, "Pushes: {}", moves.push_cnt()).unwrap();
             }
@@ -598,7 +598,7 @@ mod tests {
 
         if !Path::new(&result_file).exists() {
             fs::write(&result_file, &out).unwrap();
-            print!("Solution:\n{}", out);
+            print!("Solution:\n{out}");
             println!("\t>>> SAVED NEW SOLUTION <<<\n\n");
             // we could return here but let's parse the output as a sanity check
         }
@@ -615,8 +615,8 @@ mod tests {
             };
         }
 
-        print!("\t>>> Expected:\n{}", expected);
-        print!("\t>>> Got:\n{}", out);
+        print!("\t>>> Expected:\n{expected}");
+        print!("\t>>> Got:\n{out}");
         // This is commented out because the `difference` crate in unmaintained
         // (https://rustsec.org/advisories/RUSTSEC-2020-0095.html).
         // Difference has this nice and simple API which prints the changes with colors.
@@ -646,11 +646,11 @@ mod tests {
         for (&stat, &(out, expected)) in stats.iter().zip(&coefs) {
             let coef = f64::from(out) / f64::from(expected);
             if out > expected {
-                println!(">>> WORSE {} ({:.2}x) <<<", stat, coef);
+                println!(">>> WORSE {stat} ({coef:.2}x) <<<");
             } else if out == expected {
-                println!(">>> EQUAL {} <<<", stat);
+                println!(">>> EQUAL {stat} <<<");
             } else {
-                println!(">>> BETTER {} ({:.2}x) <<<", stat, coef);
+                println!(">>> BETTER {stat} ({coef:.2}x) <<<");
             }
         }
 

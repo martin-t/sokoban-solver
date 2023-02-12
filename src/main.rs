@@ -141,13 +141,13 @@ fn main() {
         .expect("Level path is required")
     {
         let level = path.load_level().unwrap_or_else(|err| {
-            eprintln!("Can't load level: {}", err);
+            eprintln!("Can't load level: {err}");
             process::exit(1);
         });
 
         println!("Solving {}...", path.to_string_lossy());
         let solver_ok = level.solve(method, true).unwrap_or_else(|err| {
-            eprintln!("Invalid level: {}", err);
+            eprintln!("Invalid level: {err}");
             process::exit(1);
         });
 
@@ -161,7 +161,7 @@ fn main() {
                 println!("Found solution:");
                 print!("{}", level.format_solution(format, &moves, include_steps));
                 println!("{}", solver_ok.stats);
-                println!("{}", moves);
+                println!("{moves}");
                 println!("Moves: {}", moves.move_cnt());
                 println!("Pushes: {}", moves.push_cnt());
             }

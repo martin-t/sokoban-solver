@@ -8,20 +8,15 @@ pub(crate) const MAX_BOXES: usize = 255;
 
 // TODO considering i made a mistake once already it might be worth
 // trying to split this into two types - one for remover and one for goals
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub(crate) enum MapCell {
+    // Empty imho makes slightly more sense than Wall.
+    // If changing this, make sure maps without complete borders are rejected properly.
+    #[default]
     Empty,
     Wall,
     Goal,
     Remover,
-}
-
-impl Default for MapCell {
-    fn default() -> MapCell {
-        // Empty imho makes slightly more sense than Wall
-        // if changing this, make sure maps without complete borders are rejected properly
-        MapCell::Empty
-    }
 }
 
 impl Display for MapCell {
@@ -39,17 +34,12 @@ impl Display for MapCell {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub(crate) enum Contents {
+    #[default]
     Empty,
     Box,
     Player,
-}
-
-impl Default for Contents {
-    fn default() -> Contents {
-        Contents::Empty
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

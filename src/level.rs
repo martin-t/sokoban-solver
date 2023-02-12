@@ -88,7 +88,7 @@ impl Display for Level {
 
 impl Debug for Level {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }
 
@@ -119,8 +119,8 @@ B_<><><><>B_<>
 
             // xsb as default
             assert_eq!(level.to_string(), xsb);
-            assert_eq!(format!("{}", level), xsb);
-            assert_eq!(format!("{:?}", level), xsb);
+            assert_eq!(format!("{level}"), xsb);
+            assert_eq!(format!("{level:?}"), xsb);
 
             // explicit xsb
             assert_eq!(level.xsb().to_string(), xsb);

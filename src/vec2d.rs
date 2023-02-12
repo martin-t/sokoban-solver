@@ -98,14 +98,14 @@ impl Iterator for Positions {
 
 impl<T: Display> Display for Vec2d<T> {
     default fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let data: Vec<String> = self.data.iter().map(|t| format!("{}", t)).collect();
+        let data: Vec<String> = self.data.iter().map(|t| format!("{t}")).collect();
         fmt_t(&data, self.cols.into(), f)
     }
 }
 
 impl<T: Debug> Debug for Vec2d<T> {
     default fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let data: Vec<String> = self.data.iter().map(|t| format!("{:?}", t)).collect();
+        let data: Vec<String> = self.data.iter().map(|t| format!("{t:?}")).collect();
         fmt_t(&data, self.cols.into(), f)
     }
 }
@@ -118,7 +118,7 @@ fn fmt_t(data: &[String], cols: usize, f: &mut Formatter<'_>) -> fmt::Result {
     let longest = data.iter().map(String::len).max().unwrap_or(0);
     for row in data.chunks(cols) {
         for cell in row {
-            write!(f, " {:>width$}", cell, width = longest)?;
+            write!(f, " {cell:>longest$}")?;
         }
         writeln!(f)?;
     }
@@ -133,7 +133,7 @@ impl Display for Vec2d<MapCell> {
         }
         for row in self.data.chunks(self.cols.into()) {
             for &cell in row {
-                write!(f, "{}", cell)?;
+                write!(f, "{cell}")?;
             }
             writeln!(f)?;
         }
@@ -143,7 +143,7 @@ impl Display for Vec2d<MapCell> {
 
 impl Debug for Vec2d<MapCell> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }
 
@@ -155,7 +155,7 @@ impl Display for Vec2d<bool> {
         }
         for row in self.data.chunks(self.cols.into()) {
             for &cell in row {
-                write!(f, "{}", if cell { 1 } else { 0 })?;
+                write!(f, "{}", i32::from(cell))?;
             }
             writeln!(f)?;
         }
@@ -165,7 +165,7 @@ impl Display for Vec2d<bool> {
 
 impl Debug for Vec2d<bool> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }
 
@@ -234,8 +234,8 @@ mod tests {
 
         let expected = "101\n010\n101\n";
 
-        assert_eq!(format!("{}", v2d), expected);
-        assert_eq!(format!("{:?}", v2d), expected);
+        assert_eq!(format!("{v2d}"), expected);
+        assert_eq!(format!("{v2d:?}"), expected);
     }
 
     #[test]
@@ -257,18 +257,18 @@ mod tests {
 "
         .trim_start_matches('\n');
 
-        assert_eq!(format!("{}", v2d), expected);
-        assert_eq!(format!("{:?}", v2d), expected);
+        assert_eq!(format!("{v2d}"), expected);
+        assert_eq!(format!("{v2d:?}"), expected);
     }
 
     #[test]
     fn formatting_empty() {
         let v2d: Vec2d<bool> = Vec2d::new(&[]);
-        assert_eq!(format!("{}", v2d), "");
-        assert_eq!(format!("{:?}", v2d), "");
+        assert_eq!(format!("{v2d}"), "");
+        assert_eq!(format!("{v2d:?}"), "");
 
         let v2d: Vec2d<&str> = Vec2d::new(&[]);
-        assert_eq!(format!("{}", v2d), "");
-        assert_eq!(format!("{:?}", v2d), "");
+        assert_eq!(format!("{v2d}"), "");
+        assert_eq!(format!("{v2d:?}"), "");
     }
 }

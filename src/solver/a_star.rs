@@ -98,7 +98,7 @@ impl Display for Stats {
 
         for i in 0..self.created_states.len() {
             // created_states should be the longest vec
-            let depth = format!("{}: ", i);
+            let depth = format!("{i}: ");
             let created = self.created_states[i];
             let visited = if i < self.visited_states.len() {
                 self.visited_states[i]
@@ -163,7 +163,7 @@ impl Display for SimpleCost {
 
 impl Debug for SimpleCost {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }
 
@@ -208,7 +208,7 @@ impl Display for ComplexCost {
 
 impl Debug for ComplexCost {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }
 
