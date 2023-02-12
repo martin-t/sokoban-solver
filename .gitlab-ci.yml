@@ -43,7 +43,20 @@ rustfmt:
 clippy:
   script:
     - rustup component add clippy
+
+    # Use --all-targets to also check tests.
+    # Note that --all-features doesn't check all code when something is *disabled* by a feature.
     - cargo clippy --all-targets --all-features -- --deny warnings
+
+    # No fixmes allowed - they're to be fixed before committing
+    # or at least before merging to master so they can be used
+    # during development for things that must not be forgotten
+    # and grep's output is not littered with other people's fixmes.
+    #
+    # Grep returns success when found and failure when not found, `!` inverts success/failure.
+    # The `[F]` is the usual trick to avoid matching this line itself
+    # without excluding this whole file so it's still checked.
+    - "! ( grep --recursive --exclude-dir=target [F]IXME . && echo 'The lines above this message must be fixed (or marked as todo/later in uppercase, not fixme)' )"
   allow_failure: true
 
 audit:
