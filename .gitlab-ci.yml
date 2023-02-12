@@ -21,13 +21,6 @@ tests:
   script:
     - rustc --version && cargo --version
 
-    # --debug is faster
-    # need force when using cache because there's no --update (https://github.com/rust-lang/cargo/issues/6797)
-    - cargo install --debug cargo-audit  #--force
-    # yanking only gives warn and most crates probably don't bother reporting vulns properly
-    # RUSTSEC-2021-0127: https://github.com/bheisler/criterion.rs/issues/534
-    - cargo audit --deny warnings --ignore RUSTSEC-2021-0127
-
     # normal
     - cargo build --verbose
     - cargo build --verbose --release
@@ -51,4 +44,14 @@ clippy:
   script:
     - rustup component add clippy
     - cargo clippy --all-targets --all-features -- --deny warnings
+  allow_failure: true
+
+audit:
+  script:
+    # --debug is faster
+    # Need --force when using cache because there's no --update (https://github.com/rust-lang/cargo/issues/6797)
+    - cargo install --debug cargo-audit  #--force
+    # Yanking only gives a warn and most crates probably don't bother reporting vulns properly.
+    # RUSTSEC-2021-0127: serde_cbor is unmaintained - https://github.com/bheisler/criterion.rs/issues/534
+    - cargo audit --deny warnings --ignore RUSTSEC-2021-0127
   allow_failure: true
