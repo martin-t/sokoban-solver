@@ -34,6 +34,7 @@ fn main() {
     const PUSHES: &str = "pushes";
     const ANY: &str = "any";
     const LEVEL_FILE: &str = "level-file";
+    #[cfg(debug_assertions)]
     const VERBOSE: &str = "verbose";
 
     let app = Command::new("sokoban-solver")
@@ -131,7 +132,10 @@ fn main() {
         Method::Any
     };
 
+    #[cfg(debug_assertions)]
     let verbose = matches.get_flag(VERBOSE);
+    #[cfg(not(debug_assertions))]
+    let verbose = false;
 
     let log_level = if verbose {
         log::LevelFilter::Trace
