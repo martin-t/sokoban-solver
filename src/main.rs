@@ -107,7 +107,8 @@ fn main() {
         Arg::new(VERBOSE)
             .short('v')
             .long(VERBOSE)
-            .help("Print all log levels (only available in debug builds)"),
+            .help("Print all log levels (only available in debug builds)")
+            .action(ArgAction::SetTrue),
     );
 
     let matches = app.get_matches();
