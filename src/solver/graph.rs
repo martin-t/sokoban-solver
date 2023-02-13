@@ -89,11 +89,11 @@ impl<'a, C: Cost> Graph<'a, C> {
         dot::render(self, &mut writer).unwrap();
         let s = String::from_utf8(writer).unwrap();
         let s = s.replace("digraph G {", "digraph G {\n    graph [fontname = \"hack\"];\n    node [fontname = \"hack\"];\n    edge [fontname = \"hack\"];");
-        fs::write("state-space.dot", &s).unwrap();
+        fs::write("state-space.dot", s).unwrap();
 
         let status = Command::new("dot")
             // PNG is bigger on disk but takes less memory to load than SVG
-            .args(&["-Tpng", "-O", "state-space.dot"])
+            .args(["-Tpng", "-O", "state-space.dot"])
             .status()
             .unwrap();
         assert!(status.success());
@@ -124,7 +124,7 @@ impl<'a, C: Cost> Labeller<'a, Nd, Ed> for Graph<'a, C> {
     }
 
     fn node_id(&'a self, n: &Nd) -> Id<'a> {
-        Id::new(format!("N{}", n)).unwrap()
+        Id::new(format!("N{n}")).unwrap()
     }
 
     fn node_label(&'a self, n: &Nd) -> LabelText<'a> {
