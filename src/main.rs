@@ -54,14 +54,14 @@ fn main() {
                 .help("Output in the XSB format (default)")
                 .action(ArgAction::SetTrue),
         )
-        .group(ArgGroup::new("format").args(&[CUSTOM, XSB]))
+        .group(ArgGroup::new("format").args([CUSTOM, XSB]))
         .arg(
             Arg::new(MOVES_PUSHES)
                 .short('M')
                 .long(MOVES_PUSHES)
                 .help("Search for a move-optimal solution with minimal pushes")
                 .action(ArgAction::SetTrue)
-                .conflicts_with_all(&[MOVES, PUSHES_MOVES, PUSHES, ANY]),
+                .conflicts_with_all([MOVES, PUSHES_MOVES, PUSHES, ANY]),
         )
         .arg(
             Arg::new(MOVES)
@@ -69,7 +69,7 @@ fn main() {
                 .long(MOVES)
                 .help("Search for a move-optimal solution")
                 .action(ArgAction::SetTrue)
-                .conflicts_with_all(&[PUSHES_MOVES, PUSHES, ANY]),
+                .conflicts_with_all([PUSHES_MOVES, PUSHES, ANY]),
         )
         .arg(
             Arg::new(PUSHES_MOVES)
@@ -77,7 +77,7 @@ fn main() {
                 .long(PUSHES_MOVES)
                 .help("Search for a push-optimal solution with minimal moves")
                 .action(ArgAction::SetTrue)
-                .conflicts_with_all(&[PUSHES, ANY]),
+                .conflicts_with_all([PUSHES, ANY]),
         )
         .arg(
             Arg::new(PUSHES)
@@ -85,7 +85,7 @@ fn main() {
                 .long(PUSHES)
                 .help("Search for a push-optimal solution")
                 .action(ArgAction::SetTrue)
-                .conflicts_with_all(&[ANY]),
+                .conflicts_with_all([ANY]),
         )
         .arg(
             Arg::new(ANY)
@@ -94,7 +94,7 @@ fn main() {
                 .help("Search for any solution (default, currently push optimal)")
                 .action(ArgAction::SetTrue),
         )
-        .group(ArgGroup::new("method").args(&[MOVES_PUSHES, MOVES, PUSHES_MOVES, PUSHES, ANY]))
+        .group(ArgGroup::new("method").args([MOVES_PUSHES, MOVES, PUSHES_MOVES, PUSHES, ANY]))
         .arg(
             Arg::new(LEVEL_FILE)
                 .value_parser(value_parser!(OsString))
