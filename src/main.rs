@@ -12,10 +12,11 @@
 #![allow(clippy::too_many_lines)]
 // ^ End of pedantic overrides
 
+use std::ffi::OsString;
 #[cfg(unix)]
 use std::{fs, process};
 
-use clap::{crate_authors, crate_version, Arg, ArgGroup, Command};
+use clap::{crate_authors, crate_version, Arg, ArgAction, ArgGroup, Command, value_parser};
 
 use sokoban_solver::{
     config::{Format, Method},
@@ -42,51 +43,63 @@ fn main() {
             Arg::new(CUSTOM)
                 .short('c')
                 .long(CUSTOM)
-                .help("Output in the custom format"),
+                .help("Output in the custom format")
+                .action(ArgAction::SetTrue)
+                .conflicts_with(XSB),
         )
         .arg(
             Arg::new(XSB)
                 .short('x')
                 .long(XSB)
-                .help("Output in the XSB format (default)"),
+                .help("Output in the XSB format (default)")
+                .action(ArgAction::SetTrue),
         )
         .group(ArgGroup::new("format").args(&[CUSTOM, XSB]))
         .arg(
             Arg::new(MOVES_PUSHES)
                 .short('M')
                 .long(MOVES_PUSHES)
-                .help("Search for a move-optimal solution with minimal pushes"),
+                .help("Search for a move-optimal solution with minimal pushes")
+                .action(ArgAction::SetTrue)
+                .conflicts_with_all(&[MOVES, PUSHES_MOVES, PUSHES, ANY]),
         )
         .arg(
             Arg::new(MOVES)
                 .short('m')
                 .long(MOVES)
-                .help("Search for a move-optimal solution"),
+                .help("Search for a move-optimal solution")
+                .action(ArgAction::SetTrue)
+                .conflicts_with_all(&[PUSHES_MOVES, PUSHES, ANY]),
         )
         .arg(
             Arg::new(PUSHES_MOVES)
                 .short('P')
                 .long(PUSHES_MOVES)
-                .help("Search for a push-optimal solution with minimal moves"),
+                .help("Search for a push-optimal solution with minimal moves")
+                .action(ArgAction::SetTrue)
+                .conflicts_with_all(&[PUSHES, ANY]),
         )
         .arg(
             Arg::new(PUSHES)
                 .short('p')
                 .long(PUSHES)
-                .help("Search for a push-optimal solution"),
+                .help("Search for a push-optimal solution")
+                .action(ArgAction::SetTrue)
+                .conflicts_with_all(&[ANY]),
         )
         .arg(
             Arg::new(ANY)
                 .short('a')
                 .long(ANY)
-                .help("Search for any solution (default, currently push optimal)"),
+                .help("Search for any solution (default, currently push optimal)")
+                .action(ArgAction::SetTrue),
         )
         .group(ArgGroup::new("method").args(&[MOVES_PUSHES, MOVES, PUSHES_MOVES, PUSHES, ANY]))
         .arg(
             Arg::new(LEVEL_FILE)
-                .allow_invalid_utf8(true)
+                .value_parser(value_parser!(OsString))
                 .required(true)
-                .multiple_occurrences(true),
+                .action(ArgAction::Append),
         );
 
     #[cfg(debug_assertions)]
@@ -99,25 +112,25 @@ fn main() {
 
     let matches = app.get_matches();
 
-    let format = if matches.is_present(CUSTOM) {
+    let format = if matches.get_flag(CUSTOM) {
         Format::Custom
     } else {
         Format::Xsb
     };
 
-    let method = if matches.is_present(MOVES_PUSHES) {
+    let method = if matches.get_flag(MOVES_PUSHES) {
         Method::MovesPushes
-    } else if matches.is_present(MOVES) {
+    } else if matches.get_flag(MOVES) {
         Method::Moves
-    } else if matches.is_present(PUSHES_MOVES) {
+    } else if matches.get_flag(PUSHES_MOVES) {
         Method::PushesMoves
-    } else if matches.is_present(PUSHES) {
+    } else if matches.get_flag(PUSHES) {
         Method::Pushes
     } else {
         Method::Any
     };
 
-    let verbose = matches.is_present(VERBOSE);
+    let verbose = matches.get_flag(VERBOSE);
 
     let log_level = if verbose {
         log::LevelFilter::Trace
@@ -137,7 +150,7 @@ fn main() {
     .unwrap_or_else(|_| eprintln!("Couldn't change oom_score_adj"));
 
     for path in matches
-        .values_of_os(LEVEL_FILE)
+        .get_many::<OsString>(LEVEL_FILE)
         .expect("Level path is required")
     {
         let level = path.load_level().unwrap_or_else(|err| {
