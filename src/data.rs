@@ -2,7 +2,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, Sub};
 
-// FIXME this is fishy - add tests that test both limits
+// TODO this is fishy - add tests that test both limits
 pub(crate) const MAX_SIZE: usize = 255;
 pub(crate) const MAX_BOXES: usize = 255;
 
