@@ -68,5 +68,6 @@ audit:
     - cargo install --debug cargo-audit  #--force
     # Yanking only gives a warn and most crates probably don't bother reporting vulns properly.
     # RUSTSEC-2021-0127: serde_cbor is unmaintained - https://github.com/bheisler/criterion.rs/issues/534
-    - cargo audit --deny warnings --ignore RUSTSEC-2021-0127
+    # RUSTSEC-2021-0145: atty - Potential unaligned read - waiting on criterion to update
+    - cargo audit --deny warnings --ignore RUSTSEC-2021-0127 --ignore RUSTSEC-2021-0145
   allow_failure: true
