@@ -16,7 +16,7 @@ use std::ffi::OsString;
 #[cfg(unix)]
 use std::{fs, process};
 
-use clap::{crate_authors, crate_version, Arg, ArgAction, ArgGroup, Command, value_parser};
+use clap::{crate_authors, crate_version, value_parser, Arg, ArgAction, ArgGroup, Command};
 
 use sokoban_solver::{
     config::{Format, Method},
