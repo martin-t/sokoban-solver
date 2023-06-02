@@ -1,3 +1,4 @@
+/target-criterion
 /test-report*.txt
 /callgrind.out.*
 
