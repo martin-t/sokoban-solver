@@ -7,6 +7,7 @@ use crate::map_formatter::MapFormatter;
 use crate::state::State;
 use crate::vec2d::Vec2d;
 
+#[allow(dead_code)]
 pub(crate) trait Map {
     fn grid(&self) -> &Vec2d<MapCell>;
 

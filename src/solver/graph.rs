@@ -1,6 +1,6 @@
 use std::{borrow::Cow, fs, process::Command};
 
-use dot::{self, Edges, GraphWalk, Id, LabelText, Labeller, Nodes, Style};
+use dot::{Edges, GraphWalk, Id, LabelText, Labeller, Nodes, Style};
 use fnv::{FnvHashMap, FnvHashSet};
 
 use crate::{
