@@ -25,6 +25,7 @@
 #![allow(clippy::items_after_statements)]
 // This is a matter of taste and some things are easier to understand as one long function
 #![allow(clippy::too_many_lines)]
+#![allow(clippy::struct_field_names)]
 // ^ End of pedantic overrides
 
 pub mod config;
