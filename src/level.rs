@@ -58,7 +58,7 @@ impl Level {
         &'a self,
         moves: &'a Moves,
         include_steps: bool,
-    ) -> SolutionFormatter<'_> {
+    ) -> SolutionFormatter<'a> {
         self.format_solution(Format::Xsb, moves, include_steps)
     }
 
@@ -66,7 +66,7 @@ impl Level {
         &'a self,
         moves: &'a Moves,
         include_steps: bool,
-    ) -> SolutionFormatter<'_> {
+    ) -> SolutionFormatter<'a> {
         self.format_solution(Format::Custom, moves, include_steps)
     }
 
